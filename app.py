@@ -441,6 +441,22 @@ st.markdown("""
     a.news-link:hover {
         color: #E2FF3B !important;
     }
+    
+    /* Download Button override */
+    div.stDownloadButton > button {
+        background-color: #0E1217 !important;
+        color: #BAC7D5 !important;
+        border: 1px solid #1C232E !important;
+        font-weight: 600 !important;
+        border-radius: 6px !important;
+        transition: all 0.2s ease-in-out !important;
+        box-shadow: none !important;
+    }
+    div.stDownloadButton > button:hover {
+        border-color: #E2FF3B !important;
+        color: #E2FF3B !important;
+        background-color: #12161A !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -527,8 +543,10 @@ with st.sidebar:
         
     st.markdown(
         """
-        <div style="font-size:0.72rem; color:#8A99AD; line-height:1.45; margin-top:0.8rem;">
-        <b>RAG Security Isolation</b>: Access parameters for this session are restricted to this scheme's documents inside the database.
+        <div style="font-size:0.68rem; color:#5A697D; line-height:1.45; margin-top:0.8rem; border-top:1px solid #1C232E; padding-top:0.8rem;">
+            <b>RAG Isolation Mode</b>: Database queries are isolated strictly to this scheme's documents.
+            <div style="margin-top: 6px;"></div>
+            <b>Disclaimer</b>: Mutual Fund investments are subject to market risks. Read all scheme-related documents carefully. AI insights and sentiment analysis are for informational purposes only and do not constitute financial advice. NAV data is sourced live from public feeds (MFAPI).
         </div>
         """,
         unsafe_allow_html=True
@@ -1018,6 +1036,25 @@ with right_col:
         """,
         unsafe_allow_html=True
     )
+
+    # 1b. PDF Factsheet Downloader
+    pdf_path = f"data/{selected_key}/true.pdf"
+    pdf_bytes = b""
+    if os.path.exists(pdf_path):
+        with open(pdf_path, "rb") as f:
+            pdf_bytes = f.read()
+
+    if pdf_bytes:
+        download_name = f"{selected_key}_factsheet.pdf"
+        st.download_button(
+            label="📄 Download Factsheet PDF",
+            data=pdf_bytes,
+            file_name=download_name,
+            mime="application/pdf",
+            use_container_width=True,
+            key=f"dl_pdf_{selected_key}"
+        )
+    st.markdown("<div style='margin-bottom: 1.2rem;'></div>", unsafe_allow_html=True)
 
     # 2. Dhan RAG Chat Analyst
     col_header, col_clear = st.columns([2.2, 1.0])
