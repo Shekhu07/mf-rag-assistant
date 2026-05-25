@@ -501,9 +501,7 @@ with st.sidebar:
             )
         else:
             # Inactive item rendered as flat button
-            change_val = nav_info["change"].split(" ")[0]
-            # Format: Name • NAV (Change)
-            btn_label = f"📁 {name_display}  •  {nav_info['nav']} ({change_val})"
+            btn_label = f"📁 {name_display}"
             if st.button(btn_label, key=f"sidebar_btn_{key}", use_container_width=True):
                 st.session_state["selected_scheme"] = key
                 st.rerun()
