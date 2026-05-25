@@ -640,29 +640,16 @@ with left_col:
 
         st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
 
-        # --- Risk Profile & Summary ---
-        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>RISK PROFILE &amp; SUMMARY</span>", unsafe_allow_html=True)
-        risk_col1, risk_col2 = st.columns([1.5, 1.0])
-        with risk_col1:
-            st.markdown(
-                f"""
-                <div style="font-size:0.88rem; color:#BAC7D5; line-height:1.5; padding: 0.5rem 0;">
-                <b>Description:</b> {scheme['desc']}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        with risk_col2:
-            st.markdown(
-                f"""
-                <div class="riskometer-box">
-                    <div style="font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:2px;">Riskometer</div>
-                    <div style="font-size:1.05rem; font-weight:700;">&#9679; {scheme['riskometer']}</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            
+        # --- Fund Description ---
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>FUND DESCRIPTION</span>", unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div style="font-size:0.88rem; color:#BAC7D5; line-height:1.5; padding: 0.5rem 0;">
+            {scheme['desc']}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     with tab_holdings:
         st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
         st.markdown("<span style='font-size:0.85rem; font-weight:600; color:#8A99AD;'>PORTFOLIO ALLOCATION BREAKDOWN</span>", unsafe_allow_html=True)
