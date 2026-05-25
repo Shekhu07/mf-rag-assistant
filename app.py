@@ -201,35 +201,26 @@ st.markdown("""
         color: #F87171;
     }
     
-    /* Order Transaction Box (Right Sidebar Style) */
-    .order-box {
-        background-color: #0E1217;
+    /* Fund Summary Card */
+    .fund-summary-card {
+        background: linear-gradient(135deg, #0E1217, #0A0E14);
         border: 1px solid #1C232E;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin-bottom: 1.4rem;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.4);
     }
-    
-    .btn-dhan-green {
-        background-color: #E2FF3B !important;
-        color: #080A0C !important;
-        font-weight: 700 !important;
-        font-family: 'Outfit', sans-serif !important;
-        border-radius: 6px !important;
-        border: none !important;
-        width: 100%;
-        padding: 10px !important;
-        font-size: 1rem !important;
-        text-align: center;
-        cursor: pointer;
-        display: block;
-        margin-top: 1rem;
-        transition: opacity 0.2s;
+    .fund-summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.55rem 0;
+        border-bottom: 1px solid #151D28;
+        font-size: 0.84rem;
     }
-    .btn-dhan-green:hover {
-        opacity: 0.9;
-    }
+    .fund-summary-row:last-child { border-bottom: none; }
+    .fund-summary-label { color: #8A99AD; font-weight: 500; }
+    .fund-summary-value { color: #FFFFFF; font-weight: 600; text-align: right; }
     
     /* Dhan RAG Chat Analyst Container & Bubbles */
     .chat-row-user {
@@ -465,7 +456,7 @@ st.markdown(
 )
 
 # --- TWO-COLUMN LAYOUT ---
-left_col, right_col = st.columns([1.6, 1.0], gap="large")
+left_col, right_col = st.columns([1.65, 1.0], gap="large")
 
 # ==================== LEFT COLUMN: SCHEME ANALYSIS ====================
 with left_col:
@@ -760,40 +751,47 @@ with left_col:
         )
 
 
-# ==================== RIGHT COLUMN: BUY CARD & AI CHAT ====================
+# ==================== RIGHT COLUMN: FUND SUMMARY + AI CHAT ====================
 with right_col:
-    # 1. Transaction Order Card (Dhan Panel Style)
+    # 1. Fund Summary Card (replaces non-functional SIP card)
+    change_indicator = f'<span style="color:{"#10B981" if display_change_positive else "#EF4444"}">{display_change}</span>'
+    risk_color = "#EF4444" if "Very High" in scheme["riskometer"] else "#F59E0B" if "High" in scheme["riskometer"] else "#10B981"
     st.markdown(
         f"""
-        <div class="order-box">
-            <div style="display:flex; justify-content:space-between; margin-bottom:1.2rem; border-bottom:1px solid #1C232E; padding-bottom:0.5rem;">
-                <span style="color:#FFFFFF; font-weight:700; font-size:1.1rem; font-family:Outfit;">Invest in Scheme</span>
-                <span style="color:#10B981; font-weight:600; font-size:0.82rem; background-color:#14221A; padding:2px 8px; border-radius:4px;">Direct Plan</span>
+        <div class="fund-summary-card">
+            <div style="font-size:0.7rem; font-weight:700; color:#8A99AD; letter-spacing:0.08em; margin-bottom:0.8rem;">FUND SNAPSHOT</div>
+            <div class="fund-summary-row">
+                <span class="fund-summary-label">Current NAV</span>
+                <span class="fund-summary-value">{display_nav} &nbsp;{change_indicator}</span>
             </div>
-            <div style="font-size:0.82rem; color:#8A99AD; margin-bottom:0.5rem;">INVESTMENT TYPE</div>
+            <div class="fund-summary-row">
+                <span class="fund-summary-label">AUM</span>
+                <span class="fund-summary-value">{scheme['aum']}</span>
+            </div>
+            <div class="fund-summary-row">
+                <span class="fund-summary-label">Expense Ratio</span>
+                <span class="fund-summary-value" style="color:#E2FF3B;">{scheme['expense_ratio']}</span>
+            </div>
+            <div class="fund-summary-row">
+                <span class="fund-summary-label">Min SIP</span>
+                <span class="fund-summary-value">{scheme['min_sip']}</span>
+            </div>
+            <div class="fund-summary-row">
+                <span class="fund-summary-label">Fund Manager</span>
+                <span class="fund-summary-value">{scheme['manager']}</span>
+            </div>
+            <div class="fund-summary-row">
+                <span class="fund-summary-label">Risk</span>
+                <span class="fund-summary-value" style="color:{risk_color};">{scheme['riskometer']}</span>
+            </div>
+            <div class="fund-summary-row">
+                <span class="fund-summary-label">Category</span>
+                <span class="fund-summary-value">{scheme['category']}</span>
+            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
-    
-    # We use Streamlit tabs inside the card to toggle between SIP and Lumpsum
-    order_tabs = st.tabs(["SIP (Monthly)", "Lumpsum (One-time)"])
-    with order_tabs[0]:
-        st.number_input("Monthly SIP Amount", min_value=100, value=5000, step=500, key="sip_amount")
-        st.selectbox("SIP Date (Monthly)", options=[1, 5, 10, 15, 25], index=1)
-        st.markdown(f"<div style='font-size:0.75rem; color:#8A99AD;'>Minimum SIP amount for this scheme: {scheme['min_sip']}</div>", unsafe_allow_html=True)
-    with order_tabs[1]:
-        st.number_input("One-time Lumpsum Amount", min_value=500, value=10000, step=1000, key="lump_amount")
-        st.markdown("<div style='font-size:0.75rem; color:#8A99AD;'>Typically processed within 1 working day.</div>", unsafe_allow_html=True)
-        
-    st.markdown(
-        """
-        <button class="btn-dhan-green" onclick="alert('SIP transaction initiated!')">⚡ Start SIP</button>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    st.markdown("<div style='margin-bottom:2rem;'></div>", unsafe_allow_html=True)
 
     # 2. Dhan RAG Chat Analyst
     col_header, col_clear = st.columns([2.2, 1.0])
