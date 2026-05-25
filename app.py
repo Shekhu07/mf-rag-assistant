@@ -15,6 +15,7 @@ import src.config as config
 
 # Import mutual fund scheme details
 from src.fund_metadata import FUND_DATA
+from src.nav_service import get_live_nav, clear_nav_cache
 
 # --- PAGE SETUP ---
 st.set_page_config(
@@ -419,6 +420,10 @@ with st.sidebar:
         label_visibility="visible"
     )
     st.divider()
+    # NAV Refresh button
+    if st.button("🔄 Refresh Live NAV", use_container_width=True, key="refresh_nav"):
+        clear_nav_cache()
+        st.rerun()
     st.markdown(
         """
         <div style="font-size:0.75rem; color:#8A99AD; line-height:1.4;">
@@ -430,6 +435,19 @@ with st.sidebar:
 
 # Get selected scheme facts
 scheme = FUND_DATA[selected_key]
+
+# --- FETCH LIVE NAV FROM MFAPI ---
+live_nav_data = get_live_nav(
+    fund_id=selected_key,
+    static_nav=scheme["nav"],
+    static_change=scheme["change"],
+    static_change_positive=scheme["change_positive"]
+)
+display_nav = live_nav_data["nav"]
+display_change = live_nav_data["change"]
+display_change_positive = live_nav_data["change_positive"]
+nav_date = live_nav_data["date"]
+is_live = live_nav_data["is_live"]
 
 # --- DASHBOARD HEADER ---
 st.markdown(
@@ -459,14 +477,23 @@ with left_col:
     )
     st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
     
-    # 2. NAV & Daily Change
-    change_class = "nav-change-pos" if scheme["change_positive"] else "nav-change-neg"
+    # 2. NAV & Daily Change (Live from MFAPI)
+    change_class = "nav-change-pos" if display_change_positive else "nav-change-neg"
+    live_badge = (
+        f'<span style="background:#0D2B1A; color:#10B981; font-size:0.65rem; font-weight:700; '
+        f'padding:2px 7px; border-radius:4px; border:1px solid rgba(16,185,129,0.3); '
+        f'margin-left:8px; vertical-align:middle;">&#9679; LIVE · {nav_date}</span>'
+    ) if is_live else (
+        f'<span style="background:#1A1512; color:#F59E0B; font-size:0.65rem; font-weight:700; '
+        f'padding:2px 7px; border-radius:4px; border:1px solid rgba(245,158,11,0.3); '
+        f'margin-left:8px; vertical-align:middle;">&#9679; STATIC · Refresh to go live</span>'
+    )
     st.markdown(
         f"""
         <div class="nav-box">
-            <div class="nav-label">NET ASSET VALUE (NAV)</div>
-            <div class="nav-val">{scheme["nav"]}</div>
-            <div class="{change_class}">{scheme["change"]}</div>
+            <div class="nav-label">NET ASSET VALUE (NAV) {live_badge}</div>
+            <div class="nav-val">{display_nav}</div>
+            <div class="{change_class}">{display_change}</div>
         </div>
         """,
         unsafe_allow_html=True
@@ -706,15 +733,18 @@ with right_col:
                 st.rerun()
         with col_s2:
             if st.button("📈 Returns Info", use_container_width=True, key=f"sug_perf_{selected_key}"):
-                st.session_state[chat_key].append({"role": "user", "content": "Tell me about the CAGR returns."})
-                # Serve instantly from local metadata — no API call needed
+                st.session_state[chat_key].append({"role": "user", "content": "Tell me about the NAV and CAGR returns."})
+                # Live NAV + static CAGR — instant, no API call needed
+                nav_source = f"MFAPI · {nav_date}" if is_live else "Static"
                 ans = (
-                    f"Here is the historical CAGR performance for **{scheme['name']}**:\n\n"
-                    f"| Period | CAGR Return |\n"
-                    f"|--------|------------|\n"
-                    f"| 1 Year | **{scheme['return_1y']}** |\n"
-                    f"| 3 Years | **{scheme['return_3y']}** |\n"
-                    f"| 5 Years | **{scheme['return_5y']}** |\n\n"
+                    f"Here is the performance snapshot for **{scheme['name']}**:\n\n"
+                    f"| Metric | Value | Source |\n"
+                    f"|--------|-------|--------|\n"
+                    f"| **Current NAV** | **{display_nav}** | {nav_source} |\n"
+                    f"| Daily Change | {display_change} | {nav_source} |\n"
+                    f"| 1-Year CAGR | **{scheme['return_1y']}** | Factsheet |\n"
+                    f"| 3-Year CAGR | **{scheme['return_3y']}** | Factsheet |\n"
+                    f"| 5-Year CAGR | **{scheme['return_5y']}** | Factsheet |\n\n"
                     f"*Risk Profile: {scheme['riskometer']}*"
                 )
                 st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
