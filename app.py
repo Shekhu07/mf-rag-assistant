@@ -491,7 +491,7 @@ with left_col:
     )
     
     # 3. Dhan Scheme Tabs
-    tab_overview, tab_holdings, tab_parameters = st.tabs(["Overview & Returns", "Holdings Portfolio", "Scheme Information"])
+    tab_overview, tab_holdings = st.tabs(["Overview & Returns", "Holdings Portfolio"])
     
     with tab_overview:
         import pandas as pd
@@ -710,24 +710,6 @@ with left_col:
             st.altair_chart(chart, use_container_width=True)
         except Exception as chart_err:
             st.error(f"Error rendering chart: {chart_err}")
-
-    with tab_parameters:
-        st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
-        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>FUND SPECS</span>", unsafe_allow_html=True)
-        
-        # Grid of key facts
-        st.markdown(
-            f"""
-            <div class="dhan-box">
-                <div class="metric-row"><span class="metric-label">Fund Manager</span><span class="metric-value">{scheme['manager']}</span></div>
-                <div class="metric-row"><span class="metric-label">Total Assets Under Management (AUM)</span><span class="metric-value">{scheme['aum']}</span></div>
-                <div class="metric-row"><span class="metric-label">Expense Ratio (Direct Plan)</span><span class="metric-value" style="color:#E2FF3B;">{scheme['expense_ratio']}</span></div>
-                <div class="metric-row"><span class="metric-label">Minimum SIP Amount</span><span class="metric-value">{scheme['min_sip']}</span></div>
-                <div class="metric-row"><span class="metric-label">Lock-in Period</span><span class="metric-value">Nil</span></div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
 
 
 # ==================== RIGHT COLUMN: FUND SUMMARY + AI CHAT ====================
