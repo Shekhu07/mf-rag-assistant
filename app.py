@@ -491,7 +491,7 @@ with left_col:
     )
     
     # 3. Dhan Scheme Tabs
-    tab_overview, tab_holdings = st.tabs(["Overview & Returns", "Holdings Portfolio"])
+    tab_overview, tab_holdings, tab_sip = st.tabs(["Overview & Returns", "Holdings Portfolio", "💰 SIP Calculator"])
     
     with tab_overview:
         import pandas as pd
@@ -697,6 +697,129 @@ with left_col:
             st.altair_chart(chart, use_container_width=True)
         except Exception as chart_err:
             st.error(f"Error rendering chart: {chart_err}")
+
+    with tab_sip:
+        import pandas as pd
+        import altair as alt
+
+        st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>SIP CALCULATOR (COMPOUND INTEREST DETAILED GROWTH)</span>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
+
+        sip_col1, sip_col2 = st.columns([1.2, 1.0])
+        with sip_col1:
+            monthly_investment = st.slider(
+                "Monthly Investment (₹)",
+                min_value=500,
+                max_value=200000,
+                value=10000,
+                step=500,
+                format="₹%d",
+                key=f"sip_amt_{selected_key}"
+            )
+            years = st.slider(
+                "Investment Period (Years)",
+                min_value=1,
+                max_value=30,
+                value=10,
+                step=1,
+                format="%d years",
+                key=f"sip_years_{selected_key}"
+            )
+        with sip_col2:
+            cagr_option = st.radio(
+                "Expected Return Rate (CAGR)",
+                options=[
+                    f"3-Year CAGR ({scheme['return_3y']})",
+                    f"5-Year CAGR ({scheme['return_5y']})",
+                    f"1-Year CAGR ({scheme['return_1y']})",
+                    "Custom Return Rate"
+                ],
+                key=f"sip_cagr_opt_{selected_key}"
+            )
+            if cagr_option == "Custom Return Rate":
+                annual_rate = st.slider(
+                    "Custom Return Rate (%)",
+                    min_value=1.0,
+                    max_value=30.0,
+                    value=15.0,
+                    step=0.5,
+                    format="%.1f%%",
+                    key=f"sip_custom_rate_{selected_key}"
+                )
+            elif "3-Year" in cagr_option:
+                annual_rate = float(scheme["return_3y"].replace("%", ""))
+            elif "5-Year" in cagr_option:
+                annual_rate = float(scheme["return_5y"].replace("%", ""))
+            else:
+                annual_rate = float(scheme["return_1y"].replace("%", ""))
+
+        # Calculate Projected Corpus
+        # Formula: M = P * ((1 + i)^n - 1) / i * (1 + i)
+        i = (annual_rate / 100) / 12
+        n = years * 12
+        total_invested = monthly_investment * n
+        if i == 0:
+            future_value = total_invested
+        else:
+            future_value = monthly_investment * (((1 + i)**n - 1) / i) * (1 + i)
+        
+        wealth_gained = max(0.0, future_value - total_invested)
+
+        # Metric cards
+        invested_str = f"₹{total_invested:,.0f}"
+        wealth_str = f"₹{wealth_gained:,.0f}"
+        total_str = f"₹{future_value:,.0f}"
+
+        st.markdown(
+            f"""
+            <div style="display:flex; gap:1rem; margin-top:1rem; margin-bottom:1.5rem;">
+                <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.8rem 1rem; text-align:center;">
+                    <div style="font-size:0.65rem; color:#8A99AD; font-weight:600; text-transform:uppercase; margin-bottom:2px;">Total Invested</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:#FFFFFF;">{invested_str}</div>
+                </div>
+                <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.8rem 1rem; text-align:center;">
+                    <div style="font-size:0.65rem; color:#8A99AD; font-weight:600; text-transform:uppercase; margin-bottom:2px;">Est. Returns</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:#10B981;">{wealth_str}</div>
+                </div>
+                <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.8rem 1rem; text-align:center;">
+                    <div style="font-size:0.65rem; color:#8A99AD; font-weight:600; text-transform:uppercase; margin-bottom:2px;">Total Value</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:#E2FF3B;">{total_str}</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Generate year-by-year trajectory
+        chart_data = []
+        for yr in range(1, int(years) + 1):
+            m = yr * 12
+            inv = monthly_investment * m
+            if i == 0:
+                fv = inv
+            else:
+                fv = monthly_investment * (((1 + i)**m - 1) / i) * (1 + i)
+            chart_data.append({"Year": yr, "Amount": inv, "Type": "Invested Amount"})
+            chart_data.append({"Year": yr, "Amount": round(fv), "Type": "Future Value"})
+
+        df_chart = pd.DataFrame(chart_data)
+
+        # Growth line chart (clean, static, no hover pop-ups, matches NAV chart)
+        growth_chart = alt.Chart(df_chart).mark_line(strokeWidth=3, strokeLinecap="round", interpolate="monotone").encode(
+            x=alt.X("Year:Q", scale=alt.Scale(domain=[1, years]), axis=alt.Axis(tickCount=int(years), format="d", labelColor="#8A99AD", gridColor="#1C232E", domainColor="#1C232E", title="Years")),
+            y=alt.Y("Amount:Q", axis=alt.Axis(format="~s", labelColor="#8A99AD", gridColor="#1C232E", domainColor="#1C232E", title="Amount (₹)")),
+            color=alt.Color("Type:N", scale=alt.Scale(domain=["Invested Amount", "Future Value"], range=["#4F5E71", "#E2FF3B"]), legend=alt.Legend(title=None, orient="bottom", labelColor="#BAC7D5", labelFontSize=11)),
+            tooltip=None
+        ).properties(
+            height=200
+        ).configure(
+            background="transparent"
+        ).configure_view(
+            strokeWidth=0
+        )
+
+        st.altair_chart(growth_chart, use_container_width=True)
 
 
 # ==================== RIGHT COLUMN: FUND SUMMARY + AI CHAT ====================
