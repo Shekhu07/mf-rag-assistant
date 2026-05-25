@@ -15,7 +15,7 @@ import src.config as config
 
 # Import mutual fund scheme details
 from src.fund_metadata import FUND_DATA
-from src.nav_service import get_live_nav, clear_nav_cache
+from src.nav_service import get_live_nav, clear_nav_cache, fetch_nav_history
 
 # --- PAGE SETUP ---
 st.set_page_config(
@@ -503,8 +503,12 @@ with left_col:
     tab_overview, tab_holdings, tab_parameters = st.tabs(["Overview & Returns", "Holdings Portfolio", "Scheme Information"])
     
     with tab_overview:
+        import pandas as pd
+        import altair as alt
+
         st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
-        # Returns grid
+
+        # --- CAGR Return Cards ---
         st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>HISTORICAL PERFORMANCE (CAGR)</span>", unsafe_allow_html=True)
         r_col1, r_col2, r_col3 = st.columns(3)
         with r_col1:
@@ -513,11 +517,161 @@ with left_col:
             st.markdown(f'<div class="return-card"><div class="nav-label">3Y RETURN</div><div class="return-num">{scheme["return_3y"]}</div></div>', unsafe_allow_html=True)
         with r_col3:
             st.markdown(f'<div class="return-card"><div class="nav-label">5Y RETURN</div><div class="return-num">{scheme["return_5y"]}</div></div>', unsafe_allow_html=True)
-        
-        st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
-        
-        # Investment Objective & Riskometer
-        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>RISK PROFILE & SUMMARY</span>", unsafe_allow_html=True)
+
+        st.markdown("<div style='margin-bottom:1.2rem;'></div>", unsafe_allow_html=True)
+
+        # --- NAV HISTORY LINE CHART ---
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>NAV PRICE HISTORY (LIVE · MFAPI)</span>", unsafe_allow_html=True)
+
+        # Period selector using segmented control style
+        period_key = f"nav_period_{selected_key}"
+        if period_key not in st.session_state:
+            st.session_state[period_key] = "1Y"
+
+        period_cols = st.columns(6)
+        period_labels = ["1M", "6M", "1Y", "3Y", "5Y", "All"]
+        for i, period_label in enumerate(period_labels):
+            with period_cols[i]:
+                is_active = st.session_state[period_key] == period_label
+                btn_style = (
+                    "background:#E2FF3B; color:#080A0C; font-weight:700;"
+                    if is_active else
+                    "background:#0E1217; color:#8A99AD; font-weight:500;"
+                )
+                if st.button(
+                    period_label,
+                    key=f"period_{selected_key}_{period_label}",
+                    use_container_width=True,
+                ):
+                    st.session_state[period_key] = period_label
+                    st.rerun()
+
+        # Fetch and render chart
+        selected_period = st.session_state[period_key]
+        with st.spinner(f"Loading {selected_period} NAV history..."):
+            df_hist = fetch_nav_history(selected_key, period=selected_period)
+
+        if df_hist is not None and len(df_hist) > 1:
+            # Compute % change from period start for a normalised view in tooltip
+            start_nav = df_hist["nav"].iloc[0]
+            df_hist["pct_change"] = ((df_hist["nav"] - start_nav) / start_nav * 100).round(2)
+            df_hist["date_str"] = df_hist["date"].dt.strftime("%d %b %Y")
+            is_positive = df_hist["nav"].iloc[-1] >= df_hist["nav"].iloc[0]
+            line_color = "#10B981" if is_positive else "#EF4444"
+            area_color_start = "rgba(16,185,129,0.25)" if is_positive else "rgba(239,68,68,0.25)"
+
+            # Hover selection
+            nearest = alt.selection_point(
+                nearest=True, on="mouseover", fields=["date"], empty=False
+            )
+
+            # Base line
+            base = alt.Chart(df_hist).encode(
+                x=alt.X(
+                    "date:T",
+                    axis=alt.Axis(
+                        format="%b '%y",
+                        labelColor="#8A99AD",
+                        labelFontSize=10,
+                        gridColor="#1C232E",
+                        domainColor="#1C232E",
+                        tickColor="#1C232E",
+                    ),
+                    title=None,
+                ),
+                y=alt.Y(
+                    "nav:Q",
+                    scale=alt.Scale(zero=False),
+                    axis=alt.Axis(
+                        labelColor="#8A99AD",
+                        labelFontSize=10,
+                        gridColor="#1C232E",
+                        domainColor="#1C232E",
+                        tickColor="#1C232E",
+                        format=".0f",
+                    ),
+                    title=None,
+                ),
+            )
+
+            # Gradient area fill
+            area = base.mark_area(
+                line={"color": line_color, "strokeWidth": 2},
+                color=alt.Gradient(
+                    gradient="linear",
+                    stops=[
+                        alt.GradientStop(color=area_color_start, offset=0),
+                        alt.GradientStop(color="rgba(8,10,12,0.0)", offset=1),
+                    ],
+                    x1=1, x2=1, y1=1, y2=0,
+                ),
+                interpolate="monotone",
+            )
+
+            # Vertical hover rule
+            rule = base.mark_rule(color="#E2FF3B", strokeWidth=1, opacity=0.6).encode(
+                opacity=alt.condition(nearest, alt.value(0.6), alt.value(0)),
+                tooltip=[
+                    alt.Tooltip("date_str:N", title="Date"),
+                    alt.Tooltip("nav:Q", title="NAV (₹)", format=".2f"),
+                    alt.Tooltip("pct_change:Q", title="Change from Start (%)", format="+.2f"),
+                ],
+            ).add_params(nearest)
+
+            # Hover dot
+            point = base.mark_point(
+                filled=True, size=80, color=line_color
+            ).encode(
+                opacity=alt.condition(nearest, alt.value(1), alt.value(0)),
+            )
+
+            chart = (area + rule + point).properties(
+                height=220,
+            ).configure(
+                background="transparent",
+            ).configure_view(
+                strokeWidth=0,
+            )
+
+            st.altair_chart(chart, use_container_width=True)
+
+            # Mini stats below chart
+            period_start = df_hist["nav"].iloc[0]
+            period_end = df_hist["nav"].iloc[-1]
+            period_high = df_hist["nav"].max()
+            period_low = df_hist["nav"].min()
+            period_ret = ((period_end - period_start) / period_start) * 100
+            ret_color = "#10B981" if period_ret >= 0 else "#EF4444"
+            sign = "+" if period_ret >= 0 else ""
+            st.markdown(
+                f"""
+                <div style="display:flex; gap:1rem; margin-top:-0.5rem; margin-bottom:1rem;">
+                    <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
+                        <div style="font-size:0.65rem; color:#8A99AD; font-weight:600;">PERIOD RETURN</div>
+                        <div style="font-size:1rem; font-weight:700; color:{ret_color};">{sign}{period_ret:.1f}%</div>
+                    </div>
+                    <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
+                        <div style="font-size:0.65rem; color:#8A99AD; font-weight:600;">{selected_period} HIGH</div>
+                        <div style="font-size:1rem; font-weight:700; color:#FFFFFF">₹{period_high:,.2f}</div>
+                    </div>
+                    <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
+                        <div style="font-size:0.65rem; color:#8A99AD; font-weight:600;">{selected_period} LOW</div>
+                        <div style="font-size:1rem; font-weight:700; color:#FFFFFF">₹{period_low:,.2f}</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                "<div style='color:#8A99AD; font-size:0.85rem; padding:1rem; text-align:center;'>⚠️ Could not load chart data. Check your internet connection.</div>",
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
+
+        # --- Risk Profile & Summary ---
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>RISK PROFILE &amp; SUMMARY</span>", unsafe_allow_html=True)
         risk_col1, risk_col2 = st.columns([1.5, 1.0])
         with risk_col1:
             st.markdown(
@@ -533,7 +687,7 @@ with left_col:
                 f"""
                 <div class="riskometer-box">
                     <div style="font-size:0.75rem; font-weight:600; text-transform:uppercase; margin-bottom:2px;">Riskometer</div>
-                    <div style="font-size:1.05rem; font-weight:700;">● {scheme['riskometer']}</div>
+                    <div style="font-size:1.05rem; font-weight:700;">&#9679; {scheme['riskometer']}</div>
                 </div>
                 """,
                 unsafe_allow_html=True

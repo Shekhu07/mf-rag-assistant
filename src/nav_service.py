@@ -117,6 +117,69 @@ def get_live_nav(fund_id: str, static_nav: str, static_change: str, static_chang
         }
 
 
+def fetch_nav_history(fund_id: str, period: str = "1Y", timeout: int = 6) -> Optional[object]:
+    """
+    Fetches historical NAV data for a fund from MFAPI and returns a
+    pandas DataFrame with columns ['date', 'nav'] filtered to the requested period.
+
+    period options: '1M', '6M', '1Y', '3Y', '5Y', 'All'
+    Returns None on failure.
+    """
+    try:
+        import pandas as pd
+        from datetime import timedelta
+    except ImportError:
+        logger.error("pandas is required for fetch_nav_history")
+        return None
+
+    if fund_id not in MFAPI_SCHEME_CODES:
+        return None
+
+    scheme_code = MFAPI_SCHEME_CODES[fund_id]
+    cache_key = f"history_{fund_id}"
+
+    # Use session-level cache for history too
+    if cache_key in _nav_cache:
+        df_all = _nav_cache[cache_key]
+    else:
+        try:
+            url = f"{MFAPI_BASE}/{scheme_code}"
+            resp = requests.get(url, timeout=timeout)
+            resp.raise_for_status()
+            data = resp.json()
+
+            if data.get("status") != "SUCCESS" or not data.get("data"):
+                return None
+
+            # MFAPI returns newest first — reverse to oldest first for charting
+            records = data["data"]
+            df_all = pd.DataFrame(records)
+            df_all["date"] = pd.to_datetime(df_all["date"], format="%d-%m-%Y")
+            df_all["nav"] = df_all["nav"].astype(float)
+            df_all = df_all.sort_values("date").reset_index(drop=True)
+
+            _nav_cache[cache_key] = df_all
+            logger.info(f"Fetched {len(df_all)} historical NAV records for {fund_id}")
+
+        except Exception as e:
+            logger.error(f"Failed to fetch history for {fund_id}: {e}")
+            return None
+
+    # Filter by period
+    latest_date = df_all["date"].max()
+    period_map = {
+        "1M":  latest_date - pd.DateOffset(months=1),
+        "6M":  latest_date - pd.DateOffset(months=6),
+        "1Y":  latest_date - pd.DateOffset(years=1),
+        "3Y":  latest_date - pd.DateOffset(years=3),
+        "5Y":  latest_date - pd.DateOffset(years=5),
+        "All": df_all["date"].min(),
+    }
+    start_date = period_map.get(period, period_map["1Y"])
+    df_filtered = df_all[df_all["date"] >= start_date].copy()
+    return df_filtered
+
+
 def clear_nav_cache():
     """Clears the in-memory NAV cache (useful for manual refresh)."""
     global _nav_cache
