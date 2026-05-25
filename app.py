@@ -383,6 +383,94 @@ st.markdown("""
         color: #E2FF3B;
         border-bottom: 2px solid #E2FF3B;
     }
+    
+    /* Scheme Switcher Cards */
+    .switcher-card {
+        background-color: #0E1217;
+        border: 1px solid #1C232E;
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        text-align: left;
+        height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.2s ease-in-out;
+    }
+    .switcher-card:hover {
+        border-color: #8A99AD;
+        background-color: #121820;
+    }
+    .switcher-card-active {
+        background-color: #12161A;
+        border: 1.5px solid #E2FF3B;
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        text-align: left;
+        height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        box-shadow: 0 0 12px rgba(226, 255, 59, 0.12);
+    }
+    .switcher-card-active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background-color: #E2FF3B;
+    }
+    .switcher-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #8A99AD;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .switcher-card-active .switcher-title {
+        color: #E2FF3B;
+    }
+    .switcher-nav-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: auto;
+    }
+    .switcher-nav {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #FFFFFF;
+    }
+    .switcher-change {
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+    .switcher-change-pos {
+        color: #10B981;
+    }
+    .switcher-change-neg {
+        color: #EF4444;
+    }
+    .active-badge {
+        background-color: rgba(226, 255, 59, 0.06);
+        color: #E2FF3B;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-align: center;
+        padding: 5px 0;
+        border: 1px dashed rgba(226, 255, 59, 0.3);
+        border-radius: 4px;
+        margin-top: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -400,40 +488,84 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- SIDEBAR FOR SCHEME SWITCHER ---
-with st.sidebar:
-    st.markdown("<h3 style='font-family:Outfit; color:white; font-size:1.15rem; margin-bottom:1rem;'>⚡ Schemes Switcher</h3>", unsafe_allow_html=True)
-    fund_keys = list(FUND_DATA.keys())
-    selected_key = st.selectbox(
-        "Choose Mutual Fund Scheme:",
-        options=fund_keys,
-        format_func=lambda k: FUND_DATA[k]["name"],
-        label_visibility="visible"
-    )
-    st.divider()
-    # NAV Refresh button
-    if st.button("🔄 Refresh Live NAV", use_container_width=True, key="refresh_nav"):
+# Initialize session state for selected scheme
+if "selected_scheme" not in st.session_state:
+    st.session_state["selected_scheme"] = "sbi_bluechip"
+selected_key = st.session_state["selected_scheme"]
+
+# --- PARALLEL NAV PRE-FETCHING ---
+from concurrent.futures import ThreadPoolExecutor
+all_nav_data = {}
+with ThreadPoolExecutor(max_workers=5) as executor:
+    futures = {
+        key: executor.submit(
+            get_live_nav,
+            key,
+            item["nav"],
+            item["change"],
+            item["change_positive"]
+        )
+        for key, item in FUND_DATA.items()
+    }
+    all_nav_data = {key: fut.result() for key, fut in futures.items()}
+
+# --- TOP-BAR SCHEME SWITCHER ---
+st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
+
+# Row for Section Title & Refresh button
+sw_title_col, sw_ref_col = st.columns([5.5, 1.0])
+with sw_title_col:
+    st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD; letter-spacing:0.05em;'>SELECT MUTUAL FUND SCHEME</span>", unsafe_allow_html=True)
+with sw_ref_col:
+    if st.button("🔄 Refresh NAV", key="refresh_nav_top", use_container_width=True):
         clear_nav_cache()
         st.rerun()
-    st.markdown(
-        """
-        <div style="font-size:0.75rem; color:#8A99AD; line-height:1.4;">
-        <b>RAG Security Isolation</b>: Access parameters for this session are restricted to this scheme's documents inside the database.
+
+# 5 horizontal columns for the cards
+sw_cols = st.columns(5)
+short_names = {
+    "sbi_bluechip": "SBI Bluechip",
+    "parag_parikh_flexi": "Parag Parikh Flexi",
+    "hdfc_top100": "HDFC Top 100",
+    "icici_prudential": "ICICI Pru Bluechip",
+    "mirae_asset": "Mirae Asset Large"
+}
+
+for idx, (key, item) in enumerate(FUND_DATA.items()):
+    nav_info = all_nav_data[key]
+    is_active = (key == selected_key)
+    name_display = short_names.get(key, item["name"])
+    
+    card_class = "switcher-card-active" if is_active else "switcher-card"
+    change_val = nav_info["change"].split(" ")[0]  # Get just "+0.12%" or "-0.15%"
+    change_class = "switcher-change-pos" if nav_info["change_positive"] else "switcher-change-neg"
+    
+    card_html = f"""
+    <div class="{card_class}">
+        <div class="switcher-title">{name_display}</div>
+        <div class="switcher-nav-row">
+            <span class="switcher-nav">{nav_info["nav"]}</span>
+            <span class="switcher-change {change_class}">{change_val}</span>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+    </div>
+    """
+    
+    with sw_cols[idx]:
+        st.markdown(card_html, unsafe_allow_html=True)
+        if is_active:
+            st.markdown('<div class="active-badge">ACTIVE ⚡</div>', unsafe_allow_html=True)
+        else:
+            if st.button("Select", key=f"sel_btn_{key}", use_container_width=True):
+                st.session_state["selected_scheme"] = key
+                st.rerun()
+
+st.markdown("<div style='margin-bottom: 1.5rem; border-bottom: 1px solid #1C232E; padding-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
 
 # Get selected scheme facts
 scheme = FUND_DATA[selected_key]
 
-# --- FETCH LIVE NAV FROM MFAPI ---
-live_nav_data = get_live_nav(
-    fund_id=selected_key,
-    static_nav=scheme["nav"],
-    static_change=scheme["change"],
-    static_change_positive=scheme["change_positive"]
-)
+# --- FETCH LIVE NAV FROM MFAPI (Retrieved from pre-fetched pool) ---
+live_nav_data = all_nav_data[selected_key]
 display_nav = live_nav_data["nav"]
 display_change = live_nav_data["change"]
 display_change_positive = live_nav_data["change_positive"]
@@ -806,11 +938,10 @@ with left_col:
         df_chart = pd.DataFrame(chart_data)
 
         # Growth line chart (clean, static, no hover pop-ups, matches NAV chart)
-        growth_chart = alt.Chart(df_chart).mark_line(strokeWidth=3, strokeCap="round", interpolate="monotone").encode(
+        growth_chart = alt.Chart(df_chart).mark_line(strokeWidth=3, strokeCap="round", interpolate="monotone", tooltip=None).encode(
             x=alt.X("Year:Q", scale=alt.Scale(domain=[1, years]), axis=alt.Axis(tickCount=int(years), format="d", labelColor="#8A99AD", gridColor="#1C232E", domainColor="#1C232E", title="Years")),
             y=alt.Y("Amount:Q", axis=alt.Axis(format="~s", labelColor="#8A99AD", gridColor="#1C232E", domainColor="#1C232E", title="Amount (₹)")),
             color=alt.Color("Type:N", scale=alt.Scale(domain=["Invested Amount", "Future Value"], range=["#4F5E71", "#E2FF3B"]), legend=alt.Legend(title=None, orient="bottom", labelColor="#BAC7D5", labelFontSize=11)),
-            tooltip=None
         ).properties(
             height=200
         ).configure(
