@@ -551,12 +551,7 @@ with left_col:
             line_color = "#10B981" if is_positive else "#EF4444"
             area_color_start = "rgba(16,185,129,0.25)" if is_positive else "rgba(239,68,68,0.25)"
 
-            # Hover selection
-            nearest = alt.selection_point(
-                nearest=True, on="mouseover", fields=["date"], empty=False
-            )
-
-            # Base line
+            # Base chart — no hover, no tooltip
             base = alt.Chart(df_hist).encode(
                 x=alt.X(
                     "date:T",
@@ -585,7 +580,7 @@ with left_col:
                 ),
             )
 
-            # Gradient area fill
+            # Gradient area fill — tooltip disabled
             area = base.mark_area(
                 line={"color": line_color, "strokeWidth": 2},
                 color=alt.Gradient(
@@ -597,26 +592,10 @@ with left_col:
                     x1=1, x2=1, y1=1, y2=0,
                 ),
                 interpolate="monotone",
+                tooltip=None,
             )
 
-            # Vertical hover rule
-            rule = base.mark_rule(color="#E2FF3B", strokeWidth=1, opacity=0.6).encode(
-                opacity=alt.condition(nearest, alt.value(0.6), alt.value(0)),
-                tooltip=[
-                    alt.Tooltip("date_str:N", title="Date"),
-                    alt.Tooltip("nav:Q", title="NAV (₹)", format=".2f"),
-                    alt.Tooltip("pct_change:Q", title="Change from Start (%)", format="+.2f"),
-                ],
-            ).add_params(nearest)
-
-            # Hover dot
-            point = base.mark_point(
-                filled=True, size=80, color=line_color
-            ).encode(
-                opacity=alt.condition(nearest, alt.value(1), alt.value(0)),
-            )
-
-            chart = (area + rule + point).properties(
+            chart = area.properties(
                 height=220,
             ).configure(
                 background="transparent",
