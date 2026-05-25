@@ -16,6 +16,7 @@ import src.config as config
 # Import mutual fund scheme details
 from src.fund_metadata import FUND_DATA
 from src.nav_service import get_live_nav, clear_nav_cache, fetch_nav_history
+from src.news_service import fetch_google_news, analyze_sentiment_with_llm
 
 # --- PAGE SETUP ---
 st.set_page_config(
@@ -430,6 +431,16 @@ st.markdown("""
         font-weight: 600;
         margin-left: 8px;
     }
+    
+    /* News Feed Styling */
+    a.news-link {
+        color: #FFFFFF !important;
+        text-decoration: none !important;
+        transition: color 0.15s ease-in-out !important;
+    }
+    a.news-link:hover {
+        color: #E2FF3B !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -585,7 +596,7 @@ with left_col:
     )
     
     # 3. Dhan Scheme Tabs
-    tab_overview, tab_holdings, tab_sip = st.tabs(["Overview & Returns", "Holdings Portfolio", "💰 SIP Calculator"])
+    tab_overview, tab_holdings, tab_sip, tab_news = st.tabs(["Overview & Returns", "Holdings Portfolio", "💰 SIP Calculator", "📰 News & Sentiment"])
     
     with tab_overview:
         import pandas as pd
@@ -913,6 +924,57 @@ with left_col:
         )
 
         st.altair_chart(growth_chart, use_container_width=True)
+
+    with tab_news:
+        st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>NEWS SENTIMENT ANALYSIS & TRANSACTION TRACKER</span>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
+
+        with st.spinner("Fetching latest news from Google News..."):
+            articles = fetch_google_news(selected_key)
+
+        if articles:
+            # Analyze sentiment and buys/sells using Gemini
+            with st.spinner("Analyzing news sentiment and buys/sells with Gemini..."):
+                api_key = os.environ.get("GEMINI_API_KEY", "")
+                analysis_report = analyze_sentiment_with_llm(articles, scheme["name"], api_key)
+            
+            # Show LLM Analysis Report
+            st.markdown(analysis_report)
+            
+            # Show raw headlines below
+            st.markdown("<div style='margin-bottom:1.8rem; border-bottom:1px solid #1C232E; padding-bottom:1rem;'></div>", unsafe_allow_html=True)
+            st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>RECENT GOOGLE NEWS ARTICLES FEED</span>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
+            
+            for art in articles:
+                date_str = art["date"]
+                try:
+                    parts = date_str.split(" ")
+                    if len(parts) >= 4:
+                        date_str = f"{parts[1]} {parts[2]} {parts[3]}"
+                except:
+                    pass
+                    
+                st.markdown(
+                    f"""
+                    <div style="background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.8rem 1rem; margin-bottom:0.8rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+                            <span style="font-size:0.7rem; font-weight:700; color:#E2FF3B; text-transform:uppercase; letter-spacing:0.05em;">{art['source']}</span>
+                            <span style="font-size:0.65rem; color:#8A99AD;">{date_str}</span>
+                        </div>
+                        <a class="news-link" href="{art['link']}" target="_blank" style="font-size:0.9rem; font-weight:600; line-height:1.45;">
+                            {art['title']}
+                        </a>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+        else:
+            st.markdown(
+                "<div style='color:#8A99AD; font-size:0.85rem; padding:1.5rem; text-align:center;'>⚠️ No recent news articles found for this fund house.</div>",
+                unsafe_allow_html=True
+            )
 
 
 # ==================== RIGHT COLUMN: FUND SUMMARY + AI CHAT ====================
