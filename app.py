@@ -26,6 +26,37 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- CACHED DATA WRAPPERS TO OPTIMIZE PERFORMANCE & PREVENT RATE LIMITS ---
+@st.cache_data(ttl=300)
+def get_all_nav_data_cached():
+    from concurrent.futures import ThreadPoolExecutor
+    all_nav_data = {}
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {
+            key: executor.submit(
+                get_live_nav,
+                key,
+                item["nav"],
+                item["change"],
+                item["change_positive"]
+            )
+            for key, item in FUND_DATA.items()
+        }
+        all_nav_data = {key: fut.result() for key, fut in futures.items()}
+    return all_nav_data
+
+@st.cache_data(ttl=300)
+def fetch_nav_history_cached(fund_id: str, period: str):
+    return fetch_nav_history(fund_id, period)
+
+@st.cache_data(ttl=1800)
+def fetch_google_news_cached(fund_id: str):
+    return fetch_google_news(fund_id)
+
+@st.cache_data(ttl=1800)
+def analyze_sentiment_cached(articles, fund_name, api_key):
+    return analyze_sentiment_with_llm(articles, fund_name, api_key)
+
 # --- HIGH FIDELITY DHAN WEB STYLE CSS ---
 st.markdown("""
 <style>
@@ -480,20 +511,8 @@ if "selected_scheme" not in st.session_state:
 selected_key = st.session_state["selected_scheme"]
 
 # --- PARALLEL NAV PRE-FETCHING ---
-from concurrent.futures import ThreadPoolExecutor
-all_nav_data = {}
-with ThreadPoolExecutor(max_workers=5) as executor:
-    futures = {
-        key: executor.submit(
-            get_live_nav,
-            key,
-            item["nav"],
-            item["change"],
-            item["change_positive"]
-        )
-        for key, item in FUND_DATA.items()
-    }
-    all_nav_data = {key: fut.result() for key, fut in futures.items()}
+all_nav_data = get_all_nav_data_cached()
+
 
 # --- SIDEBAR: SAAS NAVIGATION LIST ---
 with st.sidebar:
@@ -539,6 +558,7 @@ with st.sidebar:
     # Utilities in sidebar
     if st.button("🔄 Refresh Live NAV", key="sidebar_refresh", use_container_width=True):
         clear_nav_cache()
+        st.cache_data.clear()
         st.rerun()
         
     st.markdown(
@@ -663,7 +683,7 @@ with left_col:
         # Fetch and render chart
         selected_period = st.session_state[period_key]
         with st.spinner(f"Loading {selected_period} NAV history..."):
-            df_hist = fetch_nav_history(selected_key, period=selected_period)
+            df_hist = fetch_nav_history_cached(selected_key, period=selected_period)
 
         if df_hist is not None and len(df_hist) > 1:
             # Compute % change from period start for a normalised view in tooltip
@@ -949,13 +969,13 @@ with left_col:
         st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
 
         with st.spinner("Fetching latest news from Google News..."):
-            articles = fetch_google_news(selected_key)
+            articles = fetch_google_news_cached(selected_key)
 
         if articles:
             # Analyze sentiment and buys/sells using Gemini
             with st.spinner("Analyzing news sentiment and buys/sells with Gemini..."):
                 api_key = os.environ.get("GEMINI_API_KEY", "")
-                analysis_report = analyze_sentiment_with_llm(articles, scheme["name"], api_key)
+                analysis_report = analyze_sentiment_cached(articles, scheme["name"], api_key)
             
             # Show LLM Analysis Report
             st.markdown(analysis_report)
