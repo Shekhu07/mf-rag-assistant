@@ -806,7 +806,7 @@ with left_col:
         df_chart = pd.DataFrame(chart_data)
 
         # Growth line chart (clean, static, no hover pop-ups, matches NAV chart)
-        growth_chart = alt.Chart(df_chart).mark_line(strokeWidth=3, strokeLinecap="round", interpolate="monotone").encode(
+        growth_chart = alt.Chart(df_chart).mark_line(strokeWidth=3, strokeCap="round", interpolate="monotone").encode(
             x=alt.X("Year:Q", scale=alt.Scale(domain=[1, years]), axis=alt.Axis(tickCount=int(years), format="d", labelColor="#8A99AD", gridColor="#1C232E", domainColor="#1C232E", title="Years")),
             y=alt.Y("Amount:Q", axis=alt.Axis(format="~s", labelColor="#8A99AD", gridColor="#1C232E", domainColor="#1C232E", title="Amount (₹)")),
             color=alt.Color("Type:N", scale=alt.Scale(domain=["Invested Amount", "Future Value"], range=["#4F5E71", "#E2FF3B"]), legend=alt.Legend(title=None, orient="bottom", labelColor="#BAC7D5", labelFontSize=11)),
