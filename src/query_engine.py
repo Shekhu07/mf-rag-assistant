@@ -79,10 +79,10 @@ def get_local_fallback_answer(query: str, fund_id: str) -> str:
     try:
         from fund_metadata import FUND_DATA
     except ImportError:
-        return "⚠️ VeritasAI is currently experiencing high demand (Gemini API Rate Limit Exceeded). Please wait a moment and try again."
+        return "⚠️ ArthaAI is currently experiencing high demand (Gemini API Rate Limit Exceeded). Please wait a moment and try again."
 
     if fund_id not in FUND_DATA:
-        return "⚠️ VeritasAI is currently experiencing high demand (Gemini API Rate Limit Exceeded). Please wait a moment and try again."
+        return "⚠️ ArthaAI is currently experiencing high demand (Gemini API Rate Limit Exceeded). Please wait a moment and try again."
         
     fund = FUND_DATA[fund_id]
     q_lower = query.lower()
@@ -157,7 +157,7 @@ def get_local_fallback_answer(query: str, fund_id: str) -> str:
         f"- **Expense Ratio**: {fund['expense_ratio']}\n"
         f"- **Fund Manager**: {fund['manager']}\n"
         f"- **Category**: {fund['category']}\n\n"
-        f"*(Note: VeritasAI is currently experiencing high demand. General info is served from local scheme metadata)*"
+        f"*(Note: ArthaAI is currently experiencing high demand. General info is served from local scheme metadata)*"
     )
 
 def reformulate_query(query: str, chat_history: list, api_key: str) -> str:

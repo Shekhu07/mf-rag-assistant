@@ -1,4 +1,4 @@
-# ⚡ VeritasAI MF RAG Assistant
+# ⚡ ArthaAI MF RAG Assistant
 
 A **production-grade Mutual Fund Research Assistant** built with Streamlit, LangChain, ChromaDB, and Gemini 2.5 Flash. Analyze factsheets, compare returns, check expense ratios, and ask deep questions about any mutual fund — all in a sleek, premium dark UI.
 
