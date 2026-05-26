@@ -700,7 +700,7 @@ with left_col:
     )
     
     # 3. Dhan Scheme Tabs
-    tab_overview, tab_holdings, tab_sip, tab_news, tab_overlap = st.tabs(["Overview & Returns", "Holdings Portfolio", "💰 SIP Calculator", "📰 News & Sentiment", "⚖️ Overlap Analyzer"])
+    tab_overview, tab_holdings, tab_sip, tab_news, tab_overlap = st.tabs(["Overview & Returns", "Holdings Portfolio", "💰 SIP Calculator", "📰 News & Sentiment", "⚖️ Compare & Overlap"])
     
     with tab_overview:
         import pandas as pd
@@ -1082,7 +1082,7 @@ with left_col:
 
     with tab_overlap:
         st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
-        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>PORTFOLIO OVERLAP & DIVERSIFICATION ANALYZER</span>", unsafe_allow_html=True)
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>MUTUAL FUND SCHEME COMPARE & OVERLAP ANALYZER</span>", unsafe_allow_html=True)
         st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
 
         comp_options = [k for k in FUND_DATA.keys() if k != selected_key]
@@ -1095,6 +1095,71 @@ with left_col:
         
         comp_scheme = FUND_DATA[comparison_key]
         
+        # --- SIDE-BY-SIDE SPECIFICATIONS COMPARISON ---
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>KEY SCHEME SPECIFICATIONS COMPARISON</span>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
+        
+        # Color coding variables
+        r_color_a = "#EF4444" if "Very High" in scheme["riskometer"] else "#F59E0B"
+        r_color_b = "#EF4444" if "Very High" in comp_scheme["riskometer"] else "#F59E0B"
+        
+        st.markdown(
+            f"""
+            <table style="width:100%; border-collapse:collapse; background:#0E1217; border:1px solid #1C232E; border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
+                <thead>
+                    <tr style="border-bottom:1px solid #1C232E; text-align:left; background:#11161F;">
+                        <th style="padding:0.6rem 0.8rem; color:#8A99AD; font-weight:700;">Metric</th>
+                        <th style="padding:0.6rem 0.8rem; color:#FFFFFF; font-weight:700;">{scheme['name']}</th>
+                        <th style="padding:0.6rem 0.8rem; color:#FFFFFF; font-weight:700;">{comp_scheme['name']}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">Category</td>
+                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:500;">{scheme['category']}</td>
+                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:500;">{comp_scheme['category']}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">AUM (Size)</td>
+                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:600;">{scheme['aum']}</td>
+                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:600;">{comp_scheme['aum']}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">Expense Ratio</td>
+                        <td style="color:#E2FF3B; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{scheme['expense_ratio']}</td>
+                        <td style="color:#E2FF3B; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{comp_scheme['expense_ratio']}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">1Y Return (CAGR)</td>
+                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{scheme['return_1y']}</td>
+                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{comp_scheme['return_1y']}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">3Y Return (CAGR)</td>
+                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{scheme['return_3y']}</td>
+                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{comp_scheme['return_3y']}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">5Y Return (CAGR)</td>
+                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{scheme['return_5y']}</td>
+                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{comp_scheme['return_5y']}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">Riskometer</td>
+                        <td style="color:{r_color_a}; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:600;">{scheme['riskometer']}</td>
+                        <td style="color:{r_color_b}; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:600;">{comp_scheme['riskometer']}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#8A99AD; padding:0.5rem 0.8rem;">Fund Manager</td>
+                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem;">{scheme['manager']}</td>
+                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem;">{comp_scheme['manager']}</td>
+                    </tr>
+                </tbody>
+            </table>
+            """,
+            unsafe_allow_html=True
+        )
+
         # Parse holdings into dictionary of {company: {sector, alloc}}
         def parse_holdings(holdings_list):
             h_dict = {}
