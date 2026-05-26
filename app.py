@@ -634,7 +634,7 @@ with left_col:
     )
     
     # 3. Dhan Scheme Tabs
-    tab_overview, tab_holdings, tab_sip, tab_news = st.tabs(["Overview & Returns", "Holdings Portfolio", "💰 SIP Calculator", "📰 News & Sentiment"])
+    tab_overview, tab_holdings, tab_sip, tab_news, tab_overlap = st.tabs(["Overview & Returns", "Holdings Portfolio", "💰 SIP Calculator", "📰 News & Sentiment", "⚖️ Overlap Analyzer"])
     
     with tab_overview:
         import pandas as pd
@@ -1013,6 +1013,169 @@ with left_col:
                 "<div style='color:#8A99AD; font-size:0.85rem; padding:1.5rem; text-align:center;'>⚠️ No recent news articles found for this fund house.</div>",
                 unsafe_allow_html=True
             )
+
+    with tab_overlap:
+        st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>PORTFOLIO OVERLAP & DIVERSIFICATION ANALYZER</span>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
+
+        comp_options = [k for k in FUND_DATA.keys() if k != selected_key]
+        comparison_key = st.selectbox(
+            "Select Mutual Fund to compare overlap with:",
+            options=comp_options,
+            format_func=lambda x: FUND_DATA[x]["name"],
+            key=f"overlap_compare_{selected_key}"
+        )
+        
+        comp_scheme = FUND_DATA[comparison_key]
+        
+        # Parse holdings into dictionary of {company: {sector, alloc}}
+        def parse_holdings(holdings_list):
+            h_dict = {}
+            for company, sector, alloc_str in holdings_list:
+                try:
+                    alloc_val = float(alloc_str.replace("%", "").strip())
+                    h_dict[company] = {"sector": sector, "alloc": alloc_val}
+                except ValueError:
+                    pass
+            return h_dict
+            
+        holdings_a = parse_holdings(scheme["holdings"])
+        holdings_b = parse_holdings(comp_scheme["holdings"])
+        
+        # Calculate overlap using Morningstar / standard mutual fund overlap formula:
+        # Overlap = sum(min(alloc_A(c), alloc_B(c)))
+        common_companies = set(holdings_a.keys()).intersection(set(holdings_b.keys()))
+        overlap_pct = 0.0
+        common_data = []
+        for company in common_companies:
+            alloc_a = holdings_a[company]["alloc"]
+            alloc_b = holdings_b[company]["alloc"]
+            shared = min(alloc_a, alloc_b)
+            overlap_pct += shared
+            common_data.append({
+                "Company": company,
+                "Sector": holdings_a[company]["sector"],
+                "Allocation A": f"{alloc_a:.2f}%",
+                "Allocation B": f"{alloc_b:.2f}%",
+                "Shared Overlap": f"{shared:.2f}%",
+                "shared_val": shared
+            })
+            
+        overlap_pct = round(overlap_pct, 2)
+        
+        # Classify diversification strength
+        if overlap_pct < 20.0:
+            status = "Low Overlap (Excellent Diversification)"
+            status_color = "#10B981"  # Green
+            bg_accent = "rgba(16, 185, 129, 0.1)"
+        elif overlap_pct <= 50.0:
+            status = "Moderate Overlap (Average Diversification)"
+            status_color = "#E2FF3B"  # Yellow/Accent
+            bg_accent = "rgba(226, 255, 59, 0.1)"
+        else:
+            status = "High Overlap (Poor Diversification Redundancy)"
+            status_color = "#EF4444"  # Red
+            bg_accent = "rgba(239, 68, 68, 0.1)"
+            
+        # Renders the Overlap KPI card
+        st.markdown(
+            f"""
+            <div style="background:#0E1217; border:1px solid #1C232E; border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; border-left: 4px solid {status_color};">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size:0.75rem; font-weight:700; color:#8A99AD; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.4rem;">
+                            PORTFOLIO OVERLAP PERCENTAGE
+                        </div>
+                        <div style="font-size:2.2rem; font-weight:800; color:{status_color};">
+                            {overlap_pct:.2f}%
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.7rem; font-weight:700; background:{bg_accent}; color:{status_color}; padding:0.4rem 0.8rem; border-radius:4px; border:1px solid {status_color}33;">
+                            {status}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # Shared Holdings Table
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>OVERLAPPING STOCKS</span>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
+        
+        if common_data:
+            common_data = sorted(common_data, key=lambda x: x["shared_val"], reverse=True)
+            rows = ""
+            for item in common_data:
+                rows += f"""
+                <tr>
+                    <td style="color:#FFFFFF; font-weight:600; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Company']}</td>
+                    <td style="color:#8A99AD; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Sector']}</td>
+                    <td style="color:#FFFFFF; text-align:right; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Allocation A']}</td>
+                    <td style="color:#FFFFFF; text-align:right; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Allocation B']}</td>
+                    <td style="color:#E2FF3B; text-align:right; font-weight:700; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Shared Overlap']}</td>
+                </tr>
+                """
+                
+            st.markdown(
+                f"""
+                <table style="width:100%; border-collapse:collapse; background:#0E1217; border:1px solid #1C232E; border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #1C232E; text-align:left; background:#11161F;">
+                            <th style="padding:0.75rem 1rem; color:#8A99AD; font-weight:700;">Company</th>
+                            <th style="padding:0.75rem 1rem; color:#8A99AD; font-weight:700;">Sector</th>
+                            <th style="padding:0.75rem 1rem; color:#8A99AD; font-weight:700; text-align:right;">{scheme['name']}</th>
+                            <th style="padding:0.75rem 1rem; color:#8A99AD; font-weight:700; text-align:right;">{comp_scheme['name']}</th>
+                            <th style="padding:0.75rem 1rem; color:#E2FF3B; font-weight:700; text-align:right;">Shared Overlap</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows}
+                    </tbody>
+                </table>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                "<div style=\"background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:1.5rem; text-align:center; color:#8A99AD; font-size:0.85rem; margin-bottom:1.5rem;\">"
+                "🟢 No overlapping holdings found in the top stocks of these two funds. Excellent diversification!"
+                "</div>",
+                unsafe_allow_html=True
+            )
+            
+        # Unique portfolio drivers
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>UNIQUE PORTFOLIO DRIVERS</span>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom:0.8rem;'></div>", unsafe_allow_html=True)
+        
+        col_unique_a, col_unique_b = st.columns(2)
+        
+        with col_unique_a:
+            st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:#8A99AD; text-transform:uppercase;'>Unique to {scheme['name']}</span>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-bottom:0.4rem;'></div>", unsafe_allow_html=True)
+            unique_a = [c for c in holdings_a.keys() if c not in common_companies]
+            if unique_a:
+                list_items = ""
+                for u in unique_a:
+                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:#FFFFFF;'><span style='font-weight:600;'>{u}</span> <span style='color:#8A99AD;'>({holdings_a[u]['alloc']:.2f}%)</span></li>"
+                st.markdown(f"<ul style='list-style-type:square; padding-left:1.2rem;'>{list_items}</ul>", unsafe_allow_html=True)
+            else:
+                st.markdown("<div style='color:#8A99AD; font-size:0.8rem;'>No unique top holdings.</div>", unsafe_allow_html=True)
+                
+        with col_unique_b:
+            st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:#8A99AD; text-transform:uppercase;'>Unique to {comp_scheme['name']}</span>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-bottom:0.4rem;'></div>", unsafe_allow_html=True)
+            unique_b = [c for c in holdings_b.keys() if c not in common_companies]
+            if unique_b:
+                list_items = ""
+                for u in unique_b:
+                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:#FFFFFF;'><span style='font-weight:600;'>{u}</span> <span style='color:#8A99AD;'>({holdings_b[u]['alloc']:.2f}%)</span></li>"
+                st.markdown(f"<ul style='list-style-type:square; padding-left:1.2rem;'>{list_items}</ul>", unsafe_allow_html=True)
+            else:
+                st.markdown("<div style='color:#8A99AD; font-size:0.8rem;'>No unique top holdings.</div>", unsafe_allow_html=True)
 
 
 # ==================== RIGHT COLUMN: FUND SUMMARY + AI CHAT ====================
