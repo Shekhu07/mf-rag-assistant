@@ -1365,11 +1365,13 @@ with right_col:
             if "sources" in chat and chat["sources"]:
                 with st.expander("🔍 View Reference Passages", expanded=False):
                     for idx, (src_name, score, snippet) in enumerate(chat["sources"]):
+                        # Convert L2 distance score to user-friendly similarity match percentage
+                        match_pct = max(0, min(100, int((1.0 - (score / 2.0)) * 100.0)))
                         st.markdown(
                             f"""
                             <div class="chat-source-item" style="margin-top: 5px;">
                                 <span style="color:#10B981; font-weight:700; font-size:0.75rem;">SRC {idx+1}: {src_name}</span> &nbsp;|&nbsp; 
-                                <span style="color:#8A99AD; font-size:0.7rem;">Distance: {score:.3f}</span>
+                                <span style="color:#8A99AD; font-size:0.7rem;">Match Score: {match_pct}%</span>
                                 <div style="color:#BAC7D5; font-size:0.8rem; font-style:italic; margin-top:2px;">"{snippet}..."</div>
                             </div>
                             """,

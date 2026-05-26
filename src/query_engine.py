@@ -242,6 +242,8 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4) 
             history_to_format = chat_history[1:]
             
         if len(history_to_format) > 0:
+            # Apply a sliding window of the last 6 messages (3 turns of conversation) to prevent context bloat
+            history_to_format = history_to_format[-6:]
             logger.info("Reformulating user query based on conversation history...")
             search_query = reformulate_query(query, history_to_format, api_key)
             formatted_history = format_chat_history(history_to_format)
