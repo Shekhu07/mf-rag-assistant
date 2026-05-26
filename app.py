@@ -69,10 +69,38 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
     
-    /* Hide Streamlit default header and decoration to prevent overlap */
+    /* Make default header transparent and allow click-through to nav bar links */
     header[data-testid="stHeader"], [data-testid="stHeader"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        pointer-events: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Hide other default header buttons (Deploy, Settings) */
+    [data-testid="stHeader"] button:not([data-testid="stSidebarCollapseButton"]) {
         display: none !important;
     }
+    
+    /* Only allow pointer events on the sidebar collapse button, style it to match ArthaAI */
+    [data-testid="stSidebarCollapseButton"] {
+        pointer-events: auto !important;
+        background-color: #0E1217 !important;
+        border: 1px solid #1C232E !important;
+        border-radius: 6px !important;
+        color: #E2FF3B !important;
+        display: flex !important;
+        margin-top: 10px !important;
+        margin-left: 12px !important;
+    }
+    
+    [data-testid="stSidebarCollapseButton"]:hover {
+        background-color: #12161A !important;
+        color: #FFFFFF !important;
+        border-color: #E2FF3B !important;
+    }
+    
     [data-testid="stDecoration"] {
         display: none !important;
     }
@@ -98,6 +126,7 @@ st.markdown("""
         font-weight: 800;
         font-size: 1.6rem;
         margin-right: 2rem;
+        margin-left: 2.8rem; /* Leaves room for the sidebar collapse button */
         letter-spacing: -0.5px;
     }
     
