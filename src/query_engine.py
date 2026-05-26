@@ -222,7 +222,7 @@ def reformulate_query(query: str, chat_history: list, api_key: str) -> str:
         # Fallback to original query on failure
         return query
 
-def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4) -> tuple[str, list]:
+def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, extra_context: str = None) -> tuple[str, list]:
     """
     Queries the vector database for a specific mutual fund (enforcing isolation),
     optionally reformulating the query using conversation history,
@@ -288,6 +288,8 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4) 
             f"Content: {doc.page_content.strip()}"
         )
     context_text = "\n\n".join(context_parts)
+    if extra_context:
+        context_text = f"[Additional Recent News & Transactions Context]\n{extra_context}\n\n" + context_text
 
     # 4. Create the grounded prompt with chat history context
     history_context = ""
@@ -296,10 +298,10 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4) 
 
     system_instruction = (
         "You are a highly precise and objective AI financial analyst assistant specializing in mutual fund analysis.\n"
-        "You are tasked with answering queries about a specific mutual fund using the provided factsheet and documentation context.\n"
+        "You are tasked with answering queries about a specific mutual fund using the provided factsheet, documentation context, and optional recent news/transaction context.\n"
         "You also have access to the conversation history below to help you answer follow-up queries or maintain context.\n\n"
         "Strict Grounding Rules:\n"
-        "1. Answer the question using ONLY the facts, numbers, and statements provided in the Context below.\n"
+        "1. Answer the question using ONLY the facts, numbers, and statements provided in the Context (including recent news/portfolio changes context) below.\n"
         "2. Do NOT use outside knowledge, extrapolate, make assumptions, or speculate.\n"
         "3. If the context does not contain the answer or does not have enough information to answer, you must respond exactly with: "
         "'I am sorry, but I do not have that information in the provided documentation for this mutual fund.'\n"

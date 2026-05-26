@@ -1505,7 +1505,21 @@ with right_col:
         
         # Run QA
         with st.spinner("Analyzing context..."):
-            ans, docs = query_fund(q_input, selected_key, st.session_state[chat_key][:-1])
+            # Fetch recent news/sentiment context to support chatbot queries about recent buy/sell activity
+            extra_ctx = None
+            api_key = os.environ.get("GEMINI_API_KEY")
+            if api_key:
+                try:
+                    articles = fetch_google_news_cached(selected_key)
+                    if articles:
+                        analysis_report = analyze_sentiment_cached(articles, scheme["name"], api_key)
+                        if analysis_report:
+                            extra_ctx = analysis_report
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Failed to fetch news context for chat: {e}")
+
+            ans, docs = query_fund(q_input, selected_key, st.session_state[chat_key][:-1], extra_context=extra_ctx)
             
             # Format sources
             sources_list = []
