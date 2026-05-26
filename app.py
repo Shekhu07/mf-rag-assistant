@@ -601,16 +601,17 @@ display_change_positive = live_nav_data["change_positive"]
 nav_date = live_nav_data["date"]
 is_live = live_nav_data["is_live"]
 
-# --- DASHBOARD HEADER ---
+# --- WORKSPACE STATUS BAR ---
 st.markdown(
     """
-    <div style="margin-bottom: 2rem; margin-top: 1rem;">
-        <h1 style="font-family: 'Outfit', sans-serif; font-weight: 800; color: #FFFFFF; font-size: 2.2rem; margin-bottom: 0.2rem; letter-spacing: -0.5px; line-height: 1.2;">
-            ⚡ ArthaAI
-        </h1>
-        <p style="font-size: 0.95rem; color: #8A99AD; margin: 0;">
-            Real-time layout-aware RAG analysis & portfolio insights powered by Gemini 2.5 Flash
-        </p>
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1C232E; padding-bottom:0.8rem; margin-bottom:1.5rem; margin-top:0.5rem;">
+        <div style="font-size:0.7rem; font-weight:700; color:#8A99AD; letter-spacing:0.12em; text-transform:uppercase;">
+            ARTHAAI WORKSPACE &nbsp;/&nbsp; SCHEME RESEARCH & ANALYSIS
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+            <span style="display:inline-block; width:6px; height:6px; background-color:#10B981; border-radius:50%; box-shadow:0 0 8px #10B981;"></span>
+            <span style="font-size:0.65rem; font-weight:700; color:#10B981; letter-spacing:0.05em; text-transform:uppercase;">RAG SECURED CORE</span>
+        </div>
     </div>
     """,
     unsafe_allow_html=True
