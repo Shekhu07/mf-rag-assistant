@@ -504,15 +504,29 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Convert logo to base64 for raw HTML rendering in navigation bar
+import base64
+def get_base64_image(image_path):
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode("utf-8")
+    except Exception:
+        return ""
+
+logo_base64 = get_base64_image("assets/logo.png")
+
 # --- TOP NAVIGATION BAR ---
 st.markdown(
-    """
+    f"""
     <div class="dhan-nav">
-        <div class="dhan-logo">⚡ ArthaAI</div>
-        <div style="color:#FFFFFF; font-size:0.9rem; font-weight:600; margin-right:1.5rem;">Markets</div>
-        <div style="color:#E2FF3B; font-size:0.9rem; font-weight:600; margin-right:1.5rem; border-bottom: 2px solid #E2FF3B; padding-bottom:12px; margin-bottom:-12px;">Mutual Funds</div>
-        <div style="color:#8A99AD; font-size:0.9rem; font-weight:500; margin-right:1.5rem;">Portfolio</div>
-        <div style="color:#8A99AD; font-size:0.9rem; font-weight:500; margin-right:1.5rem;">Orders</div>
+        <div class="dhan-logo" style="display: flex; align-items: center; gap: 8px;">
+            <img src="data:image/png;base64,{logo_base64}" width="28" height="28" style="border-radius: 4px; object-fit: contain;" />
+            <span>ArthaAI</span>
+        </div>
+        <div style="color:#FFFFFF; font-size:0.9rem; font-weight:600; margin-right:1.5rem; margin-top:2px;">Markets</div>
+        <div style="color:#E2FF3B; font-size:0.9rem; font-weight:600; margin-right:1.5rem; border-bottom: 2px solid #E2FF3B; padding-bottom:12px; margin-bottom:-12px; margin-top:2px;">Mutual Funds</div>
+        <div style="color:#8A99AD; font-size:0.9rem; font-weight:500; margin-right:1.5rem; margin-top:2px;">Portfolio</div>
+        <div style="color:#8A99AD; font-size:0.9rem; font-weight:500; margin-right:1.5rem; margin-top:2px;">Orders</div>
     </div>
     """,
     unsafe_allow_html=True
