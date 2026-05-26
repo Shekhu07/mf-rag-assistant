@@ -90,7 +90,7 @@ def analyze_sentiment_with_llm(articles: List[Dict], fund_name: str, api_key: st
             bullet_list += f"[{idx+1}] Title: {art['title']} (Source: {art['source']}, Date: {art['date']})\n"
             
         system_prompt = (
-            "You are a Senior Portfolio Analyst at Dhan. Your goal is to analyze financial news headlines "
+            "You are a Senior Portfolio Analyst at VeritasAI. Your goal is to analyze financial news headlines "
             "concerning a fund house and synthesize their portfolio actions (specifically what they are buying and selling)."
         )
         

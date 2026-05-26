@@ -20,7 +20,7 @@ from src.news_service import fetch_google_news, analyze_sentiment_with_llm
 
 # --- PAGE SETUP ---
 st.set_page_config(
-    page_title="Dhan - Mutual Funds",
+    page_title="VeritasAI - Mutual Funds",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -508,7 +508,7 @@ st.markdown("""
 st.markdown(
     """
     <div class="dhan-nav">
-        <div class="dhan-logo">⚡ dhan</div>
+        <div class="dhan-logo">⚡ VeritasAI</div>
         <div style="color:#FFFFFF; font-size:0.9rem; font-weight:600; margin-right:1.5rem;">Markets</div>
         <div style="color:#E2FF3B; font-size:0.9rem; font-weight:600; margin-right:1.5rem; border-bottom: 2px solid #E2FF3B; padding-bottom:12px; margin-bottom:-12px;">Mutual Funds</div>
         <div style="color:#8A99AD; font-size:0.9rem; font-weight:500; margin-right:1.5rem;">Portfolio</div>
@@ -529,7 +529,7 @@ all_nav_data = get_all_nav_data_cached()
 
 # --- SIDEBAR: SAAS NAVIGATION LIST ---
 with st.sidebar:
-    st.markdown("<h2 style='font-family:Outfit; color:white; font-size:1.3rem; margin-top:0.5rem; margin-bottom:1rem;'>⚡ dhan mutual funds</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='font-family:Outfit; color:white; font-size:1.3rem; margin-top:0.5rem; margin-bottom:1rem;'>⚡ VeritasAI Funds</h2>", unsafe_allow_html=True)
     st.markdown("<span style='font-size:0.7rem; font-weight:700; color:#8A99AD; letter-spacing:0.08em; display:block; margin-bottom:0.8rem;'>SCHEMES WORKSPACE</span>", unsafe_allow_html=True)
     
     short_names = {
@@ -579,7 +579,7 @@ with st.sidebar:
         <div style="font-size:0.68rem; color:#5A697D; line-height:1.45; margin-top:0.8rem; border-top:1px solid #1C232E; padding-top:0.8rem;">
             <b>RAG Isolation Mode</b>: Database queries are isolated strictly to this scheme's documents.
             <div style="margin-top: 6px;"></div>
-            <b>Disclaimer</b>: Mutual Fund investments are subject to market risks. Read all scheme-related documents carefully. AI insights and sentiment analysis are for informational purposes only and do not constitute financial advice. NAV data is sourced live from public feeds (MFAPI).
+            <b>Disclaimer</b>: Mutual Fund investments are subject to market risks. Read all scheme-related documents carefully. AI insights and sentiment analysis are for informational purposes only and do not constitute financial advice. NAV data is sourced live from public feeds (MFAPI). This platform is an independent educational tool and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Dhan (Moneylicious Securities Pvt. Ltd.) or any of its subsidiaries.
         </div>
         """,
         unsafe_allow_html=True
@@ -601,7 +601,7 @@ st.markdown(
     """
     <div style="margin-bottom: 2rem; margin-top: 1rem;">
         <h1 style="font-family: 'Outfit', sans-serif; font-weight: 800; color: #FFFFFF; font-size: 2.2rem; margin-bottom: 0.2rem; letter-spacing: -0.5px; line-height: 1.2;">
-            ⚡ Dhan
+            ⚡ VeritasAI
         </h1>
         <p style="font-size: 0.95rem; color: #8A99AD; margin: 0;">
             Real-time layout-aware RAG analysis & portfolio insights powered by Gemini 2.5 Flash
@@ -1252,13 +1252,13 @@ with right_col:
         )
     st.markdown("<div style='margin-bottom: 1.2rem;'></div>", unsafe_allow_html=True)
 
-    # 2. Dhan RAG Chat Analyst
+    # 2. VeritasAI RAG Chat Analyst
     col_header, col_clear = st.columns([2.2, 1.0])
     with col_header:
-        st.markdown("<h3 style='font-family:Outfit; color:#E2FF3B; font-weight:700; font-size:1.35rem; margin:0;'>⚡ Dhan AI Analyst</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='font-family:Outfit; color:#E2FF3B; font-weight:700; font-size:1.35rem; margin:0;'>⚡ VeritasAI Analyst</h3>", unsafe_allow_html=True)
     with col_clear:
         if st.button("🗑️ Clear Chat", use_container_width=True, key=f"clear_{selected_key}"):
-            chat_key = f"dhan_chat_{selected_key}"
+            chat_key = f"veritas_chat_{selected_key}"
             if chat_key in st.session_state:
                 del st.session_state[chat_key]
             st.rerun()
@@ -1269,7 +1269,7 @@ with right_col:
     )
     
     # Session state Chat History for this fund
-    chat_key = f"dhan_chat_{selected_key}"
+    chat_key = f"veritas_chat_{selected_key}"
     if chat_key not in st.session_state:
         st.session_state[chat_key] = [
             {
@@ -1301,7 +1301,7 @@ with right_col:
                 <div class="chat-row-analyst">
                     <div class="chat-avatar-analyst">⚡</div>
                     <div class="chat-bubble-new chat-bubble-new-analyst">
-                        <div style="font-size:0.7rem; color:#E2FF3B; font-weight:700; margin-bottom:4px; font-family:Outfit;">⚡ DHAN RAG ANALYST</div>
+                        <div style="font-size:0.7rem; color:#E2FF3B; font-weight:700; margin-bottom:4px; font-family:Outfit;">⚡ VERITASAI RAG ANALYST</div>
                         <div>{html_content}</div>
                     </div>
                 </div>

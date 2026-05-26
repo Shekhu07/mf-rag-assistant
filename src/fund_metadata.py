@@ -1,4 +1,4 @@
-# Shared mutual fund scheme details matching Dhan UI and factsheet specs
+# Shared mutual fund scheme details matching VeritasAI UI and factsheet specs
 FUND_DATA = {
     "sbi_bluechip": {
         "name": "SBI Bluechip Fund Direct Growth",

@@ -1,6 +1,6 @@
-# ⚡ Dhan MF RAG Assistant
+# ⚡ VeritasAI MF RAG Assistant
 
-A **production-grade Mutual Fund Research Assistant** built with Streamlit, LangChain, ChromaDB, and Gemini 2.5 Flash. Analyze factsheets, compare returns, check expense ratios, and ask deep questions about any mutual fund — all in a sleek Dhan-inspired dark UI.
+A **production-grade Mutual Fund Research Assistant** built with Streamlit, LangChain, ChromaDB, and Gemini 2.5 Flash. Analyze factsheets, compare returns, check expense ratios, and ask deep questions about any mutual fund — all in a sleek, premium dark UI.
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.x-red?logo=streamlit)
@@ -17,7 +17,7 @@ A **production-grade Mutual Fund Research Assistant** built with Streamlit, Lang
 - **Instant Answers** — Returns Info, Expense Specs, and Top Holdings load instantly from local metadata (no API call)
 - **Conversational Memory** — Multi-turn chat with query reformulation for follow-up questions
 - **Rate-Limit Resilience** — Automatic fallback to local metadata when Gemini API quota is exceeded
-- **Dhan-Inspired UI** — Dark, premium interface with markdown tables, animated chat bubbles, and a collapsible sources panel
+- **Premium Dark UI** — Dark, premium interface with markdown tables, animated chat bubbles, and a collapsible sources panel
 - **5 Funds Supported** out of the box:
   - SBI Bluechip Fund Direct Growth
   - Parag Parikh Flexi Cap Fund Direct Growth
