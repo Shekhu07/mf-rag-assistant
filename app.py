@@ -529,7 +529,12 @@ all_nav_data = get_all_nav_data_cached()
 
 # --- SIDEBAR: SAAS NAVIGATION LIST ---
 with st.sidebar:
-    st.markdown("<h2 style='font-family:Outfit; color:white; font-size:1.3rem; margin-top:0.5rem; margin-bottom:1rem;'>⚡ ArthaAI Funds</h2>", unsafe_allow_html=True)
+    col_logo, col_title = st.columns([1, 3.5])
+    with col_logo:
+        st.image("assets/logo.png", width=42)
+    with col_title:
+        st.markdown("<h2 style='font-family:Outfit; color:white; font-size:1.45rem; margin-top:0.25rem; margin-bottom:0; line-height:1;'>ArthaAI</h2>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 1.2rem;'></div>", unsafe_allow_html=True)
     st.markdown("<span style='font-size:0.7rem; font-weight:700; color:#8A99AD; letter-spacing:0.08em; display:block; margin-bottom:0.8rem;'>SCHEMES WORKSPACE</span>", unsafe_allow_html=True)
     
     short_names = {
