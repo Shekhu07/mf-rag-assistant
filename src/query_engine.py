@@ -39,11 +39,17 @@ def get_vector_store() -> Chroma:
         google_api_key=api_key
     )
 
-    if not config.VECTOR_STORE_DIR.exists():
-        raise FileNotFoundError(
-            f"Vector store not found at {config.VECTOR_STORE_DIR}. "
-            "Please run the ingestion script 'src/ingest.py' first."
-        )
+    if not config.VECTOR_STORE_DIR.exists() or not list(config.VECTOR_STORE_DIR.glob("*")):
+        logger.info(f"Vector store not found or empty at {config.VECTOR_STORE_DIR}. Attempting auto-ingestion...")
+        try:
+            from ingest import ingest_documents
+            ingest_documents()
+        except Exception as e:
+            logger.error(f"Auto-ingestion failed: {e}")
+            raise FileNotFoundError(
+                f"Vector store not found at {config.VECTOR_STORE_DIR} and auto-ingestion failed: {e}. "
+                "Please run the ingestion script 'src/ingest.py' manually."
+            )
 
     db = Chroma(
         persist_directory=str(config.VECTOR_STORE_DIR),
