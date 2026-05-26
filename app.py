@@ -78,19 +78,23 @@ st.markdown("""
         box-shadow: none !important;
     }
     
-    /* Hide other default header buttons (Deploy, Settings) */
-    [data-testid="stHeader"] button:not([data-testid="stSidebarCollapseButton"]) {
+    /* Hide Deploy and Main Menu buttons specifically to prevent hiding collapse control */
+    [data-testid="stAppDeployButton"] {
+        display: none !important;
+    }
+    [data-testid="stMainMenu"] {
         display: none !important;
     }
     
-    /* Only allow pointer events on the sidebar collapse button, style it to match ArthaAI */
-    [data-testid="stSidebarCollapseButton"] {
+    /* Style and ensure the sidebar collapse toggle button is fully visible and clickable */
+    [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {
         pointer-events: auto !important;
         background-color: #0E1217 !important;
         border: 1px solid #1C232E !important;
         border-radius: 6px !important;
         color: #E2FF3B !important;
         display: flex !important;
+        z-index: 1000000 !important;
         margin-top: 10px !important;
         margin-left: 12px !important;
     }
