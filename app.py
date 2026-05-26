@@ -69,6 +69,19 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
     
+    /* Hide Streamlit default header and decoration to prevent overlap */
+    header[data-testid="stHeader"], [data-testid="stHeader"] {
+        display: none !important;
+    }
+    [data-testid="stDecoration"] {
+        display: none !important;
+    }
+    
+    /* Reset top padding to sit the custom header naturally at the top */
+    .block-container {
+        padding-top: 0rem !important;
+    }
+    
     /* Top Navigation bar */
     .dhan-nav {
         background-color: #0E1217;
@@ -76,7 +89,7 @@ st.markdown("""
         border-bottom: 1px solid #1C232E;
         display: flex;
         align-items: center;
-        margin: -6rem -5rem 2rem -5rem;
+        margin: 0rem -5rem 2rem -5rem;
     }
     
     .dhan-logo {
