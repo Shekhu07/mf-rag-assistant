@@ -1503,6 +1503,20 @@ with right_col:
         # Append User Msg
         st.session_state[chat_key].append({"role": "user", "content": q_input})
         
+        # Render the user message immediately so it appears on screen while the spinner runs
+        st.markdown(
+            f"""
+            <div class="chat-row-user">
+                <div class="chat-bubble-new chat-bubble-new-user">
+                    <div style="font-size:0.7rem; color:#8A99AD; font-weight:600; margin-bottom:4px;">YOU</div>
+                    <div>{q_input}</div>
+                </div>
+                <div class="chat-avatar-user">👤</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
         # Run QA
         with st.spinner("Analyzing context..."):
             # Fetch recent news/sentiment context to support chatbot queries about recent buy/sell activity
