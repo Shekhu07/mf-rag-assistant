@@ -301,12 +301,24 @@ st.markdown("""
     .fund-summary-value { color: #FFFFFF; font-weight: 600; text-align: right; }
     
     /* Dhan RAG Chat Analyst Container & Bubbles */
+    @keyframes slideUp {
+        from {
+            transform: translateY(12px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
     .chat-row-user {
         display: flex;
         justify-content: flex-end;
         align-items: flex-start;
         margin-bottom: 1.2rem;
         width: 100%;
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     
     .chat-row-analyst {
@@ -315,31 +327,83 @@ st.markdown("""
         align-items: flex-start;
         margin-bottom: 1.2rem;
         width: 100%;
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     
     .chat-bubble-new {
         max-width: 82%;
-        padding: 0.8rem 1rem;
-        font-size: 0.88rem;
-        line-height: 1.5;
+        padding: 0.85rem 1.1rem;
+        font-size: 0.86rem;
+        line-height: 1.55;
         position: relative;
+        font-family: 'Inter', sans-serif;
     }
     
     .chat-bubble-new-user {
-        background: linear-gradient(135deg, #1C2431, #131A24);
-        border: 1px solid #2B3A4F;
-        color: #EBF1F7;
-        border-radius: 16px 16px 4px 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        background: rgba(28, 36, 49, 0.5) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        border: 1px solid rgba(43, 58, 79, 0.4) !important;
+        color: #EBF1F7 !important;
+        border-radius: 16px 16px 0px 16px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
     }
     
     .chat-bubble-new-analyst {
-        background: linear-gradient(135deg, #0F131C, #090B10);
-        border: 1px solid #1C2433;
-        color: #C5D2E0;
-        border-radius: 16px 16px 16px 4px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        border-left: 3px solid #E2FF3B;
+        background: rgba(14, 18, 23, 0.75) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        border: 1px solid rgba(28, 35, 46, 0.5) !important;
+        color: #C5D2E0 !important;
+        border-radius: 16px 16px 16px 0px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+        border-left: 3px solid #E2FF3B !important;
+    }
+
+    /* Style markdown tables inside the analyst bubbles */
+    .chat-bubble-new-analyst table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 0.8rem 0 !important;
+        font-size: 0.8rem !important;
+    }
+    .chat-bubble-new-analyst th {
+        background-color: rgba(28, 35, 46, 0.5) !important;
+        color: #8A99AD !important;
+        padding: 6px 10px !important;
+        text-align: left !important;
+        font-weight: 700 !important;
+        border-bottom: 1px solid rgba(43, 58, 79, 0.3) !important;
+    }
+    .chat-bubble-new-analyst td {
+        padding: 6px 10px !important;
+        border-bottom: 1px solid rgba(28, 35, 46, 0.3) !important;
+        color: #FFFFFF !important;
+    }
+    .chat-bubble-new-analyst tr:last-child td {
+        border-bottom: none !important;
+    }
+
+    /* Copy/Helpful actions inside chatbot response */
+    .chat-bubble-footer {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+        padding-top: 6px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 0.65rem;
+        color: #8A99AD;
+        font-weight: 500;
+    }
+    .chat-bubble-footer span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .chat-bubble-footer span:hover {
+        color: #E2FF3B;
     }
     
     .chat-avatar-user {
@@ -366,8 +430,8 @@ st.markdown("""
         justify-content: center;
         font-size: 0.95rem;
         margin-right: 10px;
-        color: #10B981;
-        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #E2FF3B;
+        border: 1px solid rgba(226, 255, 59, 0.3);
         box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
     
@@ -1472,6 +1536,102 @@ with right_col:
                 background-color: #0E1217 !important;
                 border-top: 1px solid #1C232E !important;
             }
+
+            /* Sleek scrollbar for the message content container */
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) [data-testid="stVContainer"] {
+                scrollbar-width: thin !important;
+                scrollbar-color: #1C232E #0E1217 !important;
+            }
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) [data-testid="stVContainer"]::-webkit-scrollbar {
+                width: 6px !important;
+                height: 6px !important;
+            }
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) [data-testid="stVContainer"]::-webkit-scrollbar-thumb {
+                background: #1C232E !important;
+                border-radius: 3px !important;
+            }
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) [data-testid="stVContainer"]::-webkit-scrollbar-track {
+                background: #0E1217 !important;
+            }
+
+            /* Glowing focus outline inside stChatInput textarea */
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) .stChatInput textarea {
+                background-color: #11161F !important;
+                border: 1px solid #1C232E !important;
+                color: #FFFFFF !important;
+                border-radius: 8px !important;
+                transition: all 0.3s ease !important;
+            }
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) .stChatInput textarea:focus {
+                border-color: #E2FF3B !important;
+                box-shadow: 0 0 10px rgba(226, 255, 59, 0.2) !important;
+            }
+
+            /* Custom styling for all chat action buttons (Header and Suggestions) */
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) button {
+                background-color: #11161F !important;
+                color: #BAC7D5 !important;
+                border: 1px solid #1C232E !important;
+                border-radius: 20px !important;
+                font-size: 0.8rem !important;
+                font-weight: 600 !important;
+                padding: 0.35rem 0.8rem !important;
+                transition: all 0.25s ease !important;
+                cursor: pointer !important;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+            }
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) button:hover {
+                border-color: #E2FF3B !important;
+                color: #FFFFFF !important;
+                background-color: #161D26 !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 4px 12px rgba(226, 255, 59, 0.15) !important;
+            }
+
+            /* Red close button styling override */
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) .stColumn:last-child button {
+                border-radius: 50% !important;
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+                padding: 0 !important;
+                line-height: 32px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: rgba(239, 68, 68, 0.1) !important;
+                color: #EF4444 !important;
+                border: 1px solid rgba(239, 68, 68, 0.2) !important;
+            }
+            div[data-testid="column"] > div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) .stColumn:last-child button:hover {
+                background-color: #EF4444 !important;
+                color: #FFFFFF !important;
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35) !important;
+                border-color: #EF4444 !important;
+            }
+
+            /* RAG secured pulse indicator dot */
+            .rag-pulse-dot {
+                width: 8px;
+                height: 8px;
+                background-color: #E2FF3B;
+                border-radius: 50%;
+                animation: RAGPulse 1.8s infinite ease-in-out;
+            }
+            @keyframes RAGPulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(226, 255, 59, 0.6);
+                    transform: scale(0.95);
+                }
+                70% {
+                    box-shadow: 0 0 0 6px rgba(226, 255, 59, 0);
+                    transform: scale(1);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(226, 255, 59, 0);
+                    transform: scale(0.95);
+                }
+            }
         </style>
         """),
         unsafe_allow_html=True
@@ -1556,7 +1716,15 @@ with right_col:
             # 1. Header with Title, Clear, and Close actions
             header_col1, header_col2, header_col3 = st.columns([3.5, 1.2, 1.2])
             with header_col1:
-                st.markdown("<div style='font-family:Outfit; color:#E2FF3B; font-weight:700; font-size:1.15rem; margin-top: 4px;'>⚡ ArthaAI Analyst</div>", unsafe_allow_html=True)
+                st.markdown(
+                    """
+                    <div style='display:flex; align-items:center; gap:8px; margin-top: 4px;'>
+                        <div class="rag-pulse-dot"></div>
+                        <div style='font-family:Outfit; color:#E2FF3B; font-weight:700; font-size:1.1rem; line-height:1.2;'>ArthaAI Analyst</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
             with header_col2:
                 st.button("🗑️ Clear", key="clear_chat_widget", use_container_width=True, on_click=handle_clear_chat, args=(chat_key,))
             with header_col3:
@@ -1588,8 +1756,15 @@ with right_col:
                             <div class="chat-row-analyst">
                                 <div class="chat-avatar-analyst">⚡</div>
                                 <div class="chat-bubble-new chat-bubble-new-analyst">
-                                    <div style="font-size:0.7rem; color:#E2FF3B; font-weight:700; margin-bottom:4px; font-family:Outfit;">⚡ ARTHAAI RAG ANALYST</div>
+                                    <div style="font-size:0.7rem; color:#E2FF3B; font-weight:700; margin-bottom:6px; font-family:Outfit; display:flex; justify-content:space-between; align-items:center;">
+                                        <span>⚡ ARTHAAI SECURED RAG</span>
+                                        <span style="color:#8A99AD; font-weight:500; font-size:0.6rem; background:rgba(28,35,46,0.5); padding:2px 6px; border-radius:4px;">Grounded</span>
+                                    </div>
                                     <div>{html_content}</div>
+                                    <div class="chat-bubble-footer">
+                                        <span>📋 Copy</span>
+                                        <span>👍 Helpful</span>
+                                    </div>
                                 </div>
                             </div>
                             """,
