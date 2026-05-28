@@ -1591,19 +1591,30 @@ with right_col:
             
             # Run QA
             with st.spinner("Analyzing context..."):
-                # Fetch recent news/sentiment context to support chatbot queries about recent buy/sell activity
                 extra_ctx = None
-                api_key = os.environ.get("GEMINI_API_KEY")
-                if api_key:
-                    try:
-                        articles = fetch_google_news_cached(selected_key)
-                        if articles:
-                            analysis_report = analyze_sentiment_cached(articles, scheme["name"], api_key)
-                            if analysis_report:
-                                extra_ctx = analysis_report
-                    except Exception as e:
-                        import logging
-                        logging.getLogger(__name__).warning(f"Failed to fetch news context for chat: {e}")
+                
+                # Dynamic check: Only perform news sentiment analysis if query relates to news, sentiment, or recent changes
+                news_keywords = ["news", "sentiment", "recent", "buy", "sell", "holding changes", "article", "headline", "bought", "sold", "active", "transaction", "latest news"]
+                is_news_query = any(k in q_input.lower() for k in news_keywords)
+                
+                if is_news_query:
+                    api_key = os.environ.get("GEMINI_API_KEY")
+                    if api_key:
+                        news_report_key = f"news_report_{selected_key}"
+                        # Check session state cache first
+                        if news_report_key in st.session_state:
+                            extra_ctx = st.session_state[news_report_key]
+                        else:
+                            try:
+                                articles = fetch_google_news_cached(selected_key)
+                                if articles:
+                                    analysis_report = analyze_sentiment_cached(articles, scheme["name"], api_key)
+                                    if analysis_report:
+                                        st.session_state[news_report_key] = analysis_report
+                                        extra_ctx = analysis_report
+                            except Exception as e:
+                                import logging
+                                logging.getLogger(__name__).warning(f"Failed to fetch news context for chat: {e}")
     
                 ans, docs = query_fund(q_input, selected_key, st.session_state[chat_key][:-1], extra_context=extra_ctx)
                 

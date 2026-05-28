@@ -222,6 +222,14 @@ def reformulate_query(query: str, chat_history: list, api_key: str) -> str:
         # Fallback to original query on failure
         return query
 
+def is_query_relative(query: str) -> bool:
+    """Returns True if the query likely depends on chat history context (contains pronouns/deictic terms)."""
+    relative_tokens = {"it", "its", "them", "they", "those", "that", "this", "he", "she", "him", "her", "his", "their", "previous", "earlier", "above", "latter", "former", "other", "why", "how", "what about", "who"}
+    # Strip common punctuation and split into words
+    cleaned_query = query.lower().replace("?", "").replace(".", "").replace(",", "")
+    words = set(cleaned_query.split())
+    return not words.isdisjoint(relative_tokens)
+
 def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, extra_context: str = None) -> tuple[str, list]:
     """
     Queries the vector database for a specific mutual fund (enforcing isolation),
@@ -238,7 +246,7 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
         logger.error(f"Failed to load vector store: {e}")
         return f"Error loading database: {e}", []
 
-    # 1. Reformulate query if chat history exists
+    # 1. Reformulate query if chat history exists and query is relative
     search_query = query
     formatted_history = ""
     if chat_history and len(chat_history) > 1:  # >1 to skip the initial static greeting message
@@ -248,12 +256,16 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
             history_to_format = chat_history[1:]
             
         if len(history_to_format) > 0:
-            # Apply a sliding window of the last 6 messages (3 turns of conversation) to prevent context bloat
-            history_to_format = history_to_format[-6:]
-            logger.info("Reformulating user query based on conversation history...")
-            search_query = reformulate_query(query, history_to_format, api_key)
             formatted_history = format_chat_history(history_to_format)
-            logger.info(f"Original: '{query}' -> Reformulated: '{search_query}'")
+            # Only reformulate query if it is relative to conversation history
+            if is_query_relative(query):
+                # Apply a sliding window of the last 6 messages (3 turns of conversation) to prevent context bloat
+                history_to_format = history_to_format[-6:]
+                logger.info("Reformulating user query based on conversation history...")
+                search_query = reformulate_query(query, history_to_format, api_key)
+                logger.info(f"Original: '{query}' -> Reformulated: '{search_query}'")
+            else:
+                logger.info("Query is self-contained. Skipping reformulation step.")
 
     # 2. Retrieve matching documents strictly isolated by fund_id
     logger.info(f"Retrieving chunks for fund '{fund_id}' with search query: '{search_query}'")
