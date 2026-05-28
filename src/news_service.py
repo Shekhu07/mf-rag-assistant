@@ -82,7 +82,8 @@ def analyze_sentiment_with_llm(articles: List[Dict], fund_name: str, api_key: st
         llm = ChatGoogleGenerativeAI(
             model=config.GENERATION_MODEL,
             temperature=0.1,  # low temperature for stable fact extraction
-            google_api_key=api_key
+            google_api_key=api_key,
+            max_retries=0
         )
         
         bullet_list = ""

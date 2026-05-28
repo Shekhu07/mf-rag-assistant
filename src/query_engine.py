@@ -22,17 +22,22 @@ logger = logging.getLogger(__name__)
 
 # Module-level singletons — initialized once, reused on every query
 _vector_store_cache: Optional[Chroma] = None
+_vector_store_api_key: Optional[str] = None
 _llm_cache = None
 
 def get_vector_store() -> Chroma:
     """Loads and returns the local Chroma DB (cached at module level)."""
-    global _vector_store_cache
-    if _vector_store_cache is not None:
-        return _vector_store_cache
-
+    global _vector_store_cache, _vector_store_api_key
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY environment variable is not set.")
+
+    if _vector_store_cache is not None and _vector_store_api_key == api_key:
+        return _vector_store_cache
+
+    if _vector_store_cache is not None and _vector_store_api_key != api_key:
+        logger.info("API key change detected. Invaliding cached Chroma vector store.")
+        _vector_store_cache = None
 
     embeddings = GoogleGenerativeAIEmbeddings(
         model=config.EMBEDDING_MODEL,
@@ -57,20 +62,33 @@ def get_vector_store() -> Chroma:
         collection_name=config.COLLECTION_NAME
     )
     _vector_store_cache = db
+    _vector_store_api_key = api_key
     logger.info("ChromaDB vector store initialized and cached.")
     return _vector_store_cache
+
 
 def get_llm(api_key: str):
     """Returns the LLM client (cached at module level)."""
     global _llm_cache
+    if _llm_cache is not None:
+        # Check if the API key has changed to invalidate cache
+        current_key = getattr(_llm_cache, "google_api_key", None)
+        current_key_val = current_key.get_secret_value() if hasattr(current_key, "get_secret_value") else current_key
+        if current_key_val != api_key:
+            _llm_cache = None
+            logger.info("API key change detected. Invaliding cached LLM client.")
+
     if _llm_cache is None:
         _llm_cache = ChatGoogleGenerativeAI(
             model=config.GENERATION_MODEL,
             temperature=config.GENERATION_TEMPERATURE,
-            google_api_key=api_key
+            google_api_key=api_key,
+            max_retries=0
         )
         logger.info("LLM client initialized and cached.")
     return _llm_cache
+
+
 
 def format_chat_history(chat_history: list) -> str:
     """Formats chat history from a list of dicts to a readable string."""
@@ -266,22 +284,17 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
                 logger.info(f"Original: '{query}' -> Reformulated: '{search_query}'")
             else:
                 logger.info("Query is self-contained. Skipping reformulation step.")
-
-    # 2. Retrieve matching documents strictly isolated by fund_id
-    logger.info(f"Retrieving chunks for fund '{fund_id}' with search query: '{search_query}'")
-    search_filter = {"fund_id": fund_id}
     
-    # We use similarity_search_with_score which returns list of (Document, score)
-    # where score is L2 distance (lower is closer/better).
+    # 2. Perform similarity search in vector database
     try:
         results = db.similarity_search_with_score(
-            search_query,
-            k=k,
-            filter=search_filter
+            search_query, 
+            k=k, 
+            filter={"fund_id": fund_id}
         )
     except Exception as e:
-        logger.error(f"Error querying vector store: {e}")
-        return f"Error executing similarity search: {e}", []
+        logger.error(f"Vector search failed: {e}")
+        return get_local_fallback_answer(query, fund_id), []
 
     if not results:
         logger.warning(f"No document chunks found for fund '{fund_id}'.")

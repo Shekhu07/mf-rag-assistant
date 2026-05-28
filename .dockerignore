@@ -1,0 +1,29 @@
+# Exclude version control files
+.git
+.gitignore
+
+# Exclude python cache and environment files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+
+# Exclude Streamlit local configuration files
+.streamlit/
+
+# Exclude temporary scratch files and directories
+scratch/
+test_*.py
+*test.py
+
+# Exclude OS-specific metadata files
+.DS_Store
+Thumbs.db
