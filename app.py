@@ -1390,6 +1390,9 @@ with right_col:
     # Initialize session state for chatbot open/close toggle
     if "chat_open" not in st.session_state:
         st.session_state["chat_open"] = False
+    
+    chat_key = f"artha_chat_{selected_key}"
+
 
     # Render floating chat elements outside the column layout
     # 1. Custom CSS rules for floating widget
@@ -1398,7 +1401,7 @@ with right_col:
         textwrap.dedent("""
         <style>
             /* Target the outer container of the floating chat button */
-            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-btn-marker) {
+            div[data-testid="stVerticalBlock"]:has(> div[data-testid="element-container"] .unique-chat-btn-marker) {
                 position: fixed !important;
                 bottom: 25px !important;
                 right: 25px !important;
@@ -1409,7 +1412,7 @@ with right_col:
             }
 
             /* Round button style override */
-            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-btn-marker) button {
+            div[data-testid="stVerticalBlock"]:has(> div[data-testid="element-container"] .unique-chat-btn-marker) button {
                 border-radius: 50% !important;
                 width: 60px !important;
                 height: 60px !important;
@@ -1430,14 +1433,14 @@ with right_col:
                 line-height: 60px !important;
             }
 
-            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-btn-marker) button:hover {
+            div[data-testid="stVerticalBlock"]:has(> div[data-testid="element-container"] .unique-chat-btn-marker) button:hover {
                 transform: scale(1.1) !important;
                 box-shadow: 0px 6px 25px rgba(226, 255, 59, 0.65) !important;
                 background-color: #f1ff7a !important;
             }
 
             /* Target the outer container of the floating chat window */
-            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) {
+            div[data-testid="stVerticalBlock"]:has(> div[data-testid="element-container"] .unique-chat-window-marker) {
                 position: fixed !important;
                 bottom: 100px !important;
                 right: 25px !important;
@@ -1456,7 +1459,7 @@ with right_col:
             }
 
             /* Adjust spacing inside window container */
-            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) > div {
+            div[data-testid="stVerticalBlock"]:has(> div[data-testid="element-container"] .unique-chat-window-marker) > div {
                 height: 100% !important;
                 display: flex !important;
                 flex-direction: column !important;
@@ -1464,7 +1467,7 @@ with right_col:
             }
 
             /* Style chat input inside the window */
-            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) .stChatInput {
+            div[data-testid="stVerticalBlock"]:has(> div[data-testid="element-container"] .unique-chat-window-marker) .stChatInput {
                 padding: 0.8rem 1rem 1rem 1rem !important;
                 background-color: #0E1217 !important;
                 border-top: 1px solid #1C232E !important;
@@ -1483,14 +1486,67 @@ with right_col:
             }
         ]
 
+    # Define callbacks for chat drawer interactions
+    def handle_open_chat():
+        st.session_state["chat_open"] = True
+
+    def handle_close_chat():
+        st.session_state["chat_open"] = False
+
+    def handle_clear_chat(chat_key):
+        if chat_key in st.session_state:
+            del st.session_state[chat_key]
+
+    def handle_sug_holdings(chat_key, scheme):
+        st.session_state[chat_key].append({"role": "user", "content": "What are the top 5 holdings in this scheme?"})
+        rows = "\n".join(
+            [f"| {i+1} | {company} | {sector} | **{alloc}** |" for i, (company, sector, alloc) in enumerate(scheme["holdings"][:5])]
+        )
+        ans = (
+            f"Here are the top holdings for **{scheme['name']}** from the latest factsheet:\n\n"
+            f"| # | Company | Sector | Allocation |\n"
+            f"|---|---------|--------|-----------|\n"
+            f"{rows}"
+        )
+        st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
+
+    def handle_sug_perf(chat_key, scheme, display_nav, display_change, is_live, nav_date):
+        st.session_state[chat_key].append({"role": "user", "content": "Tell me about the NAV and CAGR returns."})
+        nav_source = f"MFAPI · {nav_date}" if is_live else "Static"
+        ans = (
+            f"Here is the performance snapshot for **{scheme['name']}**:\n\n"
+            f"| Metric | Value | Source |\n"
+            f"|--------|-------|--------|\n"
+            f"| **Current NAV** | **{display_nav}** | {nav_source} |\n"
+            f"| Daily Change | {display_change} | {nav_source} |\n"
+            f"| 1-Year CAGR | **{scheme['return_1y']}** | Factsheet |\n"
+            f"| 3-Year CAGR | **{scheme['return_3y']}** | Factsheet |\n"
+            f"| 5-Year CAGR | **{scheme['return_5y']}** | Factsheet |\n\n"
+            f"*Risk Profile: {scheme['riskometer']}*"
+        )
+        st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
+
+    def handle_sug_expense(chat_key, scheme):
+        st.session_state[chat_key].append({"role": "user", "content": "What is the expense ratio and fees?"})
+        ans = (
+            f"Here are the fee and expense specifications for **{scheme['name']}**:\n\n"
+            f"| Spec | Details |\n"
+            f"|------|---------|\n"
+            f"| Expense Ratio (Direct Plan) | **{scheme['expense_ratio']}** |\n"
+            f"| Minimum SIP Amount | **{scheme['min_sip']}** |\n"
+            f"| Exit Load | **Nil (most Direct plans)** |\n"
+            f"| Lock-in Period | **None** |\n"
+            f"| Risk Profile | **{scheme['riskometer']}** |\n\n"
+            f"*AUM: {scheme['aum']} | Fund Manager: {scheme['manager']}*"
+        )
+        st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
+
     if not st.session_state["chat_open"]:
         # Render round message trigger icon in bottom right
         btn_container = st.container()
         with btn_container:
             st.markdown('<div class="unique-chat-btn-marker"></div>', unsafe_allow_html=True)
-            if st.button("💬", key="open_chat_widget"):
-                st.session_state["chat_open"] = True
-                st.rerun()
+            st.button("💬", key="open_chat_widget", on_click=handle_open_chat)
     else:
         # Render floating chat drawer
         window_container = st.container()
@@ -1502,14 +1558,9 @@ with right_col:
             with header_col1:
                 st.markdown("<div style='font-family:Outfit; color:#E2FF3B; font-weight:700; font-size:1.15rem; margin-top: 4px;'>⚡ ArthaAI Analyst</div>", unsafe_allow_html=True)
             with header_col2:
-                if st.button("🗑️ Clear", key="clear_chat_widget", use_container_width=True):
-                    if chat_key in st.session_state:
-                        del st.session_state[chat_key]
-                    st.rerun()
+                st.button("🗑️ Clear", key="clear_chat_widget", use_container_width=True, on_click=handle_clear_chat, args=(chat_key,))
             with header_col3:
-                if st.button("✖", key="close_chat_widget", use_container_width=True):
-                    st.session_state["chat_open"] = False
-                    st.rerun()
+                st.button("✖", key="close_chat_widget", use_container_width=True, on_click=handle_close_chat)
             
             st.markdown("<hr style='margin: 0; border: 0; border-top: 1px solid #1C232E;'/>", unsafe_allow_html=True)
             
@@ -1565,52 +1616,29 @@ with right_col:
                     st.markdown("<div style='margin-bottom: 0.8rem;'></div>", unsafe_allow_html=True)
                     sug_col1, sug_col2, sug_col3 = st.columns(3)
                     with sug_col1:
-                        if st.button("📊 Holdings", use_container_width=True, key=f"sug_holdings_{selected_key}"):
-                            st.session_state[chat_key].append({"role": "user", "content": "What are the top 5 holdings in this scheme?"})
-                            rows = "\n".join(
-                                [f"| {i+1} | {company} | {sector} | **{alloc}** |" for i, (company, sector, alloc) in enumerate(scheme["holdings"][:5])]
-                            )
-                            ans = (
-                                f"Here are the top holdings for **{scheme['name']}** from the latest factsheet:\n\n"
-                                f"| # | Company | Sector | Allocation |\n"
-                                f"|---|---------|--------|-----------|\n"
-                                f"{rows}"
-                            )
-                            st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
-                            st.rerun()
+                        st.button(
+                            "📊 Holdings", 
+                            use_container_width=True, 
+                            key=f"sug_holdings_{selected_key}",
+                            on_click=handle_sug_holdings,
+                            args=(chat_key, scheme)
+                        )
                     with sug_col2:
-                        if st.button("📈 Returns", use_container_width=True, key=f"sug_perf_{selected_key}"):
-                            st.session_state[chat_key].append({"role": "user", "content": "Tell me about the NAV and CAGR returns."})
-                            nav_source = f"MFAPI · {nav_date}" if is_live else "Static"
-                            ans = (
-                                f"Here is the performance snapshot for **{scheme['name']}**:\n\n"
-                                f"| Metric | Value | Source |\n"
-                                f"|--------|-------|--------|\n"
-                                f"| **Current NAV** | **{display_nav}** | {nav_source} |\n"
-                                f"| Daily Change | {display_change} | {nav_source} |\n"
-                                f"| 1-Year CAGR | **{scheme['return_1y']}** | Factsheet |\n"
-                                f"| 3-Year CAGR | **{scheme['return_3y']}** | Factsheet |\n"
-                                f"| 5-Year CAGR | **{scheme['return_5y']}** | Factsheet |\n\n"
-                                f"*Risk Profile: {scheme['riskometer']}*"
-                            )
-                            st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
-                            st.rerun()
+                        st.button(
+                            "📈 Returns", 
+                            use_container_width=True, 
+                            key=f"sug_perf_{selected_key}",
+                            on_click=handle_sug_perf,
+                            args=(chat_key, scheme, display_nav, display_change, is_live, nav_date)
+                        )
                     with sug_col3:
-                        if st.button("💼 Expenses", use_container_width=True, key=f"sug_expense_{selected_key}"):
-                            st.session_state[chat_key].append({"role": "user", "content": "What is the expense ratio and fees?"})
-                            ans = (
-                                f"Here are the fee and expense specifications for **{scheme['name']}**:\n\n"
-                                f"| Spec | Details |\n"
-                                f"|------|---------|\n"
-                                f"| Expense Ratio (Direct Plan) | **{scheme['expense_ratio']}** |\n"
-                                f"| Minimum SIP Amount | **{scheme['min_sip']}** |\n"
-                                f"| Exit Load | **Nil (most Direct plans)** |\n"
-                                f"| Lock-in Period | **None** |\n"
-                                f"| Risk Profile | **{scheme['riskometer']}** |\n\n"
-                                f"*AUM: {scheme['aum']} | Fund Manager: {scheme['manager']}*"
-                            )
-                            st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
-                            st.rerun()
+                        st.button(
+                            "💼 Expenses", 
+                            use_container_width=True, 
+                            key=f"sug_expense_{selected_key}",
+                            on_click=handle_sug_expense,
+                            args=(chat_key, scheme)
+                        )
 
             # 3. Chat Input Box (sits at the bottom of the window)
             if q_input := st.chat_input(f"Ask about {scheme['name']}...", key="chat_input_widget"):
