@@ -1398,7 +1398,7 @@ with right_col:
         textwrap.dedent("""
         <style>
             /* Target the outer container of the floating chat button */
-            div[data-testid="stVerticalBlock"]:has(div.unique-chat-btn-marker) {
+            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-btn-marker) {
                 position: fixed !important;
                 bottom: 25px !important;
                 right: 25px !important;
@@ -1409,7 +1409,7 @@ with right_col:
             }
 
             /* Round button style override */
-            div[data-testid="stVerticalBlock"]:has(div.unique-chat-btn-marker) button {
+            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-btn-marker) button {
                 border-radius: 50% !important;
                 width: 60px !important;
                 height: 60px !important;
@@ -1430,14 +1430,14 @@ with right_col:
                 line-height: 60px !important;
             }
 
-            div[data-testid="stVerticalBlock"]:has(div.unique-chat-btn-marker) button:hover {
+            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-btn-marker) button:hover {
                 transform: scale(1.1) !important;
                 box-shadow: 0px 6px 25px rgba(226, 255, 59, 0.65) !important;
                 background-color: #f1ff7a !important;
             }
 
             /* Target the outer container of the floating chat window */
-            div[data-testid="stVerticalBlock"]:has(div.unique-chat-window-marker) {
+            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) {
                 position: fixed !important;
                 bottom: 100px !important;
                 right: 25px !important;
@@ -1456,7 +1456,7 @@ with right_col:
             }
 
             /* Adjust spacing inside window container */
-            div[data-testid="stVerticalBlock"]:has(div.unique-chat-window-marker) > div {
+            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) > div {
                 height: 100% !important;
                 display: flex !important;
                 flex-direction: column !important;
@@ -1464,7 +1464,7 @@ with right_col:
             }
 
             /* Style chat input inside the window */
-            div[data-testid="stVerticalBlock"]:has(div.unique-chat-window-marker) .stChatInput {
+            div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"]:has(.unique-chat-window-marker) .stChatInput {
                 padding: 0.8rem 1rem 1rem 1rem !important;
                 background-color: #0E1217 !important;
                 border-top: 1px solid #1C232E !important;
