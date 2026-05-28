@@ -99,7 +99,7 @@ def get_local_fallback_answer(query: str, fund_id: str) -> str:
             [f"| {i+1} | {company} | {sector} | **{alloc}** |" for i, (company, sector, alloc) in enumerate(fund["holdings"])]
         )
         return (
-            f"Here are the top holdings for **{fund['name']}** from the latest factsheet:\n\n"
+            f"Here are the holdings for **{fund['name']}** from the latest factsheet:\n\n"
             f"| # | Company | Sector | Allocation |\n"
             f"|---|---------|--------|-----------|\n"
             f"{rows}\n\n"

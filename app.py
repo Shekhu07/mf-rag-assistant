@@ -1160,13 +1160,24 @@ with left_col:
             unsafe_allow_html=True
         )
 
-        # Parse holdings into dictionary of {company: {sector, alloc}}
+        # Parse holdings into dictionary of {normalized_company_name: {original_name, sector, alloc}}
         def parse_holdings(holdings_list):
             h_dict = {}
             for company, sector, alloc_str in holdings_list:
                 try:
                     alloc_val = float(alloc_str.replace("%", "").strip())
-                    h_dict[company] = {"sector": sector, "alloc": alloc_val}
+                    
+                    # Normalize company name for matching:
+                    # 1. Lowercase
+                    # 2. Strip special characters
+                    # 3. Strip common corporate suffixes
+                    import re
+                    norm = company.lower().strip()
+                    norm = norm.replace("£", "").strip()
+                    norm = re.sub(r'\b(ltd|limited|corp|corporation|inc|co)\b\.?', '', norm)
+                    norm = re.sub(r'\s+', ' ', norm).strip()
+                    
+                    h_dict[norm] = {"original_name": company, "sector": sector, "alloc": alloc_val}
                 except ValueError:
                     pass
             return h_dict
@@ -1185,7 +1196,7 @@ with left_col:
             shared = min(alloc_a, alloc_b)
             overlap_pct += shared
             common_data.append({
-                "Company": company,
+                "Company": holdings_a[company]["original_name"],
                 "Sector": holdings_a[company]["sector"],
                 "Allocation A": f"{alloc_a:.2f}%",
                 "Allocation B": f"{alloc_b:.2f}%",
@@ -1273,7 +1284,7 @@ with left_col:
         else:
             st.markdown(
                 "<div style=\"background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:1.5rem; text-align:center; color:#8A99AD; font-size:0.85rem; margin-bottom:1.5rem;\">"
-                "🟢 No overlapping holdings found in the top stocks of these two funds. Excellent diversification!"
+                "🟢 No overlapping holdings found in these two funds. Excellent diversification!"
                 "</div>",
                 unsafe_allow_html=True
             )
@@ -1287,26 +1298,30 @@ with left_col:
         with col_unique_a:
             st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:#8A99AD; text-transform:uppercase;'>Unique to {scheme['name']}</span>", unsafe_allow_html=True)
             st.markdown("<div style='margin-bottom:0.4rem;'></div>", unsafe_allow_html=True)
-            unique_a = [c for c in holdings_a.keys() if c not in common_companies]
-            if unique_a:
+            unique_a_keys = [c for c in holdings_a.keys() if c not in common_companies]
+            if unique_a_keys:
+                unique_a_keys = sorted(unique_a_keys, key=lambda x: holdings_a[x]['alloc'], reverse=True)
                 list_items = ""
-                for u in unique_a:
-                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:#FFFFFF;'><span style='font-weight:600;'>{u}</span> <span style='color:#8A99AD;'>({holdings_a[u]['alloc']:.2f}%)</span></li>"
+                for u in unique_a_keys:
+                    orig_name = holdings_a[u]['original_name']
+                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:#FFFFFF;'><span style='font-weight:600;'>{orig_name}</span> <span style='color:#8A99AD;'>({holdings_a[u]['alloc']:.2f}%)</span></li>"
                 st.markdown(f"<ul style='list-style-type:square; padding-left:1.2rem;'>{list_items}</ul>", unsafe_allow_html=True)
             else:
-                st.markdown("<div style='color:#8A99AD; font-size:0.8rem;'>No unique top holdings.</div>", unsafe_allow_html=True)
+                st.markdown("<div style='color:#8A99AD; font-size:0.8rem;'>No unique holdings.</div>", unsafe_allow_html=True)
                 
         with col_unique_b:
             st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:#8A99AD; text-transform:uppercase;'>Unique to {comp_scheme['name']}</span>", unsafe_allow_html=True)
             st.markdown("<div style='margin-bottom:0.4rem;'></div>", unsafe_allow_html=True)
-            unique_b = [c for c in holdings_b.keys() if c not in common_companies]
-            if unique_b:
+            unique_b_keys = [c for c in holdings_b.keys() if c not in common_companies]
+            if unique_b_keys:
+                unique_b_keys = sorted(unique_b_keys, key=lambda x: holdings_b[x]['alloc'], reverse=True)
                 list_items = ""
-                for u in unique_b:
-                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:#FFFFFF;'><span style='font-weight:600;'>{u}</span> <span style='color:#8A99AD;'>({holdings_b[u]['alloc']:.2f}%)</span></li>"
+                for u in unique_b_keys:
+                    orig_name = holdings_b[u]['original_name']
+                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:#FFFFFF;'><span style='font-weight:600;'>{orig_name}</span> <span style='color:#8A99AD;'>({holdings_b[u]['alloc']:.2f}%)</span></li>"
                 st.markdown(f"<ul style='list-style-type:square; padding-left:1.2rem;'>{list_items}</ul>", unsafe_allow_html=True)
             else:
-                st.markdown("<div style='color:#8A99AD; font-size:0.8rem;'>No unique top holdings.</div>", unsafe_allow_html=True)
+                st.markdown("<div style='color:#8A99AD; font-size:0.8rem;'>No unique holdings.</div>", unsafe_allow_html=True)
 
 
 # ==================== RIGHT COLUMN: FUND SUMMARY + AI CHAT ====================
@@ -1452,7 +1467,7 @@ with right_col:
                 st.session_state[chat_key].append({"role": "user", "content": "What are the top 5 holdings in this scheme?"})
                 # Serve instantly from local metadata — no API call needed
                 rows = "\n".join(
-                    [f"| {i+1} | {company} | {sector} | **{alloc}** |" for i, (company, sector, alloc) in enumerate(scheme["holdings"])]
+                    [f"| {i+1} | {company} | {sector} | **{alloc}** |" for i, (company, sector, alloc) in enumerate(scheme["holdings"][:5])]
                 )
                 ans = (
                     f"Here are the top holdings for **{scheme['name']}** from the latest factsheet:\n\n"
