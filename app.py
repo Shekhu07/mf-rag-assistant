@@ -1103,8 +1103,9 @@ with left_col:
         r_color_a = "#EF4444" if "Very High" in scheme["riskometer"] else "#F59E0B"
         r_color_b = "#EF4444" if "Very High" in comp_scheme["riskometer"] else "#F59E0B"
         
+        import textwrap
         st.markdown(
-            f"""
+            textwrap.dedent(f"""
             <table style="width:100%; border-collapse:collapse; background:#0E1217; border:1px solid #1C232E; border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
                 <thead>
                     <tr style="border-bottom:1px solid #1C232E; text-align:left; background:#11161F;">
@@ -1156,7 +1157,7 @@ with left_col:
                     </tr>
                 </tbody>
             </table>
-            """,
+            """),
             unsafe_allow_html=True
         )
 
@@ -1222,7 +1223,7 @@ with left_col:
             
         # Renders the Overlap KPI card
         st.markdown(
-            f"""
+            textwrap.dedent(f"""
             <div style="background:#0E1217; border:1px solid #1C232E; border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; border-left: 4px solid {status_color};">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
@@ -1240,7 +1241,7 @@ with left_col:
                     </div>
                 </div>
             </div>
-            """,
+            """),
             unsafe_allow_html=True
         )
         
@@ -1263,7 +1264,7 @@ with left_col:
                 """
                 
             st.markdown(
-                f"""
+                textwrap.dedent(f"""
                 <table style="width:100%; border-collapse:collapse; background:#0E1217; border:1px solid #1C232E; border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
                     <thead>
                         <tr style="border-bottom:1px solid #1C232E; text-align:left; background:#11161F;">
@@ -1278,7 +1279,7 @@ with left_col:
                         {rows}
                     </tbody>
                 </table>
-                """,
+                """),
                 unsafe_allow_html=True
             )
         else:
