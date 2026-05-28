@@ -665,7 +665,7 @@ st.markdown(
 )
 
 # --- TWO-COLUMN LAYOUT ---
-left_col, right_col = st.columns([1.65, 1.0], gap="large")
+left_col, right_col = st.columns([2.2, 0.8], gap="large")
 
 # ==================== LEFT COLUMN: SCHEME ANALYSIS ====================
 with left_col:
@@ -1386,23 +1386,94 @@ with right_col:
         )
     st.markdown("<div style='margin-bottom: 1.2rem;'></div>", unsafe_allow_html=True)
 
-    # 2. ArthaAI RAG Chat Analyst
-    col_header, col_clear = st.columns([2.2, 1.0])
-    with col_header:
-        st.markdown("<h3 style='font-family:Outfit; color:#E2FF3B; font-weight:700; font-size:1.35rem; margin:0;'>⚡ ArthaAI Analyst</h3>", unsafe_allow_html=True)
-    with col_clear:
-        if st.button("🗑️ Clear Chat", use_container_width=True, key=f"clear_{selected_key}"):
-            chat_key = f"artha_chat_{selected_key}"
-            if chat_key in st.session_state:
-                del st.session_state[chat_key]
-            st.rerun()
+    # 2. ArthaAI RAG Chat Analyst (Collapsible & Floating)
+    # Initialize session state for chatbot open/close toggle
+    if "chat_open" not in st.session_state:
+        st.session_state["chat_open"] = False
 
+    # Render floating chat elements outside the column layout
+    # 1. Custom CSS rules for floating widget
+    import textwrap
     st.markdown(
-        f"<div style='font-size:0.88rem; color:#8A99AD; margin-bottom:1rem;'>Ask questions about <b>{scheme['name']}</b>:</div>",
+        textwrap.dedent("""
+        <style>
+            /* Target the outer container of the floating chat button */
+            div[data-testid="stVerticalBlock"]:has(div.unique-chat-btn-marker) {
+                position: fixed !important;
+                bottom: 25px !important;
+                right: 25px !important;
+                z-index: 999999 !important;
+                padding: 0 !important;
+                width: 60px !important;
+                height: 60px !important;
+            }
+
+            /* Round button style override */
+            div[data-testid="stVerticalBlock"]:has(div.unique-chat-btn-marker) button {
+                border-radius: 50% !important;
+                width: 60px !important;
+                height: 60px !important;
+                min-width: 60px !important;
+                max-width: 60px !important;
+                background-color: #E2FF3B !important;
+                color: #080A0C !important;
+                font-size: 26px !important;
+                font-weight: 700 !important;
+                border: none !important;
+                box-shadow: 0px 4px 20px rgba(226, 255, 59, 0.45) !important;
+                cursor: pointer !important;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 0 !important;
+                line-height: 60px !important;
+            }
+
+            div[data-testid="stVerticalBlock"]:has(div.unique-chat-btn-marker) button:hover {
+                transform: scale(1.1) !important;
+                box-shadow: 0px 6px 25px rgba(226, 255, 59, 0.65) !important;
+                background-color: #f1ff7a !important;
+            }
+
+            /* Target the outer container of the floating chat window */
+            div[data-testid="stVerticalBlock"]:has(div.unique-chat-window-marker) {
+                position: fixed !important;
+                bottom: 100px !important;
+                right: 25px !important;
+                width: 420px !important;
+                height: 620px !important;
+                background-color: #0E1217 !important;
+                border: 1px solid #1C232E !important;
+                border-radius: 12px !important;
+                box-shadow: 0px 10px 45px rgba(0, 0, 0, 0.85) !important;
+                z-index: 999998 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                padding: 0px !important;
+                gap: 0px !important;
+            }
+
+            /* Adjust spacing inside window container */
+            div[data-testid="stVerticalBlock"]:has(div.unique-chat-window-marker) > div {
+                height: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0px !important;
+            }
+
+            /* Style chat input inside the window */
+            div[data-testid="stVerticalBlock"]:has(div.unique-chat-window-marker) .stChatInput {
+                padding: 0.8rem 1rem 1rem 1rem !important;
+                background-color: #0E1217 !important;
+                border-top: 1px solid #1C232E !important;
+            }
+        </style>
+        """),
         unsafe_allow_html=True
     )
-    
-    # Session state Chat History for this fund
+
     chat_key = f"artha_chat_{selected_key}"
     if chat_key not in st.session_state:
         st.session_state[chat_key] = [
@@ -1411,157 +1482,175 @@ with right_col:
                 "content": f"Hi! I have parsed the official factsheet for **{scheme['name']}**. Ask me about portfolio composition, foreign holdings, risk metrics, or asset details. I am isolated to this fund."
             }
         ]
-        
-    # Render chat history with Dhan bubbles
-    for chat in st.session_state[chat_key]:
-        if chat["role"] == "user":
-            st.markdown(
-                f"""
-                <div class="chat-row-user">
-                    <div class="chat-bubble-new chat-bubble-new-user">
-                        <div style="font-size:0.7rem; color:#8A99AD; font-weight:600; margin-bottom:4px;">YOU</div>
-                        <div>{chat['content']}</div>
-                    </div>
-                    <div class="chat-avatar-user">👤</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        else:
-            # Parse markdown content to rich HTML
-            html_content = markdown.markdown(chat['content'], extensions=['tables', 'nl2br'])
-            st.markdown(
-                f"""
-                <div class="chat-row-analyst">
-                    <div class="chat-avatar-analyst">⚡</div>
-                    <div class="chat-bubble-new chat-bubble-new-analyst">
-                        <div style="font-size:0.7rem; color:#E2FF3B; font-weight:700; margin-bottom:4px; font-family:Outfit;">⚡ ARTHAAI RAG ANALYST</div>
-                        <div>{html_content}</div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            # Render sources inside collapsible expander (hidden by default)
-            if "sources" in chat and chat["sources"]:
-                with st.expander("🔍 View Reference Passages", expanded=False):
-                    for idx, (src_name, score, snippet) in enumerate(chat["sources"]):
-                        # Convert L2 distance score to user-friendly similarity match percentage
-                        match_pct = max(0, min(100, int((1.0 - (score / 2.0)) * 100.0)))
+
+    if not st.session_state["chat_open"]:
+        # Render round message trigger icon in bottom right
+        btn_container = st.container()
+        with btn_container:
+            st.markdown('<div class="unique-chat-btn-marker"></div>', unsafe_allow_html=True)
+            if st.button("💬", key="open_chat_widget"):
+                st.session_state["chat_open"] = True
+                st.rerun()
+    else:
+        # Render floating chat drawer
+        window_container = st.container()
+        with window_container:
+            st.markdown('<div class="unique-chat-window-marker"></div>', unsafe_allow_html=True)
+            
+            # 1. Header with Title, Clear, and Close actions
+            header_col1, header_col2, header_col3 = st.columns([3.5, 1.2, 1.2])
+            with header_col1:
+                st.markdown("<div style='font-family:Outfit; color:#E2FF3B; font-weight:700; font-size:1.15rem; margin-top: 4px;'>⚡ ArthaAI Analyst</div>", unsafe_allow_html=True)
+            with header_col2:
+                if st.button("🗑️ Clear", key="clear_chat_widget", use_container_width=True):
+                    if chat_key in st.session_state:
+                        del st.session_state[chat_key]
+                    st.rerun()
+            with header_col3:
+                if st.button("✖", key="close_chat_widget", use_container_width=True):
+                    st.session_state["chat_open"] = False
+                    st.rerun()
+            
+            st.markdown("<hr style='margin: 0; border: 0; border-top: 1px solid #1C232E;'/>", unsafe_allow_html=True)
+            
+            # 2. Scrollable chat message area
+            chat_scroll_box = st.container(height=450)
+            with chat_scroll_box:
+                for chat in st.session_state[chat_key]:
+                    if chat["role"] == "user":
                         st.markdown(
                             f"""
-                            <div class="chat-source-item" style="margin-top: 5px;">
-                                <span style="color:#10B981; font-weight:700; font-size:0.75rem;">SRC {idx+1}: {src_name}</span> &nbsp;|&nbsp; 
-                                <span style="color:#8A99AD; font-size:0.7rem;">Match Score: {match_pct}%</span>
-                                <div style="color:#BAC7D5; font-size:0.8rem; font-style:italic; margin-top:2px;">"{snippet}..."</div>
+                            <div class="chat-row-user">
+                                <div class="chat-bubble-new chat-bubble-new-user">
+                                    <div style="font-size:0.7rem; color:#8A99AD; font-weight:600; margin-bottom:4px;">YOU</div>
+                                    <div>{chat['content']}</div>
+                                </div>
+                                <div class="chat-avatar-user">👤</div>
                             </div>
                             """,
                             unsafe_allow_html=True
                         )
+                    else:
+                        html_content = markdown.markdown(chat['content'], extensions=['tables', 'nl2br'])
+                        st.markdown(
+                            f"""
+                            <div class="chat-row-analyst">
+                                <div class="chat-avatar-analyst">⚡</div>
+                                <div class="chat-bubble-new chat-bubble-new-analyst">
+                                    <div style="font-size:0.7rem; color:#E2FF3B; font-weight:700; margin-bottom:4px; font-family:Outfit;">⚡ ARTHAAI RAG ANALYST</div>
+                                    <div>{html_content}</div>
+                                </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                        # Render sources inside collapsible expander (hidden by default)
+                        if "sources" in chat and chat["sources"]:
+                            with st.expander("🔍 View Reference Passages", expanded=False):
+                                for idx, (src_name, score, snippet) in enumerate(chat["sources"]):
+                                    match_pct = max(0, min(100, int((1.0 - (score / 2.0)) * 100.0)))
+                                    st.markdown(
+                                        f"""
+                                        <div class="chat-source-item" style="margin-top: 5px;">
+                                            <span style="color:#10B981; font-weight:700; font-size:0.75rem;">SRC {idx+1}: {src_name}</span> &nbsp;|&nbsp; 
+                                            <span style="color:#8A99AD; font-size:0.7rem;">Match Score: {match_pct}%</span>
+                                            <div style="color:#BAC7D5; font-size:0.8rem; font-style:italic; margin-top:2px;">"{snippet}..."</div>
+                                        </div>
+                                        """,
+                                        unsafe_allow_html=True
+                                    )
+                                    
+                # Quick Suggestions (only if the chat has just 1 welcome message)
+                if len(st.session_state[chat_key]) == 1:
+                    st.markdown("<div style='margin-bottom: 0.8rem;'></div>", unsafe_allow_html=True)
+                    sug_col1, sug_col2, sug_col3 = st.columns(3)
+                    with sug_col1:
+                        if st.button("📊 Holdings", use_container_width=True, key=f"sug_holdings_{selected_key}"):
+                            st.session_state[chat_key].append({"role": "user", "content": "What are the top 5 holdings in this scheme?"})
+                            rows = "\n".join(
+                                [f"| {i+1} | {company} | {sector} | **{alloc}** |" for i, (company, sector, alloc) in enumerate(scheme["holdings"][:5])]
+                            )
+                            ans = (
+                                f"Here are the top holdings for **{scheme['name']}** from the latest factsheet:\n\n"
+                                f"| # | Company | Sector | Allocation |\n"
+                                f"|---|---------|--------|-----------|\n"
+                                f"{rows}"
+                            )
+                            st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
+                            st.rerun()
+                    with sug_col2:
+                        if st.button("📈 Returns", use_container_width=True, key=f"sug_perf_{selected_key}"):
+                            st.session_state[chat_key].append({"role": "user", "content": "Tell me about the NAV and CAGR returns."})
+                            nav_source = f"MFAPI · {nav_date}" if is_live else "Static"
+                            ans = (
+                                f"Here is the performance snapshot for **{scheme['name']}**:\n\n"
+                                f"| Metric | Value | Source |\n"
+                                f"|--------|-------|--------|\n"
+                                f"| **Current NAV** | **{display_nav}** | {nav_source} |\n"
+                                f"| Daily Change | {display_change} | {nav_source} |\n"
+                                f"| 1-Year CAGR | **{scheme['return_1y']}** | Factsheet |\n"
+                                f"| 3-Year CAGR | **{scheme['return_3y']}** | Factsheet |\n"
+                                f"| 5-Year CAGR | **{scheme['return_5y']}** | Factsheet |\n\n"
+                                f"*Risk Profile: {scheme['riskometer']}*"
+                            )
+                            st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
+                            st.rerun()
+                    with sug_col3:
+                        if st.button("💼 Expenses", use_container_width=True, key=f"sug_expense_{selected_key}"):
+                            st.session_state[chat_key].append({"role": "user", "content": "What is the expense ratio and fees?"})
+                            ans = (
+                                f"Here are the fee and expense specifications for **{scheme['name']}**:\n\n"
+                                f"| Spec | Details |\n"
+                                f"|------|---------|\n"
+                                f"| Expense Ratio (Direct Plan) | **{scheme['expense_ratio']}** |\n"
+                                f"| Minimum SIP Amount | **{scheme['min_sip']}** |\n"
+                                f"| Exit Load | **Nil (most Direct plans)** |\n"
+                                f"| Lock-in Period | **None** |\n"
+                                f"| Risk Profile | **{scheme['riskometer']}** |\n\n"
+                                f"*AUM: {scheme['aum']} | Fund Manager: {scheme['manager']}*"
+                            )
+                            st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
+                            st.rerun()
 
-    # Quick Suggestions (only if the chat has just 1 welcome message)
-    if len(st.session_state[chat_key]) == 1:
-        st.markdown("<div style='margin-bottom: 0.8rem;'></div>", unsafe_allow_html=True)
-        col_s1, col_s2, col_s3 = st.columns(3)
-        with col_s1:
-            if st.button("📊 Top Holdings", use_container_width=True, key=f"sug_holdings_{selected_key}"):
-                st.session_state[chat_key].append({"role": "user", "content": "What are the top 5 holdings in this scheme?"})
-                # Serve instantly from local metadata — no API call needed
-                rows = "\n".join(
-                    [f"| {i+1} | {company} | {sector} | **{alloc}** |" for i, (company, sector, alloc) in enumerate(scheme["holdings"][:5])]
-                )
-                ans = (
-                    f"Here are the top holdings for **{scheme['name']}** from the latest factsheet:\n\n"
-                    f"| # | Company | Sector | Allocation |\n"
-                    f"|---|---------|--------|-----------|\n"
-                    f"{rows}"
-                )
-                st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
-                st.rerun()
-        with col_s2:
-            if st.button("📈 Returns Info", use_container_width=True, key=f"sug_perf_{selected_key}"):
-                st.session_state[chat_key].append({"role": "user", "content": "Tell me about the NAV and CAGR returns."})
-                # Live NAV + static CAGR — instant, no API call needed
-                nav_source = f"MFAPI · {nav_date}" if is_live else "Static"
-                ans = (
-                    f"Here is the performance snapshot for **{scheme['name']}**:\n\n"
-                    f"| Metric | Value | Source |\n"
-                    f"|--------|-------|--------|\n"
-                    f"| **Current NAV** | **{display_nav}** | {nav_source} |\n"
-                    f"| Daily Change | {display_change} | {nav_source} |\n"
-                    f"| 1-Year CAGR | **{scheme['return_1y']}** | Factsheet |\n"
-                    f"| 3-Year CAGR | **{scheme['return_3y']}** | Factsheet |\n"
-                    f"| 5-Year CAGR | **{scheme['return_5y']}** | Factsheet |\n\n"
-                    f"*Risk Profile: {scheme['riskometer']}*"
-                )
-                st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
-                st.rerun()
-        with col_s3:
-            if st.button("💼 Expense Specs", use_container_width=True, key=f"sug_expense_{selected_key}"):
-                st.session_state[chat_key].append({"role": "user", "content": "What is the expense ratio and fees?"})
-                # Serve instantly from local metadata — no API call needed
-                ans = (
-                    f"Here are the fee and expense specifications for **{scheme['name']}**:\n\n"
-                    f"| Spec | Details |\n"
-                    f"|------|---------|\n"
-                    f"| Expense Ratio (Direct Plan) | **{scheme['expense_ratio']}** |\n"
-                    f"| Minimum SIP Amount | **{scheme['min_sip']}** |\n"
-                    f"| Exit Load | **Nil (most Direct plans)** |\n"
-                    f"| Lock-in Period | **None** |\n"
-                    f"| Risk Profile | **{scheme['riskometer']}** |\n\n"
-                    f"*AUM: {scheme['aum']} | Fund Manager: {scheme['manager']}*"
-                )
-                st.session_state[chat_key].append({"role": "analyst", "content": ans, "sources": []})
+            # 3. Chat Input Box (sits at the bottom of the window)
+            if q_input := st.chat_input(f"Ask about {scheme['name']}...", key="chat_input_widget"):
+                # Append User Msg
+                st.session_state[chat_key].append({"role": "user", "content": q_input})
                 st.rerun()
 
-    # Chat Input
-    if q_input := st.chat_input(f"Query {selected_key.replace('_', ' ').upper()} factsheet..."):
-        # Append User Msg
-        st.session_state[chat_key].append({"role": "user", "content": q_input})
-        
-        # Render the user message immediately so it appears on screen while the spinner runs
-        st.markdown(
-            f"""
-            <div class="chat-row-user">
-                <div class="chat-bubble-new chat-bubble-new-user">
-                    <div style="font-size:0.7rem; color:#8A99AD; font-weight:600; margin-bottom:4px;">YOU</div>
-                    <div>{q_input}</div>
-                </div>
-                <div class="chat-avatar-user">👤</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        
-        # Run QA
-        with st.spinner("Analyzing context..."):
-            # Fetch recent news/sentiment context to support chatbot queries about recent buy/sell activity
-            extra_ctx = None
-            api_key = os.environ.get("GEMINI_API_KEY")
-            if api_key:
-                try:
-                    articles = fetch_google_news_cached(selected_key)
-                    if articles:
-                        analysis_report = analyze_sentiment_cached(articles, scheme["name"], api_key)
-                        if analysis_report:
-                            extra_ctx = analysis_report
-                except Exception as e:
-                    import logging
-                    logging.getLogger(__name__).warning(f"Failed to fetch news context for chat: {e}")
+            # Execute RAG QA query if user just entered a message
+            if st.session_state[chat_key][-1]["role"] == "user":
+                with chat_scroll_box:
+                    with st.spinner("Analyzing context..."):
+                        q_val = st.session_state[chat_key][-1]["content"]
+                        
+                        # Fetch recent news/sentiment context
+                        extra_ctx = None
+                        api_key = os.environ.get("GEMINI_API_KEY")
+                        if api_key:
+                            try:
+                                articles = fetch_google_news_cached(selected_key)
+                                if articles:
+                                    analysis_report = analyze_sentiment_cached(articles, scheme["name"], api_key)
+                                    if analysis_report:
+                                        extra_ctx = analysis_report
+                            except Exception as e:
+                                import logging
+                                logging.getLogger(__name__).warning(f"Failed to fetch news context for chat: {e}")
 
-            ans, docs = query_fund(q_input, selected_key, st.session_state[chat_key][:-1], extra_context=extra_ctx)
-            
-            # Format sources
-            sources_list = []
-            if docs:
-                for doc, score in docs:
-                    snippet = doc.page_content[:250].replace('\n', ' ')
-                    sources_list.append((doc.metadata.get('source', 'Unknown'), score, snippet))
-            
-            # Append Analyst Msg
-            st.session_state[chat_key].append({
-                "role": "analyst",
-                "content": ans,
-                "sources": sources_list
-            })
-            st.rerun()
+                        ans, docs = query_fund(q_val, selected_key, st.session_state[chat_key][:-1], extra_context=extra_ctx)
+                        
+                        # Format sources
+                        sources_list = []
+                        if docs:
+                            for doc, score in docs:
+                                snippet = doc.page_content[:250].replace('\n', ' ')
+                                sources_list.append((doc.metadata.get('source', 'Unknown'), score, snippet))
+                        
+                        # Append Analyst Msg
+                        st.session_state[chat_key].append({
+                            "role": "analyst",
+                            "content": ans,
+                            "sources": sources_list
+                        })
+                        st.rerun()
