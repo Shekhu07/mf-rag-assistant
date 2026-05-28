@@ -32,8 +32,13 @@ A **production-grade Mutual Fund Research Assistant** built with Streamlit, Lang
 ```
 mf-rag-assistant/
 ├── app.py                  # Streamlit UI — main entry point
+├── Dockerfile              # Production Docker build configuration
+├── .dockerignore           # Exclusions for Docker build context
 ├── requirements.txt        # Python dependencies
 ├── .env.template           # Template for environment variables
+├── deploy/
+│   ├── docker-compose.yml  # Orchestrates Streamlit & Nginx containers
+│   └── nginx_streamlit.conf # Nginx reverse proxy configuration
 ├── src/
 │   ├── config.py           # Paths, model names, chunking config
 │   ├── ingest.py           # PDF ingestion → ChromaDB pipeline
@@ -94,6 +99,33 @@ This processes all PDFs and text files, chunks them, embeds them, and stores the
 python3 -m streamlit run app.py
 ```
 Open [http://localhost:8501](http://localhost:8501) in your browser.
+
+---
+
+## 🐳 Production Deployment (Docker + Nginx)
+
+For production deployment or to test a local containerized setup, a turnkey multi-container orchestration is available. Nginx acts as a WebSocket-optimized reverse proxy routing traffic to the Streamlit app.
+
+### 1. Requirements
+Ensure you have **Docker Desktop** installed and running on your system.
+
+### 2. Run with Docker Compose
+From the project root directory, run the following command to spin up the Streamlit container and Nginx proxy (this automatically reads your `.env` file from the root folder):
+```bash
+docker compose --env-file .env -f deploy/docker-compose.yml up --build
+```
+
+### 3. Access the Dashboard
+Once the services start up, open your browser and navigate to:
+👉 **`http://localhost`** (standard port 80).
+
+*Note: If port 80 is already in use by another application on your system, you can edit [deploy/docker-compose.yml](file:///Users/abhishekspillai/mf-rag-assistant/deploy/docker-compose.yml) and change `"80:80"` to `"8080:80"`, then access the app at `http://localhost:8080`.*
+
+### 4. Stopping the Services
+To stop and clean up the containers, press `Ctrl + C` in the logs terminal and run:
+```bash
+docker compose -f deploy/docker-compose.yml down
+```
 
 ---
 
