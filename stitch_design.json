@@ -1,0 +1,13 @@
+{
+    "primary_color": "#E2FF3B",
+    "bg_color": "#080A0C",
+    "card_bg_color": "#0E1217",
+    "border_color": "#1C232E",
+    "text_color": "#BAC7D5",
+    "text_highlight_color": "#FFFFFF",
+    "text_muted_color": "#8A99AD",
+    "success_color": "#10B981",
+    "danger_color": "#EF4444",
+    "font_header": "'Outfit', sans-serif",
+    "font_body": "'Plus Jakarta Sans', sans-serif"
+}

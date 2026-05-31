@@ -55,18 +55,34 @@ def fetch_google_news_cached(fund_id: str):
 
 @st.cache_data(ttl=1800)
 def analyze_sentiment_cached(articles, fund_name, api_key):
-    return analyze_sentiment_with_llm(articles, fund_name, api_key)
+    return analyze_sentiment_with_llm(articles, fund_name, api_key)# --- HIGH FIDELITY DHAN WEB STYLE CSS WITH STITCH DESIGN TOKENS ---
+st.markdown(f"""
+<style>
+    :root {{
+        --primary-color: {config.STITCH_DESIGN["primary_color"]};
+        --bg-color: {config.STITCH_DESIGN["bg_color"]};
+        --card-bg-color: {config.STITCH_DESIGN["card_bg_color"]};
+        --border-color: {config.STITCH_DESIGN["border_color"]};
+        --text-color: {config.STITCH_DESIGN["text_color"]};
+        --text-highlight-color: {config.STITCH_DESIGN["text_highlight_color"]};
+        --text-muted-color: {config.STITCH_DESIGN["text_muted_color"]};
+        --success-color: {config.STITCH_DESIGN["success_color"]};
+        --danger-color: {config.STITCH_DESIGN["danger_color"]};
+        --font-header: {config.STITCH_DESIGN["font_header"]};
+        --font-body: {config.STITCH_DESIGN["font_body"]};
+    }}
+</style>
+""", unsafe_allow_html=True)
 
-# --- HIGH FIDELITY DHAN WEB STYLE CSS ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
     
     /* Global Overrides */
     .stApp {
-        background-color: #080A0C !important;
-        color: #BAC7D5 !important;
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--bg-color) !important;
+        color: var(--text-color) !important;
+        font-family: var(--font-body);
     }
     
     /* Make default header transparent and allow click-through to nav bar links */
@@ -89,10 +105,10 @@ st.markdown("""
     /* Style and ensure the sidebar collapse toggle button is fully visible and clickable */
     [data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {
         pointer-events: auto !important;
-        background-color: #0E1217 !important;
-        border: 1px solid #1C232E !important;
+        background-color: var(--card-bg-color) !important;
+        border: 1px solid var(--border-color) !important;
         border-radius: 6px !important;
-        color: #E2FF3B !important;
+        color: var(--primary-color) !important;
         display: flex !important;
         z-index: 1000000 !important;
         margin-top: 10px !important;
@@ -100,9 +116,9 @@ st.markdown("""
     }
     
     [data-testid="stSidebarCollapseButton"]:hover {
-        background-color: #12161A !important;
-        color: #FFFFFF !important;
-        border-color: #E2FF3B !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: var(--text-highlight-color) !important;
+        border-color: var(--primary-color) !important;
     }
     
     [data-testid="stDecoration"] {
@@ -116,17 +132,17 @@ st.markdown("""
     
     /* Top Navigation bar */
     .dhan-nav {
-        background-color: #0E1217;
+        background-color: var(--card-bg-color);
         padding: 0.8rem 2rem;
-        border-bottom: 1px solid #1C232E;
+        border-bottom: 1px solid var(--border-color);
         display: flex;
         align-items: center;
         margin: 0rem -5rem 2rem -5rem;
     }
     
     .dhan-logo {
-        color: #E2FF3B;
-        font-family: 'Outfit', sans-serif;
+        color: var(--primary-color);
+        font-family: var(--font-header);
         font-weight: 800;
         font-size: 1.6rem;
         margin-right: 2rem;
@@ -136,16 +152,16 @@ st.markdown("""
     
     /* Typography */
     .scheme-title {
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-header);
         font-weight: 700;
         font-size: 1.8rem;
-        color: #FFFFFF;
+        color: var(--text-highlight-color);
         margin-bottom: 0.2rem;
     }
     
     .scheme-badge {
-        background-color: #17211B;
-        color: #10B981;
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--success-color);
         font-size: 0.72rem;
         font-weight: 700;
         padding: 3px 8px;
@@ -157,7 +173,7 @@ st.markdown("""
     
     .scheme-cat {
         font-size: 0.88rem;
-        color: #8A99AD;
+        color: var(--text-muted-color);
         margin-bottom: 1.5rem;
     }
     
@@ -168,29 +184,29 @@ st.markdown("""
     
     .nav-label {
         font-size: 0.85rem;
-        color: #8A99AD;
+        color: var(--text-muted-color);
         font-weight: 500;
         margin-bottom: 0.1rem;
     }
     
     .nav-val {
         font-size: 2.2rem;
-        color: #FFFFFF;
+        color: var(--text-highlight-color);
         font-weight: 800;
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-header);
         display: inline-block;
         margin-right: 0.8rem;
     }
     
     .nav-change-pos {
-        color: #10B981;
+        color: var(--success-color);
         font-weight: 700;
         font-size: 1rem;
         display: inline-block;
     }
-
+ 
     .nav-change-neg {
-        color: #EF4444;
+        color: var(--danger-color);
         font-weight: 700;
         font-size: 1rem;
         display: inline-block;
@@ -198,20 +214,20 @@ st.markdown("""
     
     /* Cards and Containers */
     .dhan-box {
-        background-color: #0E1217;
-        border: 1px solid #1C232E;
+        background-color: var(--card-bg-color);
+        border: 1px solid var(--border-color);
         border-radius: 8px;
         padding: 1.2rem;
         margin-bottom: 1.5rem;
     }
     
     .dhan-box-header {
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-header);
         font-weight: 600;
-        color: #FFFFFF;
+        color: var(--text-highlight-color);
         font-size: 1.05rem;
         margin-bottom: 1rem;
-        border-bottom: 1px solid #1C232E;
+        border-bottom: 1px solid var(--border-color);
         padding-bottom: 0.5rem;
     }
     
@@ -224,28 +240,28 @@ st.markdown("""
     }
     
     .metric-label {
-        color: #8A99AD;
+        color: var(--text-muted-color);
     }
     
     .metric-value {
-        color: #FFFFFF;
+        color: var(--text-highlight-color);
         font-weight: 600;
     }
-
+ 
     /* Returns Dashboard Card */
     .return-card {
         text-align: center;
         padding: 0.8rem;
-        background-color: #131A22;
-        border: 1px solid #1C2635;
+        background-color: var(--card-bg-color);
+        border: 1px solid var(--border-color);
         border-radius: 6px;
     }
     
     .return-num {
-        color: #10B981;
+        color: var(--success-color);
         font-size: 1.4rem;
         font-weight: 700;
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-header);
     }
     
     /* Holdings Table */
@@ -256,33 +272,33 @@ st.markdown("""
     }
     .holdings-table th {
         text-align: left;
-        color: #8A99AD;
+        color: var(--text-muted-color);
         font-weight: 600;
-        border-bottom: 1px solid #1C232E;
+        border-bottom: 1px solid var(--border-color);
         padding: 8px 4px;
         text-transform: uppercase;
         font-size: 0.72rem;
     }
     .holdings-table td {
         padding: 10px 4px;
-        border-bottom: 1px dashed #1C232E;
-        color: #E2E8F0;
+        border-bottom: 1px dashed var(--border-color);
+        color: var(--text-color);
     }
     
     /* Riskometer Card */
     .riskometer-box {
-        border-left: 4px solid #EF4444;
-        background-color: #1A1215;
+        border-left: 4px solid var(--danger-color);
+        background-color: rgba(239, 68, 68, 0.1);
         border-radius: 6px;
         padding: 0.8rem;
         font-size: 0.85rem;
-        color: #F87171;
+        color: var(--danger-color);
     }
     
     /* Fund Summary Card */
     .fund-summary-card {
-        background: linear-gradient(135deg, #0E1217, #0A0E14);
-        border: 1px solid #1C232E;
+        background: linear-gradient(135deg, var(--card-bg-color), var(--bg-color));
+        border: 1px solid var(--border-color);
         border-radius: 10px;
         padding: 1.2rem;
         margin-bottom: 1.4rem;
@@ -293,12 +309,12 @@ st.markdown("""
         justify-content: space-between;
         align-items: center;
         padding: 0.55rem 0;
-        border-bottom: 1px solid #151D28;
+        border-bottom: 1px solid var(--border-color);
         font-size: 0.84rem;
     }
     .fund-summary-row:last-child { border-bottom: none; }
-    .fund-summary-label { color: #8A99AD; font-weight: 500; }
-    .fund-summary-value { color: #FFFFFF; font-weight: 600; text-align: right; }
+    .fund-summary-label { color: var(--text-muted-color); font-weight: 500; }
+    .fund-summary-value { color: var(--text-highlight-color); font-weight: 600; text-align: right; }
     
     /* Dhan RAG Chat Analyst Container & Bubbles */
     .chat-row-user {
@@ -323,30 +339,30 @@ st.markdown("""
         font-size: 0.88rem;
         line-height: 1.55;
         position: relative;
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: var(--font-body);
     }
     
     .chat-bubble-new-user {
-        background: rgba(28, 36, 49, 0.45) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
         backdrop-filter: blur(8px) !important;
         -webkit-backdrop-filter: blur(8px) !important;
-        border: 1px solid rgba(43, 58, 79, 0.4) !important;
-        color: #EBF1F7 !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-highlight-color) !important;
         border-radius: 16px 16px 0px 16px !important;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
     }
     
     .chat-bubble-new-analyst {
-        background: rgba(14, 18, 23, 0.75) !important;
+        background: var(--card-bg-color) !important;
         backdrop-filter: blur(8px) !important;
         -webkit-backdrop-filter: blur(8px) !important;
-        border: 1px solid rgba(28, 35, 46, 0.5) !important;
-        color: #C5D2E0 !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-color) !important;
         border-radius: 16px 16px 16px 0px !important;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
-        border-left: 3px solid #E2FF3B !important;
+        border-left: 3px solid var(--primary-color) !important;
     }
-
+ 
     /* Style markdown tables inside the analyst bubbles */
     .chat-bubble-new-analyst table {
         width: 100% !important;
@@ -355,22 +371,22 @@ st.markdown("""
         font-size: 0.8rem !important;
     }
     .chat-bubble-new-analyst th {
-        background-color: rgba(28, 35, 46, 0.5) !important;
-        color: #8A99AD !important;
+        background-color: var(--bg-color) !important;
+        color: var(--text-muted-color) !important;
         padding: 6px 10px !important;
         text-align: left !important;
         font-weight: 700 !important;
-        border-bottom: 1px solid rgba(43, 58, 79, 0.3) !important;
+        border-bottom: 1px solid var(--border-color) !important;
     }
     .chat-bubble-new-analyst td {
         padding: 6px 10px !important;
-        border-bottom: 1px solid rgba(28, 35, 46, 0.3) !important;
-        color: #FFFFFF !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        color: var(--text-highlight-color) !important;
     }
     .chat-bubble-new-analyst tr:last-child td {
         border-bottom: none !important;
     }
-
+ 
     /* Copy/Helpful actions inside chatbot response */
     .chat-bubble-footer {
         display: flex;
@@ -379,7 +395,7 @@ st.markdown("""
         padding-top: 6px;
         border-top: 1px solid rgba(255, 255, 255, 0.05);
         font-size: 0.65rem;
-        color: #8A99AD;
+        color: var(--text-muted-color);
         font-weight: 500;
     }
     .chat-bubble-footer span {
@@ -390,34 +406,34 @@ st.markdown("""
         transition: color 0.2s;
     }
     .chat-bubble-footer span:hover {
-        color: #E2FF3B;
+        color: var(--primary-color);
     }
     
     .chat-avatar-user {
         width: 32px;
         height: 32px;
-        background: linear-gradient(135deg, #2B3A4F, #1C2431);
+        background: linear-gradient(135deg, var(--card-bg-color), var(--bg-color));
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 0.95rem;
         margin-left: 10px;
-        border: 1px solid #3E516D;
+        border: 1px solid var(--border-color);
         box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
     
     .chat-avatar-analyst {
         width: 32px;
         height: 32px;
-        background: linear-gradient(135deg, #1A221E, #0E1311);
+        background: linear-gradient(135deg, var(--card-bg-color), var(--bg-color));
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 0.95rem;
         margin-right: 10px;
-        color: #E2FF3B;
+        color: var(--primary-color);
         border: 1px solid rgba(226, 255, 59, 0.3);
         box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
@@ -434,26 +450,26 @@ st.markdown("""
     .chat-source-chip {
         display: inline-flex;
         align-items: center;
-        background-color: #0E1217;
-        border: 1px solid #1C232E;
+        background-color: var(--card-bg-color);
+        border: 1px solid var(--border-color);
         border-radius: 20px;
         padding: 4px 10px;
         font-size: 0.7rem;
-        color: #8A99AD;
+        color: var(--text-muted-color);
         font-weight: 600;
         transition: all 0.2s;
     }
     
     .chat-source-chip:hover {
-        background-color: #161D26;
-        border-color: #E2FF3B;
-        color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: var(--primary-color);
+        color: var(--text-highlight-color);
     }
     
     .chat-source-item {
         font-size: 0.76rem;
-        background-color: #080A0C;
-        border: 1px solid #1C232E;
+        background-color: var(--bg-color);
+        border: 1px solid var(--border-color);
         border-radius: 6px;
         padding: 8px 12px;
         margin-top: 5px;
@@ -461,14 +477,14 @@ st.markdown("""
     
     /* Glowing focus outline inside stChatInput textarea */
     div[data-testid="column"] .stChatInput textarea {
-        background-color: #11161F !important;
-        border: 1px solid #1C232E !important;
-        color: #FFFFFF !important;
+        background-color: var(--card-bg-color) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-highlight-color) !important;
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
     }
     div[data-testid="column"] .stChatInput textarea:focus {
-        border-color: #E2FF3B !important;
+        border-color: var(--primary-color) !important;
         box-shadow: 0 0 10px rgba(226, 255, 59, 0.2) !important;
     }
     
@@ -481,26 +497,26 @@ st.markdown("""
         white-space: pre-wrap;
         background-color: transparent;
         border: none;
-        color: #8A99AD;
+        color: var(--text-muted-color);
         font-weight: 600;
         font-size: 0.9rem;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        color: #FFFFFF;
+        color: var(--text-highlight-color);
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        color: #E2FF3B;
-        border-bottom: 2px solid #E2FF3B;
+        color: var(--primary-color);
+        border-bottom: 2px solid var(--primary-color);
     }
     /* SaaS-Style Sidebar Navigation Switcher */
     [data-testid="stSidebar"] {
-        background-color: #080A0C !important;
-        border-right: 1px solid #1C232E !important;
+        background-color: var(--bg-color) !important;
+        border-right: 1px solid var(--border-color) !important;
     }
     
     [data-testid="stSidebar"] .stButton > button {
         background-color: transparent !important;
-        color: #8A99AD !important;
+        color: var(--text-muted-color) !important;
         border: none !important;
         text-align: left !important;
         justify-content: flex-start !important;
@@ -514,14 +530,14 @@ st.markdown("""
     }
     
     [data-testid="stSidebar"] .stButton > button:hover {
-        background-color: #121820 !important;
-        color: #FFFFFF !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: var(--text-highlight-color) !important;
     }
     
     .active-nav-item {
-        background-color: #121820;
-        border-left: 3.5px solid #E2FF3B;
-        color: #E2FF3B;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-left: 3.5px solid var(--primary-color);
+        color: var(--primary-color);
         padding: 0.6rem 0.8rem;
         border-radius: 0 6px 6px 0;
         font-size: 0.85rem;
@@ -535,35 +551,35 @@ st.markdown("""
     
     .active-nav-nav {
         font-size: 0.8rem;
-        color: #FFFFFF;
+        color: var(--text-highlight-color);
         font-weight: 600;
         margin-left: 8px;
     }
     
     /* News Feed Styling */
     a.news-link {
-        color: #FFFFFF !important;
+        color: var(--text-highlight-color) !important;
         text-decoration: none !important;
         transition: color 0.15s ease-in-out !important;
     }
     a.news-link:hover {
-        color: #E2FF3B !important;
+        color: var(--primary-color) !important;
     }
     
     /* Download Button override */
     div.stDownloadButton > button {
-        background-color: #0E1217 !important;
-        color: #BAC7D5 !important;
-        border: 1px solid #1C232E !important;
+        background-color: var(--card-bg-color) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color) !important;
         font-weight: 600 !important;
         border-radius: 6px !important;
         transition: all 0.2s ease-in-out !important;
         box-shadow: none !important;
     }
     div.stDownloadButton > button:hover {
-        border-color: #E2FF3B !important;
-        color: #E2FF3B !important;
-        background-color: #12161A !important;
+        border-color: var(--primary-color) !important;
+        color: var(--primary-color) !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -587,10 +603,10 @@ st.markdown(
             <img src="data:image/png;base64,{logo_base64}" width="28" height="28" style="border-radius: 4px; object-fit: contain;" />
             <span>ArthaAI</span>
         </div>
-        <div style="color:#FFFFFF; font-size:0.9rem; font-weight:600; margin-right:1.5rem; margin-top:2px;">Markets</div>
-        <div style="color:#E2FF3B; font-size:0.9rem; font-weight:600; margin-right:1.5rem; border-bottom: 2px solid #E2FF3B; padding-bottom:12px; margin-bottom:-12px; margin-top:2px;">Mutual Funds</div>
-        <div style="color:#8A99AD; font-size:0.9rem; font-weight:500; margin-right:1.5rem; margin-top:2px;">Portfolio</div>
-        <div style="color:#8A99AD; font-size:0.9rem; font-weight:500; margin-right:1.5rem; margin-top:2px;">Orders</div>
+        <div style="color:var(--text-highlight-color); font-size:0.9rem; font-weight:600; margin-right:1.5rem; margin-top:2px;">Markets</div>
+        <div style="color:var(--primary-color); font-size:0.9rem; font-weight:600; margin-right:1.5rem; border-bottom: 2px solid var(--primary-color); padding-bottom:12px; margin-bottom:-12px; margin-top:2px;">Mutual Funds</div>
+        <div style="color:var(--text-muted-color); font-size:0.9rem; font-weight:500; margin-right:1.5rem; margin-top:2px;">Portfolio</div>
+        <div style="color:var(--text-muted-color); font-size:0.9rem; font-weight:500; margin-right:1.5rem; margin-top:2px;">Orders</div>
     </div>
     """,
     unsafe_allow_html=True
@@ -631,7 +647,7 @@ with st.sidebar:
         if is_active:
             # Active item rendered as highlighted box
             change_val = nav_info["change"].split(" ")[0]
-            change_color = "#10B981" if nav_info["change_positive"] else "#EF4444"
+            change_color = config.STITCH_DESIGN["success_color"] if nav_info["change_positive"] else config.STITCH_DESIGN["danger_color"]
             st.markdown(
                 f"""
                 <div class="active-nav-item">
@@ -682,13 +698,13 @@ is_live = live_nav_data["is_live"]
 # --- WORKSPACE STATUS BAR ---
 st.markdown(
     """
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1C232E; padding-bottom:0.8rem; margin-bottom:1.5rem; margin-top:0.5rem;">
-        <div style="font-size:0.7rem; font-weight:700; color:#8A99AD; letter-spacing:0.12em; text-transform:uppercase;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:0.8rem; margin-bottom:1.5rem; margin-top:0.5rem;">
+        <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted-color); letter-spacing:0.12em; text-transform:uppercase;">
             ARTHAAI WORKSPACE &nbsp;/&nbsp; SCHEME RESEARCH & ANALYSIS
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
-            <span style="display:inline-block; width:6px; height:6px; background-color:#10B981; border-radius:50%; box-shadow:0 0 8px #10B981;"></span>
-            <span style="font-size:0.65rem; font-weight:700; color:#10B981; letter-spacing:0.05em; text-transform:uppercase;">RAG SECURED CORE</span>
+            <span style="display:inline-block; width:6px; height:6px; background-color:var(--success-color); border-radius:50%; box-shadow:0 0 8px var(--success-color);"></span>
+            <span style="font-size:0.65rem; font-weight:700; color:var(--success-color); letter-spacing:0.05em; text-transform:uppercase;">RAG SECURED CORE</span>
         </div>
     </div>
     """,
@@ -711,11 +727,11 @@ with left_col:
     # 2. NAV & Daily Change (Live from MFAPI)
     change_class = "nav-change-pos" if display_change_positive else "nav-change-neg"
     live_badge = (
-        f'<span style="background:#0D2B1A; color:#10B981; font-size:0.65rem; font-weight:700; '
+        f'<span style="background:rgba(16,185,129,0.1); color:var(--success-color); font-size:0.65rem; font-weight:700; '
         f'padding:2px 7px; border-radius:4px; border:1px solid rgba(16,185,129,0.3); '
         f'margin-left:8px; vertical-align:middle;">&#9679; LIVE · {nav_date}</span>'
     ) if is_live else (
-        f'<span style="background:#1A1512; color:#F59E0B; font-size:0.65rem; font-weight:700; '
+        f'<span style="background:rgba(245,158,11,0.1); color:var(--primary-color); font-size:0.65rem; font-weight:700; '
         f'padding:2px 7px; border-radius:4px; border:1px solid rgba(245,158,11,0.3); '
         f'margin-left:8px; vertical-align:middle;">&#9679; STATIC · Refresh to go live</span>'
     )
@@ -765,9 +781,9 @@ with left_col:
             with period_cols[i]:
                 is_active = st.session_state[period_key] == period_label
                 btn_style = (
-                    "background:#E2FF3B; color:#080A0C; font-weight:700;"
+                    f"background:{config.STITCH_DESIGN['primary_color']}; color:{config.STITCH_DESIGN['bg_color']}; font-weight:700;"
                     if is_active else
-                    "background:#0E1217; color:#8A99AD; font-weight:500;"
+                    f"background:{config.STITCH_DESIGN['card_bg_color']}; color:{config.STITCH_DESIGN['text_muted_color']}; font-weight:500;"
                 )
                 if st.button(
                     period_label,
@@ -797,11 +813,11 @@ with left_col:
                     "date:T",
                     axis=alt.Axis(
                         format="%b '%y",
-                        labelColor="#8A99AD",
+                        labelColor=config.STITCH_DESIGN["text_muted_color"],
                         labelFontSize=10,
-                        gridColor="#1C232E",
-                        domainColor="#1C232E",
-                        tickColor="#1C232E",
+                        gridColor=config.STITCH_DESIGN["border_color"],
+                        domainColor=config.STITCH_DESIGN["border_color"],
+                        tickColor=config.STITCH_DESIGN["border_color"],
                     ),
                     title=None,
                 ),
@@ -809,11 +825,11 @@ with left_col:
                     "nav:Q",
                     scale=alt.Scale(zero=False),
                     axis=alt.Axis(
-                        labelColor="#8A99AD",
+                        labelColor=config.STITCH_DESIGN["text_muted_color"],
                         labelFontSize=10,
-                        gridColor="#1C232E",
-                        domainColor="#1C232E",
-                        tickColor="#1C232E",
+                        gridColor=config.STITCH_DESIGN["border_color"],
+                        domainColor=config.STITCH_DESIGN["border_color"],
+                        tickColor=config.STITCH_DESIGN["border_color"],
                         format=".0f",
                     ),
                     title=None,
@@ -851,22 +867,22 @@ with left_col:
             period_high = df_hist["nav"].max()
             period_low = df_hist["nav"].min()
             period_ret = ((period_end - period_start) / period_start) * 100
-            ret_color = "#10B981" if period_ret >= 0 else "#EF4444"
+            ret_color = config.STITCH_DESIGN["success_color"] if period_ret >= 0 else config.STITCH_DESIGN["danger_color"]
             sign = "+" if period_ret >= 0 else ""
             st.markdown(
                 f"""
                 <div style="display:flex; gap:1rem; margin-top:-0.5rem; margin-bottom:1rem;">
-                    <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
-                        <div style="font-size:0.65rem; color:#8A99AD; font-weight:600;">PERIOD RETURN</div>
+                    <div style="flex:1; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
+                        <div style="font-size:0.65rem; color:var(--text-muted-color); font-weight:600;">PERIOD RETURN</div>
                         <div style="font-size:1rem; font-weight:700; color:{ret_color};">{sign}{period_ret:.1f}%</div>
                     </div>
-                    <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
-                        <div style="font-size:0.65rem; color:#8A99AD; font-weight:600;">{selected_period} HIGH</div>
-                        <div style="font-size:1rem; font-weight:700; color:#FFFFFF">₹{period_high:,.2f}</div>
+                    <div style="flex:1; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
+                        <div style="font-size:0.65rem; color:var(--text-muted-color); font-weight:600;">{selected_period} HIGH</div>
+                        <div style="font-size:1rem; font-weight:700; color:var(--text-highlight-color)">₹{period_high:,.2f}</div>
                     </div>
-                    <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
-                        <div style="font-size:0.65rem; color:#8A99AD; font-weight:600;">{selected_period} LOW</div>
-                        <div style="font-size:1rem; font-weight:700; color:#FFFFFF">₹{period_low:,.2f}</div>
+                    <div style="flex:1; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
+                        <div style="font-size:0.65rem; color:var(--text-muted-color); font-weight:600;">{selected_period} LOW</div>
+                        <div style="font-size:1rem; font-weight:700; color:var(--text-highlight-color)">₹{period_low:,.2f}</div>
                     </div>
                 </div>
                 """,
@@ -904,16 +920,16 @@ with left_col:
             df["AllocNum"] = df["Allocation"].str.replace("%", "").astype(float)
             
             # Standalone Donut Chart with larger radii and right-aligned legend
-            chart = alt.Chart(df).mark_arc(innerRadius=65, outerRadius=110, stroke="#080A0C", strokeWidth=2).encode(
+            chart = alt.Chart(df).mark_arc(innerRadius=65, outerRadius=110, stroke=config.STITCH_DESIGN["bg_color"], strokeWidth=2).encode(
                 theta=alt.Theta(field="AllocNum", type="quantitative"),
                 color=alt.Color(
                     field="Company", 
                     type="nominal", 
-                    scale=alt.Scale(range=["#E2FF3B", "#10B981", "#3B82F6", "#F59E0B", "#EC4899"]),
+                    scale=alt.Scale(range=[config.STITCH_DESIGN["primary_color"], config.STITCH_DESIGN["success_color"], "#3B82F6", "#F59E0B", "#EC4899"]),
                     legend=alt.Legend(
                         title=None,
                         orient="right",
-                        labelColor="#BAC7D5",
+                        labelColor=config.STITCH_DESIGN["text_color"],
                         labelFontSize=11,
                         labelFontWeight=500,
                         symbolSize=100,
@@ -1014,17 +1030,17 @@ with left_col:
         st.markdown(
             f"""
             <div style="display:flex; gap:1rem; margin-top:1rem; margin-bottom:1.5rem;">
-                <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.8rem 1rem; text-align:center;">
-                    <div style="font-size:0.65rem; color:#8A99AD; font-weight:600; text-transform:uppercase; margin-bottom:2px;">Total Invested</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:#FFFFFF;">{invested_str}</div>
+                <div style="flex:1; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:0.8rem 1rem; text-align:center;">
+                    <div style="font-size:0.65rem; color:var(--text-muted-color); font-weight:600; text-transform:uppercase; margin-bottom:2px;">Total Invested</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:var(--text-highlight-color);">{invested_str}</div>
                 </div>
-                <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.8rem 1rem; text-align:center;">
-                    <div style="font-size:0.65rem; color:#8A99AD; font-weight:600; text-transform:uppercase; margin-bottom:2px;">Est. Returns</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:#10B981;">{wealth_str}</div>
+                <div style="flex:1; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:0.8rem 1rem; text-align:center;">
+                    <div style="font-size:0.65rem; color:var(--text-muted-color); font-weight:600; text-transform:uppercase; margin-bottom:2px;">Est. Returns</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:var(--success-color);">{wealth_str}</div>
                 </div>
-                <div style="flex:1; background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:0.8rem 1rem; text-align:center;">
-                    <div style="font-size:0.65rem; color:#8A99AD; font-weight:600; text-transform:uppercase; margin-bottom:2px;">Total Value</div>
-                    <div style="font-size:1.15rem; font-weight:700; color:#E2FF3B;">{total_str}</div>
+                <div style="flex:1; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:0.8rem 1rem; text-align:center;">
+                    <div style="font-size:0.65rem; color:var(--text-muted-color); font-weight:600; text-transform:uppercase; margin-bottom:2px;">Total Value</div>
+                    <div style="font-size:1.15rem; font-weight:700; color:var(--primary-color);">{total_str}</div>
                 </div>
             </div>
             """,
@@ -1047,9 +1063,9 @@ with left_col:
 
         # Growth line chart (clean, static, no hover pop-ups, matches NAV chart)
         growth_chart = alt.Chart(df_chart).mark_line(strokeWidth=3, strokeCap="round", interpolate="monotone", tooltip=None).encode(
-            x=alt.X("Year:Q", scale=alt.Scale(domain=[1, years]), axis=alt.Axis(tickCount=int(years), format="d", labelColor="#8A99AD", gridColor="#1C232E", domainColor="#1C232E", title="Years")),
-            y=alt.Y("Amount:Q", axis=alt.Axis(format="~s", labelColor="#8A99AD", gridColor="#1C232E", domainColor="#1C232E", title="Amount (₹)")),
-            color=alt.Color("Type:N", scale=alt.Scale(domain=["Invested Amount", "Future Value"], range=["#4F5E71", "#E2FF3B"]), legend=alt.Legend(title=None, orient="bottom", labelColor="#BAC7D5", labelFontSize=11)),
+            x=alt.X("Year:Q", scale=alt.Scale(domain=[1, years]), axis=alt.Axis(tickCount=int(years), format="d", labelColor=config.STITCH_DESIGN["text_muted_color"], gridColor=config.STITCH_DESIGN["border_color"], domainColor=config.STITCH_DESIGN["border_color"], title="Years")),
+            y=alt.Y("Amount:Q", axis=alt.Axis(format="~s", labelColor=config.STITCH_DESIGN["text_muted_color"], gridColor=config.STITCH_DESIGN["border_color"], domainColor=config.STITCH_DESIGN["border_color"], title="Amount (₹)")),
+            color=alt.Color("Type:N", scale=alt.Scale(domain=["Invested Amount", "Future Value"], range=["#4F5E71", config.STITCH_DESIGN["primary_color"]]), legend=alt.Legend(title=None, orient="bottom", labelColor=config.STITCH_DESIGN["text_color"], labelFontSize=11)),
         ).properties(
             height=200
         ).configure(
@@ -1131,60 +1147,60 @@ with left_col:
         st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
         
         # Color coding variables
-        r_color_a = "#EF4444" if "Very High" in scheme["riskometer"] else "#F59E0B"
-        r_color_b = "#EF4444" if "Very High" in comp_scheme["riskometer"] else "#F59E0B"
+        r_color_a = config.STITCH_DESIGN["danger_color"] if "Very High" in scheme["riskometer"] else config.STITCH_DESIGN.get("warning_color", "#F59E0B")
+        r_color_b = config.STITCH_DESIGN["danger_color"] if "Very High" in comp_scheme["riskometer"] else config.STITCH_DESIGN.get("warning_color", "#F59E0B")
         
         import textwrap
         st.markdown(
             textwrap.dedent(f"""
-            <table style="width:100%; border-collapse:collapse; background:#0E1217; border:1px solid #1C232E; border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
+            <table style="width:100%; border-collapse:collapse; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
                 <thead>
-                    <tr style="border-bottom:1px solid #1C232E; text-align:left; background:#11161F;">
-                        <th style="padding:0.6rem 0.8rem; color:#8A99AD; font-weight:700;">Metric</th>
-                        <th style="padding:0.6rem 0.8rem; color:#FFFFFF; font-weight:700;">{scheme['name']}</th>
-                        <th style="padding:0.6rem 0.8rem; color:#FFFFFF; font-weight:700;">{comp_scheme['name']}</th>
+                    <tr style="border-bottom:1px solid var(--border-color); text-align:left; background:var(--bg-color);">
+                        <th style="padding:0.6rem 0.8rem; color:var(--text-muted-color); font-weight:700;">Metric</th>
+                        <th style="padding:0.6rem 0.8rem; color:var(--text-highlight-color); font-weight:700;">{scheme['name']}</th>
+                        <th style="padding:0.6rem 0.8rem; color:var(--text-highlight-color); font-weight:700;">{comp_scheme['name']}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">Category</td>
-                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:500;">{scheme['category']}</td>
-                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:500;">{comp_scheme['category']}</td>
+                        <td style="color:var(--text-muted-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">Category</td>
+                        <td style="color:var(--text-highlight-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:500;">{scheme['category']}</td>
+                        <td style="color:var(--text-highlight-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:500;">{comp_scheme['category']}</td>
                     </tr>
                     <tr>
-                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">AUM (Size)</td>
-                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:600;">{scheme['aum']}</td>
-                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:600;">{comp_scheme['aum']}</td>
+                        <td style="color:var(--text-muted-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">AUM (Size)</td>
+                        <td style="color:var(--text-highlight-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:600;">{scheme['aum']}</td>
+                        <td style="color:var(--text-highlight-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:600;">{comp_scheme['aum']}</td>
                     </tr>
                     <tr>
-                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">Expense Ratio</td>
-                        <td style="color:#E2FF3B; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{scheme['expense_ratio']}</td>
-                        <td style="color:#E2FF3B; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{comp_scheme['expense_ratio']}</td>
+                        <td style="color:var(--text-muted-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">Expense Ratio</td>
+                        <td style="color:var(--primary-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:700;">{scheme['expense_ratio']}</td>
+                        <td style="color:var(--primary-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:700;">{comp_scheme['expense_ratio']}</td>
                     </tr>
                     <tr>
-                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">1Y Return (CAGR)</td>
-                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{scheme['return_1y']}</td>
-                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{comp_scheme['return_1y']}</td>
+                        <td style="color:var(--text-muted-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">1Y Return (CAGR)</td>
+                        <td style="color:var(--success-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:700;">{scheme['return_1y']}</td>
+                        <td style="color:var(--success-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:700;">{comp_scheme['return_1y']}</td>
                     </tr>
                     <tr>
-                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">3Y Return (CAGR)</td>
-                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{scheme['return_3y']}</td>
-                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{comp_scheme['return_3y']}</td>
+                        <td style="color:var(--text-muted-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">3Y Return (CAGR)</td>
+                        <td style="color:var(--success-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:700;">{scheme['return_3y']}</td>
+                        <td style="color:var(--success-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:700;">{comp_scheme['return_3y']}</td>
                     </tr>
                     <tr>
-                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">5Y Return (CAGR)</td>
-                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{scheme['return_5y']}</td>
-                        <td style="color:#10B981; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:700;">{comp_scheme['return_5y']}</td>
+                        <td style="color:var(--text-muted-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">5Y Return (CAGR)</td>
+                        <td style="color:var(--success-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:700;">{scheme['return_5y']}</td>
+                        <td style="color:var(--success-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:700;">{comp_scheme['return_5y']}</td>
                     </tr>
                     <tr>
-                        <td style="color:#8A99AD; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E;">Riskometer</td>
-                        <td style="color:{r_color_a}; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:600;">{scheme['riskometer']}</td>
-                        <td style="color:{r_color_b}; padding:0.5rem 0.8rem; border-bottom:1px solid #1C232E; font-weight:600;">{comp_scheme['riskometer']}</td>
+                        <td style="color:var(--text-muted-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">Riskometer</td>
+                        <td style="color:{r_color_a}; padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:600;">{scheme['riskometer']}</td>
+                        <td style="color:{r_color_b}; padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:600;">{comp_scheme['riskometer']}</td>
                     </tr>
                     <tr>
-                        <td style="color:#8A99AD; padding:0.5rem 0.8rem;">Fund Manager</td>
-                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem;">{scheme['manager']}</td>
-                        <td style="color:#FFFFFF; padding:0.5rem 0.8rem;">{comp_scheme['manager']}</td>
+                        <td style="color:var(--text-muted-color); padding:0.5rem 0.8rem;">Fund Manager</td>
+                        <td style="color:var(--text-highlight-color); padding:0.5rem 0.8rem;">{scheme['manager']}</td>
+                        <td style="color:var(--text-highlight-color); padding:0.5rem 0.8rem;">{comp_scheme['manager']}</td>
                     </tr>
                 </tbody>
             </table>
@@ -1241,24 +1257,24 @@ with left_col:
         # Classify diversification strength
         if overlap_pct < 20.0:
             status = "Low Overlap (Excellent Diversification)"
-            status_color = "#10B981"  # Green
+            status_color = config.STITCH_DESIGN["success_color"]
             bg_accent = "rgba(16, 185, 129, 0.1)"
         elif overlap_pct <= 50.0:
             status = "Moderate Overlap (Average Diversification)"
-            status_color = "#E2FF3B"  # Yellow/Accent
+            status_color = config.STITCH_DESIGN["primary_color"]
             bg_accent = "rgba(226, 255, 59, 0.1)"
         else:
             status = "High Overlap (Poor Diversification Redundancy)"
-            status_color = "#EF4444"  # Red
+            status_color = config.STITCH_DESIGN["danger_color"]
             bg_accent = "rgba(239, 68, 68, 0.1)"
             
         # Renders the Overlap KPI card
         st.markdown(
             textwrap.dedent(f"""
-            <div style="background:#0E1217; border:1px solid #1C232E; border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; border-left: 4px solid {status_color};">
+            <div style="background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; border-left: 4px solid {status_color};">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <div style="font-size:0.75rem; font-weight:700; color:#8A99AD; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.4rem;">
+                        <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted-color); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.4rem;">
                             PORTFOLIO OVERLAP PERCENTAGE
                         </div>
                         <div style="font-size:2.2rem; font-weight:800; color:{status_color};">
@@ -1286,24 +1302,24 @@ with left_col:
             for item in common_data:
                 rows += f"""
                 <tr>
-                    <td style="color:#FFFFFF; font-weight:600; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Company']}</td>
-                    <td style="color:#8A99AD; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Sector']}</td>
-                    <td style="color:#FFFFFF; text-align:right; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Allocation A']}</td>
-                    <td style="color:#FFFFFF; text-align:right; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Allocation B']}</td>
-                    <td style="color:#E2FF3B; text-align:right; font-weight:700; padding:0.6rem 0.8rem; border-bottom:1px solid #1C232E;">{item['Shared Overlap']}</td>
+                    <td style="color:var(--text-highlight-color); font-weight:600; padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Company']}</td>
+                    <td style="color:var(--text-muted-color); padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Sector']}</td>
+                    <td style="color:var(--text-highlight-color); text-align:right; padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Allocation A']}</td>
+                    <td style="color:var(--text-highlight-color); text-align:right; padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Allocation B']}</td>
+                    <td style="color:var(--primary-color); text-align:right; font-weight:700; padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Shared Overlap']}</td>
                 </tr>
                 """
                 
             st.markdown(
                 textwrap.dedent(f"""
-                <table style="width:100%; border-collapse:collapse; background:#0E1217; border:1px solid #1C232E; border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
+                <table style="width:100%; border-collapse:collapse; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
                     <thead>
-                        <tr style="border-bottom:1px solid #1C232E; text-align:left; background:#11161F;">
-                            <th style="padding:0.75rem 1rem; color:#8A99AD; font-weight:700;">Company</th>
-                            <th style="padding:0.75rem 1rem; color:#8A99AD; font-weight:700;">Sector</th>
-                            <th style="padding:0.75rem 1rem; color:#8A99AD; font-weight:700; text-align:right;">{scheme['name']}</th>
-                            <th style="padding:0.75rem 1rem; color:#8A99AD; font-weight:700; text-align:right;">{comp_scheme['name']}</th>
-                            <th style="padding:0.75rem 1rem; color:#E2FF3B; font-weight:700; text-align:right;">Shared Overlap</th>
+                        <tr style="border-bottom:1px solid var(--border-color); text-align:left; background:var(--bg-color);">
+                            <th style="padding:0.75rem 1rem; color:var(--text-muted-color); font-weight:700;">Company</th>
+                            <th style="padding:0.75rem 1rem; color:var(--text-muted-color); font-weight:700;">Sector</th>
+                            <th style="padding:0.75rem 1rem; color:var(--text-muted-color); font-weight:700; text-align:right;">{scheme['name']}</th>
+                            <th style="padding:0.75rem 1rem; color:var(--text-muted-color); font-weight:700; text-align:right;">{comp_scheme['name']}</th>
+                            <th style="padding:0.75rem 1rem; color:var(--primary-color); font-weight:700; text-align:right;">Shared Overlap</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1315,7 +1331,7 @@ with left_col:
             )
         else:
             st.markdown(
-                "<div style=\"background:#0E1217; border:1px solid #1C232E; border-radius:6px; padding:1.5rem; text-align:center; color:#8A99AD; font-size:0.85rem; margin-bottom:1.5rem;\">"
+                "<div style=\"background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:1.5rem; text-align:center; color:var(--text-muted-color); font-size:0.85rem; margin-bottom:1.5rem;\">"
                 "🟢 No overlapping holdings found in these two funds. Excellent diversification!"
                 "</div>",
                 unsafe_allow_html=True
@@ -1328,7 +1344,7 @@ with left_col:
         col_unique_a, col_unique_b = st.columns(2)
         
         with col_unique_a:
-            st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:#8A99AD; text-transform:uppercase;'>Unique to {scheme['name']}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:var(--text-muted-color); text-transform:uppercase;'>Unique to {scheme['name']}</span>", unsafe_allow_html=True)
             st.markdown("<div style='margin-bottom:0.4rem;'></div>", unsafe_allow_html=True)
             unique_a_keys = [c for c in holdings_a.keys() if c not in common_companies]
             if unique_a_keys:
@@ -1336,13 +1352,13 @@ with left_col:
                 list_items = ""
                 for u in unique_a_keys:
                     orig_name = holdings_a[u]['original_name']
-                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:#FFFFFF;'><span style='font-weight:600;'>{orig_name}</span> <span style='color:#8A99AD;'>({holdings_a[u]['alloc']:.2f}%)</span></li>"
+                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:var(--text-highlight-color);'><span style='font-weight:600;'>{orig_name}</span> <span style='color:var(--text-muted-color);'>({holdings_a[u]['alloc']:.2f}%)</span></li>"
                 st.markdown(f"<ul style='list-style-type:square; padding-left:1.2rem;'>{list_items}</ul>", unsafe_allow_html=True)
             else:
-                st.markdown("<div style='color:#8A99AD; font-size:0.8rem;'>No unique holdings.</div>", unsafe_allow_html=True)
+                st.markdown("<div style='color:var(--text-muted-color); font-size:0.8rem;'>No unique holdings.</div>", unsafe_allow_html=True)
                 
         with col_unique_b:
-            st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:#8A99AD; text-transform:uppercase;'>Unique to {comp_scheme['name']}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:var(--text-muted-color); text-transform:uppercase;'>Unique to {comp_scheme['name']}</span>", unsafe_allow_html=True)
             st.markdown("<div style='margin-bottom:0.4rem;'></div>", unsafe_allow_html=True)
             unique_b_keys = [c for c in holdings_b.keys() if c not in common_companies]
             if unique_b_keys:
@@ -1350,21 +1366,21 @@ with left_col:
                 list_items = ""
                 for u in unique_b_keys:
                     orig_name = holdings_b[u]['original_name']
-                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:#FFFFFF;'><span style='font-weight:600;'>{orig_name}</span> <span style='color:#8A99AD;'>({holdings_b[u]['alloc']:.2f}%)</span></li>"
+                    list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:var(--text-highlight-color);'><span style='font-weight:600;'>{orig_name}</span> <span style='color:var(--text-muted-color);'>({holdings_b[u]['alloc']:.2f}%)</span></li>"
                 st.markdown(f"<ul style='list-style-type:square; padding-left:1.2rem;'>{list_items}</ul>", unsafe_allow_html=True)
             else:
-                st.markdown("<div style='color:#8A99AD; font-size:0.8rem;'>No unique holdings.</div>", unsafe_allow_html=True)
+                st.markdown("<div style='color:var(--text-muted-color); font-size:0.8rem;'>No unique holdings.</div>", unsafe_allow_html=True)
 
 
 # ==================== RIGHT COLUMN: FUND SUMMARY + AI CHAT ====================
 with right_col:
     # 1. Fund Summary Card (replaces non-functional SIP card)
-    change_indicator = f'<span style="color:{"#10B981" if display_change_positive else "#EF4444"}">{display_change}</span>'
-    risk_color = "#EF4444" if "Very High" in scheme["riskometer"] else "#F59E0B" if "High" in scheme["riskometer"] else "#10B981"
+    change_indicator = f'<span style="color:{config.STITCH_DESIGN["success_color"] if display_change_positive else config.STITCH_DESIGN["danger_color"]}">{display_change}</span>'
+    risk_color = config.STITCH_DESIGN["danger_color"] if "Very High" in scheme["riskometer"] else config.STITCH_DESIGN.get("warning_color", "#F59E0B") if "High" in scheme["riskometer"] else config.STITCH_DESIGN["success_color"]
     st.markdown(
         f"""
         <div class="fund-summary-card">
-            <div style="font-size:0.7rem; font-weight:700; color:#8A99AD; letter-spacing:0.08em; margin-bottom:0.8rem;">FUND SNAPSHOT</div>
+            <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted-color); letter-spacing:0.08em; margin-bottom:0.8rem;">FUND SNAPSHOT</div>
             <div class="fund-summary-row">
                 <span class="fund-summary-label">Current NAV</span>
                 <span class="fund-summary-value">{display_nav} &nbsp;{change_indicator}</span>
@@ -1375,7 +1391,7 @@ with right_col:
             </div>
             <div class="fund-summary-row">
                 <span class="fund-summary-label">Expense Ratio</span>
-                <span class="fund-summary-value" style="color:#E2FF3B;">{scheme['expense_ratio']}</span>
+                <span class="fund-summary-value" style="color:var(--primary-color);">{scheme['expense_ratio']}</span>
             </div>
             <div class="fund-summary-row">
                 <span class="fund-summary-label">Min SIP</span>
@@ -1423,8 +1439,8 @@ with right_col:
         st.markdown(
             """
             <div style='display:flex; align-items:center; gap:8px;'>
-                <span style='display:inline-block; width:8px; height:8px; background-color:#E2FF3B; border-radius:50%; box-shadow:0 0 8px #E2FF3B;'></span>
-                <h3 style='font-family:Outfit; color:#FFFFFF; font-weight:700; font-size:1.35rem; margin:0;'>ArthaAI Analyst</h3>
+                <span style='display:inline-block; width:8px; height:8px; background-color:var(--primary-color); border-radius:50%; box-shadow:0 0 8px var(--primary-color);'></span>
+                <h3 style='font-family:var(--font-header); color:var(--text-highlight-color); font-weight:700; font-size:1.35rem; margin:0;'>ArthaAI Analyst</h3>
             </div>
             """,
             unsafe_allow_html=True
@@ -1437,7 +1453,7 @@ with right_col:
             st.rerun()
 
     st.markdown(
-        f"<div style='font-size:0.82rem; color:#8A99AD; margin-bottom:1rem;'>Grounded context isolated to <b>{scheme['name']}</b>:</div>",
+        f"<div style='font-size:0.82rem; color:var(--text-muted-color); margin-bottom:1rem;'>Grounded context isolated to <b>{scheme['name']}</b>:</div>",
         unsafe_allow_html=True
     )
     
@@ -1460,7 +1476,7 @@ with right_col:
                     f"""
                     <div class="chat-row-user">
                         <div class="chat-bubble-new chat-bubble-new-user">
-                            <div style="font-size:0.7rem; color:#8A99AD; font-weight:600; margin-bottom:4px;">YOU</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted-color); font-weight:600; margin-bottom:4px;">YOU</div>
                             <div>{chat['content']}</div>
                         </div>
                         <div class="chat-avatar-user">👤</div>
@@ -1476,9 +1492,9 @@ with right_col:
                     <div class="chat-row-analyst">
                         <div class="chat-avatar-analyst">⚡</div>
                         <div class="chat-bubble-new chat-bubble-new-analyst">
-                            <div style="font-size:0.7rem; color:#E2FF3B; font-weight:700; margin-bottom:6px; font-family:Outfit; display:flex; justify-content:space-between; align-items:center;">
+                            <div style="font-size:0.7rem; color:var(--primary-color); font-weight:700; margin-bottom:6px; font-family:var(--font-header); display:flex; justify-content:space-between; align-items:center;">
                                 <span>⚡ ARTHAAI SECURED RAG</span>
-                                <span style="color:#8A99AD; font-weight:500; font-size:0.6rem; background:rgba(28,35,46,0.5); padding:2px 6px; border-radius:4px;">Grounded</span>
+                                <span style="color:var(--text-muted-color); font-weight:500; font-size:0.6rem; background:rgba(28,35,46,0.5); padding:2px 6px; border-radius:4px;">Grounded</span>
                             </div>
                             <div>{html_content}</div>
                             <div class="chat-bubble-footer">
@@ -1499,9 +1515,9 @@ with right_col:
                             st.markdown(
                                 f"""
                                 <div class="chat-source-item" style="margin-top: 5px;">
-                                    <span style="color:#10B981; font-weight:700; font-size:0.75rem;">SRC {idx+1}: {src_name}</span> &nbsp;|&nbsp; 
-                                    <span style="color:#8A99AD; font-size:0.7rem;">Match Score: {match_pct}%</span>
-                                    <div style="color:#BAC7D5; font-size:0.8rem; font-style:italic; margin-top:2px;">"{snippet}..."</div>
+                                    <span style="color:var(--success-color); font-weight:700; font-size:0.75rem;">SRC {idx+1}: {src_name}</span> &nbsp;|&nbsp; 
+                                    <span style="color:var(--text-muted-color); font-size:0.7rem;">Match Score: {match_pct}%</span>
+                                    <div style="color:var(--text-color); font-size:0.8rem; font-style:italic; margin-top:2px;">"{snippet}..."</div>
                                 </div>
                                 """,
                                 unsafe_allow_html=True
