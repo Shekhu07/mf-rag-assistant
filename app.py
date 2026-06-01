@@ -53,6 +53,39 @@ def fetch_nav_history_cached(fund_id: str, period: str):
 def fetch_google_news_cached(fund_id: str):
     return fetch_google_news(fund_id)
 
+def query_fund_api(query: str, fund_id: str, chat_history: list, extra_context: str = None) -> tuple[str, list]:
+    """Queries the decoupled FastAPI RAG service on port 8000, with local direct fallback."""
+    import requests
+    api_url = os.environ.get("RAG_API_URL", "http://127.0.0.1:8000/query")
+    try:
+        payload = {
+            "query": query,
+            "fund_id": fund_id,
+            "chat_history": chat_history,
+            "extra_context": extra_context
+        }
+        resp = requests.post(api_url, json=payload, timeout=45)
+        resp.raise_for_status()
+        data = resp.json()
+        ans = data["answer"]
+        sources = [(src["source"], src["score"], src["snippet"]) for src in data.get("sources", [])]
+        return ans, sources
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"FastAPI RAG service query failed: {e}. Falling back to local direct execution.")
+        try:
+            from src.query_engine import query_fund
+            ans, docs = query_fund(query, fund_id, chat_history, extra_context=extra_context)
+            sources = []
+            if docs:
+                for doc, score in docs:
+                    snippet = doc.page_content[:250].replace('\n', ' ')
+                    sources.append((doc.metadata.get('source', 'Unknown'), score, snippet))
+            return ans, sources
+        except Exception as fallback_err:
+            logging.getLogger(__name__).error(f"Fallback local RAG query failed: {fallback_err}")
+            return f"Error: Unable to connect to RAG server or run fallback. {e}", []
+
 # --- HIGH FIDELITY DHAN WEB STYLE CSS WITH STITCH DESIGN TOKENS ---
 st.markdown(f"""
 <style>
@@ -1648,14 +1681,7 @@ with right_col:
                             import logging
                             logging.getLogger(__name__).warning(f"Failed to fetch news context for chat: {e}")
     
-                ans, docs = query_fund(q_input, selected_key, st.session_state[chat_key][:-1], extra_context=extra_ctx)
-                
-                # Format sources
-                sources_list = []
-                if docs:
-                    for doc, score in docs:
-                        snippet = doc.page_content[:250].replace('\n', ' ')
-                        sources_list.append((doc.metadata.get('source', 'Unknown'), score, snippet))
+                ans, sources_list = query_fund_api(q_input, selected_key, st.session_state[chat_key][:-1], extra_context=extra_ctx)
                 
                 # Append Analyst Msg
                 st.session_state[chat_key].append({

@@ -31,9 +31,8 @@ EXPOSE 8501
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
-# Launch the Streamlit application with production configurations
-# We turn off CORS for proxy forwarding and disable usage statistics
-CMD ["streamlit", "run", "app.py", \
-     "--server.port=8501", \
-     "--server.address=0.0.0.0", \
-     "--browser.gatherUsageStats=false"]
+# Grant execute permission to the startup script
+RUN chmod +x start.sh
+
+# Launch the services via startup script
+CMD ["./start.sh"]
