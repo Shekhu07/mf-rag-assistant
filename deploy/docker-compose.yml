@@ -1,6 +1,14 @@
 version: '3.8'
 
 services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_data:/qdrant/storage:z
+    restart: always
+
   web:
     build:
       context: ..
@@ -11,6 +19,9 @@ services:
     environment:
       # Inject the Gemini API key from the host env or parent shell context
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - QDRANT_HOST=qdrant
+    depends_on:
+      - qdrant
     restart: always
 
   nginx:
@@ -24,3 +35,4 @@ services:
     depends_on:
       - web
     restart: always
+

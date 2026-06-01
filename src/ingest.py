@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_qdrant import QdrantVectorStore
 
 # Load environment variables (e.g., GEMINI_API_KEY)
 load_dotenv()
@@ -114,15 +114,47 @@ def ingest_documents():
         google_api_key=api_key
     )
 
-    # 5. Populate local ChromaDB vector store
+    # 5. Populate local Qdrant vector store
     # Ensure vector store directory exists
     config.VECTOR_STORE_DIR.mkdir(parents=True, exist_ok=True)
     
-    logger.info("Initializing ChromaDB collection...")
-    db = Chroma(
-        persist_directory=str(config.VECTOR_STORE_DIR),
-        embedding_function=embeddings,
-        collection_name=config.COLLECTION_NAME
+    from qdrant_client import QdrantClient
+    from qdrant_client.http import models
+
+    qdrant_host = os.environ.get("QDRANT_HOST", "localhost")
+    client = None
+
+    if qdrant_host != "localhost":
+        try:
+            client = QdrantClient(url=f"http://{qdrant_host}:6333", timeout=5)
+            client.get_collections()
+        except Exception as e:
+            logger.warning(f"Failed to connect to Qdrant at {qdrant_host}: {e}. Falling back to local database.")
+            client = None
+
+    if client is None:
+        try:
+            client = QdrantClient(url="http://localhost:6333", timeout=2)
+            client.get_collections()
+        except Exception:
+            db_path = config.VECTOR_STORE_DIR / "qdrant_local"
+            logger.info(f"Using local file-backed Qdrant DB at {db_path}")
+            client = QdrantClient(path=str(db_path))
+
+    # Recreate the collection to clear old data
+    logger.info(f"Recreating Qdrant collection '{config.COLLECTION_NAME}'...")
+    if client.collection_exists(config.COLLECTION_NAME):
+        client.delete_collection(config.COLLECTION_NAME)
+        
+    client.create_collection(
+        collection_name=config.COLLECTION_NAME,
+        vectors_config=models.VectorParams(size=3072, distance=models.Distance.COSINE)
+    )
+
+    db = QdrantVectorStore(
+        client=client,
+        collection_name=config.COLLECTION_NAME,
+        embedding=embeddings
     )
 
     # Add documents in batches to respect the 100 RPM Free Tier limit
