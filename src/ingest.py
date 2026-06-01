@@ -152,6 +152,13 @@ def ingest_documents():
         collection_name=config.COLLECTION_NAME,
         vectors_config=models.VectorParams(size=3072, distance=models.Distance.COSINE)
     )
+    
+    logger.info("Creating payload index for 'metadata.fund_id'...")
+    client.create_payload_index(
+        collection_name=config.COLLECTION_NAME,
+        field_name="metadata.fund_id",
+        field_schema=models.PayloadSchemaType.KEYWORD
+    )
 
     db = QdrantVectorStore(
         client=client,
