@@ -49,7 +49,7 @@ if chat_key not in st.session_state:
     st.session_state[chat_key] = [
         {
             "role": "analyst",
-            "content": f"Analysis of **{scheme['name']}** loaded. I can answer questions about portfolio holdings, sector allocation, returns, expense ratios, risk metrics, and more. Try asking me something!"
+            "content": f"Welcome to ArthaAI RAG Assistant! Ask me factual questions about this fund (e.g. expense ratios, exit loads, SIP minimums, riskometer, benchmark, lock-in). Facts-only. No investment advice."
         }
     ]
 
@@ -79,20 +79,59 @@ st.markdown(
 )
 
 # Chat messages viewport
-chat_viewport = st.container(height=320)
+chat_viewport = st.container(height=260 if len(st.session_state[chat_key]) == 1 else 320)
 with chat_viewport:
-    for chat in st.session_state[chat_key]:
-        if chat["role"] == "user":
-            st.markdown(
-                f"""<div class="float-chat-row-user"><div class="float-chat-bubble float-chat-bubble-user">{chat['content']}</div></div>""",
-                unsafe_allow_html=True
-            )
-        else:
-            html_content = md_lib.markdown(chat['content'], extensions=['tables', 'nl2br'])
-            st.markdown(
-                f"""<div class="float-chat-row-analyst"><div class="float-chat-bubble float-chat-bubble-analyst">{html_content}</div></div>""",
-                unsafe_allow_html=True
-            )
+    if len(st.session_state[chat_key]) == 1:
+        st.markdown(
+            f"""
+            <div style="padding: 10px; font-family: var(--font-body);">
+                <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-highlight-color); margin-bottom: 8px;">
+                    Welcome to ArthaAI RAG Assistant! Ask me factual questions about this fund (e.g., expense ratios, exit loads, SIP minimums, lock-in, riskometer/benchmark, capital-gains statements).
+                </div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--danger-color); margin-bottom: 12px; letter-spacing: 0.02em;">
+                    ⚠️ Facts-only. No investment advice.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        st.markdown("<span style='font-size: 0.72rem; font-weight: 700; color: var(--outline-color); margin-left: 10px; display: inline-block; margin-bottom: 8px;'>EXAMPLE QUESTIONS:</span>", unsafe_allow_html=True)
+        col_s1, col_s2, col_s3 = st.columns(3)
+        sug_query = None
+        with col_s1:
+            if st.button("What is the expense ratio?", key=f"sug_exp_{selected_key}", use_container_width=True):
+                sug_query = "What is the expense ratio of this fund?"
+        with col_s2:
+            if st.button("What is the exit load?", key=f"sug_exit_{selected_key}", use_container_width=True):
+                sug_query = "What are the exit load details?"
+        with col_s3:
+            if st.button("What is the lock-in period?", key=f"sug_lock_{selected_key}", use_container_width=True):
+                sug_query = "What is the lock-in period of this fund?"
+                
+        if sug_query:
+            st.session_state[chat_key].append({"role": "user", "content": sug_query})
+            with st.spinner("⚡ Analyzing with RAG..."):
+                ans, sources = query_fund_api(sug_query, selected_key, st.session_state[chat_key][:-1])
+                st.session_state[chat_key].append({
+                    "role": "analyst",
+                    "content": ans,
+                    "sources": sources
+                })
+            st.rerun()
+    else:
+        for chat in st.session_state[chat_key][1:]:
+            if chat["role"] == "user":
+                st.markdown(
+                    f"""<div class="float-chat-row-user"><div class="float-chat-bubble float-chat-bubble-user">{chat['content']}</div></div>""",
+                    unsafe_allow_html=True
+                )
+            else:
+                html_content = md_lib.markdown(chat['content'], extensions=['tables', 'nl2br'])
+                st.markdown(
+                    f"""<div class="float-chat-row-analyst"><div class="float-chat-bubble float-chat-bubble-analyst">{html_content}</div></div>""",
+                    unsafe_allow_html=True
+                )
 
 # Chat input form
 with st.form(key=f"main_chat_form_{selected_key}", clear_on_submit=True):
@@ -100,7 +139,7 @@ with st.form(key=f"main_chat_form_{selected_key}", clear_on_submit=True):
     with chat_col_in:
         chat_input = st.text_input(
             "Ask ArthaAI...",
-            placeholder="e.g. What are the top 5 holdings? What is the expense ratio?",
+            placeholder="Ask factual questions (e.g. What is the minimum SIP? Exit load?)...",
             label_visibility="collapsed",
             key=f"main_chat_input_{selected_key}"
         )
@@ -117,6 +156,15 @@ if chat_submitted and chat_input:
             "sources": sources
         })
     st.rerun()
+
+st.markdown(
+    """
+    <div style="text-align: center; font-size: 0.72rem; color: var(--outline-color); font-weight: 600; margin-top: -8px; margin-bottom: 8px;">
+        Facts-only. No investment advice.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
 st.divider()

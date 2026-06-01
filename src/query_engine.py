@@ -238,6 +238,60 @@ def check_conversational_intent(query: str) -> Optional[str]:
         return "You're welcome! Let me know if you have any other questions about the fund."
     return None
 
+def check_opinionated_intent(query: str) -> Optional[str]:
+    """Checks if the user query seeks investment opinions, recommendations, or buy/sell advice."""
+    import string
+    q_clean = query.lower().translate(str.maketrans("", "", string.punctuation)).strip()
+    words = set(q_clean.split())
+    
+    # Precise indicators of investment opinions (substring search)
+    opinionated_phrases = [
+        "should i buy", "should i sell", "should i invest", "good to buy", "recommend", "advice",
+        "portfolio advice", "investment advice", "buy or sell", "which one to buy", "is it good to buy",
+        "should i choose", "give me advice", "should i pull out", "is this fund good", "should i keep",
+        "should i hold", "better than", "is it worth", "worth buying", "future performance", "good fund",
+        "best fund", "suggest me", "suggest a fund", "would you recommend", "can i invest", "is it safe to invest",
+        "will it grow", "buy this", "sell this", "should we buy", "should we sell", "should we invest",
+        "in your opinion", "is this a good", "long-term retirement", "for my portfolio", "for retirement",
+        "portfolio recommendation", "recommendation on", "financial advice", "buy/sell", "advise me",
+        "give advice", "investment suggestions"
+    ]
+    
+    for phrase in opinionated_phrases:
+        if phrase in q_clean:
+            return "I am a facts-only assistant and do not provide investment advice, portfolio recommendations, or buy/sell opinions. For guidance on mutual fund investing, please refer to the [AMFI Investor Education & Knowledge Center](https://www.amfiindia.com/investor-corner/knowledge-center/)."
+            
+    # Single-word indicators when used in queries
+    opinionated_words = {"recommend", "opinion", "prediction", "forecast", "buy/sell"}
+    if words.intersection(opinionated_words):
+        return "I am a facts-only assistant and do not provide investment advice, portfolio recommendations, or buy/sell opinions. For guidance on mutual fund investing, please refer to the [AMFI Investor Education & Knowledge Center](https://www.amfiindia.com/investor-corner/knowledge-center/)."
+        
+    return None
+
+def enforce_single_citation(answer: str, fund_id: str) -> str:
+    """Ensures that the answer has exactly one citation link to the official factsheet at the end."""
+    if "do not provide investment advice" in answer or "knowledge-center" in answer:
+        return answer
+        
+    if "do not have that information" in answer or "sorry" in answer.lower():
+        return answer
+
+    factsheet_urls = {
+        "parag_parikh_flexi": "https://amc.ppfas.com/schemes/ppfas-flexi-cap-fund/",
+        "pp_tax_saver": "https://amc.ppfas.com/schemes/parag-parikh-tax-saver-fund/",
+        "pp_conservative": "https://amc.ppfas.com/schemes/parag-parikh-conservative-hybrid-fund/",
+        "pp_liquid": "https://amc.ppfas.com/schemes/parag-parikh-liquid-fund/",
+        "pp_dynamic": "https://amc.ppfas.com/schemes/parag-parikh-dynamic-asset-allocation-fund/"
+    }
+    factsheet_url = factsheet_urls.get(fund_id, "https://amc.ppfas.com/")
+    citation_text = f"\n\nOfficial Factsheet Link: [Official Factsheet & Scheme Details]({factsheet_url})"
+    
+    # Check if a citation link is already present
+    if "Official Factsheet & Scheme Details" in answer or factsheet_url in answer:
+        return answer
+    else:
+        return answer.strip() + citation_text
+
 def check_direct_lookup_intent(query: str, fund_id: str) -> Optional[str]:
     """Routes short, direct financial metric queries directly to the local static metadata fallbacks."""
     import string
@@ -358,11 +412,17 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
     if conversational_resp:
         logger.info("Intent Routing: Serving conversational greeting/pleasantry response.")
         return conversational_resp, []
+
+    # 1.5 Check opinionated/portfolio query intent
+    opinion_resp = check_opinionated_intent(query)
+    if opinion_resp:
+        logger.info("Intent Routing: Serving opinionated query refusal response.")
+        return opinion_resp, []
         
     # 2. Check direct metric lookup intent
     lookup_resp = check_direct_lookup_intent(query, fund_id)
     if lookup_resp:
-        return lookup_resp, []
+        return enforce_single_citation(lookup_resp, fund_id), []
 
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -414,7 +474,7 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
         if exact_match is not None:
             elapsed = (time.time() - start_cache_time) * 1000
             logger.info(f"[INFO] Exact Cache Hit! Served response in {elapsed:.2f}ms.")
-            return exact_match, []
+            return enforce_single_citation(exact_match, fund_id), []
             
         # B. Fallback to vector semantic similarity cache match
         # Get query embedding using cached embeddings client
@@ -423,7 +483,7 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
         if cached_response is not None:
             elapsed = (time.time() - start_cache_time) * 1000
             logger.info(f"[INFO] Semantic Cache Hit! Served response in {elapsed:.2f}ms.")
-            return cached_response, []
+            return enforce_single_citation(cached_response, fund_id), []
     except Exception as e:
         logger.warning(f"Semantic Cache lookup failed: {e}")
 
@@ -553,17 +613,30 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
     if formatted_history:
         history_context = f"Conversation History:\n{formatted_history}\n\n"
 
+    factsheet_urls = {
+        "parag_parikh_flexi": "https://amc.ppfas.com/schemes/ppfas-flexi-cap-fund/",
+        "pp_tax_saver": "https://amc.ppfas.com/schemes/parag-parikh-tax-saver-fund/",
+        "pp_conservative": "https://amc.ppfas.com/schemes/parag-parikh-conservative-hybrid-fund/",
+        "pp_liquid": "https://amc.ppfas.com/schemes/parag-parikh-liquid-fund/",
+        "pp_dynamic": "https://amc.ppfas.com/schemes/parag-parikh-dynamic-asset-allocation-fund/"
+    }
+    factsheet_url = factsheet_urls.get(fund_id, "https://amc.ppfas.com/")
+
     system_instruction = (
         "You are a highly precise, objective, and analytical AI Financial Analyst specializing in Indian Mutual Funds.\n"
         f"You are answering a query about the mutual fund scheme: '{fund_id}' using the provided Context (factsheets, live NAV, news, and history).\n\n"
-        "Strict Grounding Rules:\n"
-        "1. Base your answer ONLY on facts, numbers, dates, and statements explicitly provided in the Context below. Do not assume, extrapolate, or use pre-trained external financial knowledge.\n"
-        "2. If the context does not contain enough information to answer the question, respond EXACTLY with:\n"
+        "Strict Grounding & Behavior Rules:\n"
+        "1. Answers factual queries only (e.g., 'Expense ratio of ?', 'ELSS lock-in?', 'Minimum SIP?', 'Exit load?', 'Riskometer/benchmark?', 'How to download capital-gains statement?').\n"
+        "2. If the query asks for any opinionated/portfolio questions, recommendations, buy/sell advice, or whether to invest (e.g., 'Should I buy/sell?'), you MUST refuse to answer. Reply exactly with:\n"
+        "   'I am a facts-only assistant and do not provide investment advice, portfolio recommendations, or buy/sell opinions. For guidance on mutual fund investing, please refer to the [AMFI Investor Education & Knowledge Center](https://www.amfiindia.com/investor-corner/knowledge-center/).'\n"
+        "3. Base factual answers ONLY on details explicitly provided in the Context below. Do not assume or extrapolate.\n"
+        "4. If the context does not contain enough information to answer the factual question, respond EXACTLY with:\n"
         "   'I am sorry, but I do not have that information in the provided documentation for this mutual fund.'\n"
-        "3. Do not mention or reference the existence of any 'context', 'provided documents', or 'factsheets' in your final response. Speak naturally as a direct financial advisor analyzing the fund.\n"
-        "4. Highlight critical numbers, percentages, and names in bold.\n"
-        "5. Format data comparison or metrics in clean markdown tables when helpful.\n"
-        "6. When citing details, append the source indicator (e.g., '[Source 1]') to the end of the sentence.\n\n"
+        "5. Do not mention or reference the existence of any 'context', 'provided documents', or 'factsheets' in your final response.\n"
+        "6. Highlight critical numbers, percentages, and names in bold.\n"
+        "7. Format data comparisons in clean markdown tables when helpful.\n"
+        "8. At the very end of every factual response, you MUST append exactly one clear citation link in this format:\n"
+        f"   'Official Factsheet Link: [Official Factsheet & Scheme Details]({factsheet_url})'\n\n"
         f"{history_context}"
         f"Context:\n{context_text}"
     )
@@ -589,15 +662,15 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
             except Exception as e:
                 err_str = str(e).lower()
                 if "429" in err_str or "quota" in err_str or "exhausted" in err_str:
-                    logger.warning(f"Gemini API rate limit hit in query_fund. Retrying in {delay}s... (Retries left: {retries-1})")
-                    time.sleep(delay)
-                    delay *= 2
-                    retries -= 1
+                     logger.warning(f"Gemini API rate limit hit in query_fund. Retrying in {delay}s... (Retries left: {retries-1})")
+                     time.sleep(delay)
+                     delay *= 2
+                     retries -= 1
                 else:
-                    raise e
+                     raise e
 
         if not response:
-            return get_local_fallback_answer(query, fund_id), hybrid_results
+            return enforce_single_citation(get_local_fallback_answer(query, fund_id), fund_id), hybrid_results
             
         answer = response.content
         logger.info("Generation complete.")
@@ -609,12 +682,12 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
             except Exception as e:
                 logger.warning(f"Failed to save semantic cache: {e}")
 
-        return answer, hybrid_results
+        return enforce_single_citation(answer, fund_id), hybrid_results
     except Exception as e:
         logger.error(f"Error calling Gemini generation: {e}")
         err_str = str(e).lower()
         if "429" in err_str or "quota" in err_str or "exhausted" in err_str:
-            return get_local_fallback_answer(query, fund_id), hybrid_results
+            return enforce_single_citation(get_local_fallback_answer(query, fund_id), fund_id), hybrid_results
         return f"Error generating response: {e}", hybrid_results
 
 
