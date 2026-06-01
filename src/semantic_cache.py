@@ -1,5 +1,6 @@
 import json
 import logging
+import threading
 from pathlib import Path
 from typing import Optional
 import numpy as np
@@ -8,6 +9,11 @@ logger = logging.getLogger(__name__)
 
 # Locate the cache file inside the vector store directory
 CACHE_FILE = Path(__file__).resolve().parent.parent / "vector_store" / "semantic_cache.json"
+
+# Thread-safe in-memory cache state
+_cached_records = None
+_cache_lock = threading.Lock()
+MAX_CACHE_SIZE = 500
 
 
 def compute_cosine_similarity(v1: list, v2: list) -> float:
@@ -23,25 +29,45 @@ def compute_cosine_similarity(v1: list, v2: list) -> float:
 
 
 def load_semantic_cache() -> list:
-    """Loads semantic cache records from disk."""
-    if not CACHE_FILE.exists():
-        return []
-    try:
-        with open(CACHE_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception as e:
-        logger.error(f"Failed to load semantic cache: {e}")
-        return []
+    """Loads semantic cache records from disk or returns a copy of the in-memory cache."""
+    global _cached_records
+    if _cached_records is not None:
+        return list(_cached_records)
+
+    with _cache_lock:
+        # Double-check inside the lock context
+        if _cached_records is not None:
+            return list(_cached_records)
+        
+        if not CACHE_FILE.exists():
+            _cached_records = []
+            return list(_cached_records)
+        try:
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                _cached_records = json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load semantic cache: {e}")
+            _cached_records = []
+        return list(_cached_records)
 
 
 def save_semantic_cache(records: list):
-    """Saves semantic cache records to disk."""
-    try:
-        CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(CACHE_FILE, "w", encoding="utf-8") as f:
-            json.dump(records, f, indent=2)
-    except Exception as e:
-        logger.error(f"Failed to write semantic cache: {e}")
+    """Saves semantic cache records to disk and updates in-memory cache."""
+    global _cached_records
+    with _cache_lock:
+        # Apply FIFO eviction if size exceeds limit
+        if len(records) > MAX_CACHE_SIZE:
+            logger.info(f"Cache size ({len(records)}) exceeds MAX_CACHE_SIZE ({MAX_CACHE_SIZE}). Evicting oldest records...")
+            records = records[-MAX_CACHE_SIZE:]
+            
+        _cached_records = list(records)
+        try:
+            CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(CACHE_FILE, "w", encoding="utf-8") as f:
+                json.dump(records, f, indent=2)
+        except Exception as e:
+            logger.error(f"Failed to write semantic cache: {e}")
+
 
 
 def check_semantic_cache(query: str, query_embedding: list, fund_id: str, threshold: float = 0.96) -> Optional[str]:
