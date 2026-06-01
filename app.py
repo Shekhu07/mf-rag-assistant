@@ -594,13 +594,17 @@ def get_base64_image(image_path):
         return ""
 
 logo_base64 = get_base64_image("assets/logo.png")
+if logo_base64:
+    logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="28" height="28" style="border-radius: 4px; object-fit: contain;" />'
+else:
+    logo_html = '<span style="font-size:1.2rem; margin-right:4px;">⚡</span>'
 
 # --- TOP NAVIGATION BAR ---
 st.markdown(
     f"""
     <div class="dhan-nav">
         <div class="dhan-logo" style="display: flex; align-items: center; gap: 8px;">
-            <img src="data:image/png;base64,{logo_base64}" width="28" height="28" style="border-radius: 4px; object-fit: contain;" />
+            {logo_html}
             <span>ArthaAI</span>
         </div>
         <div style="color:var(--text-highlight-color); font-size:0.9rem; font-weight:600; margin-right:1.5rem; margin-top:2px;">Markets</div>
@@ -625,7 +629,10 @@ all_nav_data = get_all_nav_data_cached()
 with st.sidebar:
     col_logo, col_title = st.columns([1, 3.5])
     with col_logo:
-        st.image("assets/logo.png", width=42)
+        if os.path.exists("assets/logo.png"):
+            st.image("assets/logo.png", width=42)
+        else:
+            st.markdown("<h2 style='margin:0; padding:0; line-height:1; font-size:1.8rem;'>⚡</h2>", unsafe_allow_html=True)
     with col_title:
         st.markdown("<h2 style='font-family:Outfit; color:white; font-size:1.45rem; margin-top:0.25rem; margin-bottom:0; line-height:1;'>ArthaAI</h2>", unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom: 1.2rem;'></div>", unsafe_allow_html=True)
@@ -1418,8 +1425,11 @@ with right_col:
     pdf_path = f"data/{selected_key}/true.pdf"
     pdf_bytes = b""
     if os.path.exists(pdf_path):
-        with open(pdf_path, "rb") as f:
-            pdf_bytes = f.read()
+        try:
+            with open(pdf_path, "rb") as f:
+                pdf_bytes = f.read()
+        except Exception:
+            pdf_bytes = b""
 
     if pdf_bytes:
         download_name = f"{selected_key}_factsheet.pdf"
@@ -1431,6 +1441,27 @@ with right_col:
             use_container_width=True,
             key=f"dl_pdf_{selected_key}"
         )
+    else:
+        # Fallback to public factsheet pages
+        factsheet_urls = {
+            "sbi_bluechip": "https://www.sbimf.com/en-us/downloads/factsheets",
+            "parag_parikh_flexi": "https://amc.ppfas.com/schemes/ppfas-flexi-cap-fund/",
+            "hdfc_top100": "https://www.hdfcfund.com/information/factsheet",
+            "icici_prudential": "https://www.icicipruamc.com/downloads/factsheets",
+            "mirae_asset": "https://www.miraeassetmf.co.in/downloads/factsheets"
+        }
+        url = factsheet_urls.get(selected_key)
+        if url:
+            st.markdown(
+                f"""
+                <a href="{url}" target="_blank" style="text-decoration:none;">
+                    <button style="width:100%; padding:0.6rem; background-color:rgba(28,36,49,0.5); border:1px solid #E2FF3B; border-radius:4px; color:#E2FF3B; cursor:pointer; font-weight:bold;">
+                        📄 View Public Factsheet Website
+                    </button>
+                </a>
+                """,
+                unsafe_allow_html=True
+            )
     st.markdown("<div style='margin-bottom: 1.2rem;'></div>", unsafe_allow_html=True)
 
     # 2. ArthaAI RAG Chat Analyst
