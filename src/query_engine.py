@@ -137,12 +137,15 @@ def format_chat_history(chat_history: list) -> str:
 def get_local_fallback_answer(query: str, fund_id: str) -> str:
     """Generates a high-fidelity fallback answer using local metadata."""
     try:
-        from fund_metadata import FUND_DATA
+        from src.fund_metadata import FUND_DATA
     except ImportError:
-        return "⚠️ ArthaAI is currently experiencing high demand (Gemini API Rate Limit Exceeded). Please wait a moment and try again."
+        try:
+            from fund_metadata import FUND_DATA
+        except ImportError as e:
+            return f"⚠️ System Error loading fallback database: {e}"
 
     if fund_id not in FUND_DATA:
-        return "⚠️ ArthaAI is currently experiencing high demand (Gemini API Rate Limit Exceeded). Please wait a moment and try again."
+        return f"⚠️ Scheme ID '{fund_id}' not found in metadata configuration."
         
     fund = FUND_DATA[fund_id]
     q_lower = query.lower()

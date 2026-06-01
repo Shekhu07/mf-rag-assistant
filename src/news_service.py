@@ -121,4 +121,7 @@ Format your response in clean, professional markdown, suitable for a high-fideli
         
     except Exception as e:
         logger.error(f"Error during sentiment LLM analysis: {e}")
-        return "⚠️ *Sentiment Analysis is temporarily unavailable (API Limit reached). Showing raw headlines below.*"
+        err_msg = str(e)
+        if "api_key" in err_msg.lower() or "api key" in err_msg.lower() or "not found" in err_msg.lower():
+            return "⚠️ *Sentiment Analysis is unavailable: GEMINI_API_KEY is missing or invalid. Please check your Hugging Face Space Secrets configuration.*"
+        return f"⚠️ *Sentiment Analysis is temporarily unavailable ({err_msg}). Showing raw headlines below.*"
