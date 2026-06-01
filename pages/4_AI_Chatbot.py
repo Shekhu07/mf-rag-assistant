@@ -10,12 +10,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-from src.ui_helpers import inject_css, render_top_navigation, render_sidebar, get_all_nav_data_cached, query_fund_api, fetch_google_news_cached
+from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_all_nav_data_cached, query_fund_api, fetch_google_news_cached
 from src.fund_metadata import FUND_DATA
 import src.config as config
 
-# 1. Inject Dhan-Style CSS & render top navigation
+# 1. Inject CSS, ticker bar, terminal navigation
 inject_css()
+render_ticker_bar()
 render_top_navigation()
 
 # 2. Render sidebar and retrieve currently active scheme selection
@@ -34,13 +35,13 @@ is_live = live_nav_data["is_live"]
 # --- WORKSPACE STATUS BAR ---
 st.markdown(
     """
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:0.8rem; margin-bottom:1.5rem; margin-top:0.5rem;">
-        <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted-color); letter-spacing:0.12em; text-transform:uppercase;">
+    <div class="workspace-bar">
+        <div class="workspace-bar-label">
             ARTHAAI WORKSPACE &nbsp;/&nbsp; RAG ANALYST CHAT
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-            <span style="display:inline-block; width:6px; height:6px; background-color:var(--success-color); border-radius:50%; box-shadow:0 0 8px var(--success-color);"></span>
-            <span style="font-size:0.65rem; font-weight:700; color:var(--success-color); letter-spacing:0.05em; text-transform:uppercase;">RAG SECURED CORE</span>
+        <div class="workspace-bar-status">
+            <span class="status-dot"></span>
+            <span class="status-label">RAG SECURED CORE</span>
         </div>
     </div>
     """,
@@ -48,11 +49,8 @@ st.markdown(
 )
 
 # Header Section
+st.markdown(f'<span class="scheme-category-badge">{scheme["category"]}</span><span class="scheme-type-label">Direct Growth</span>', unsafe_allow_html=True)
 st.markdown(f'<div class="scheme-title">{scheme["name"]}</div>', unsafe_allow_html=True)
-st.markdown(
-    f'<span class="scheme-badge">DIRECT</span><span class="scheme-badge">GROWTH</span><span style="color:#8A99AD; font-size:0.85rem;">{scheme["category"]}</span>',
-    unsafe_allow_html=True
-)
 st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
 # Grid Layout

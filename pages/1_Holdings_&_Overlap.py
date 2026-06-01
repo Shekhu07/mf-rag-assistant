@@ -12,12 +12,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-from src.ui_helpers import inject_css, render_top_navigation, render_sidebar
+from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, render_floating_chatbot
 from src.fund_metadata import FUND_DATA
 import src.config as config
 
-# 1. Inject Dhan-Style CSS & render top navigation
+# 1. Inject CSS, ticker bar, terminal navigation
 inject_css()
+render_ticker_bar()
 render_top_navigation()
 
 # 2. Render sidebar and retrieve currently active scheme selection
@@ -27,13 +28,13 @@ scheme = FUND_DATA[selected_key]
 # --- WORKSPACE STATUS BAR ---
 st.markdown(
     """
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:0.8rem; margin-bottom:1.5rem; margin-top:0.5rem;">
-        <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted-color); letter-spacing:0.12em; text-transform:uppercase;">
+    <div class="workspace-bar">
+        <div class="workspace-bar-label">
             ARTHAAI WORKSPACE &nbsp;/&nbsp; HOLDINGS & OVERLAP ANALYZER
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-            <span style="display:inline-block; width:6px; height:6px; background-color:var(--success-color); border-radius:50%; box-shadow:0 0 8px var(--success-color);"></span>
-            <span style="font-size:0.65rem; font-weight:700; color:var(--success-color); letter-spacing:0.05em; text-transform:uppercase;">RAG SECURED CORE</span>
+        <div class="workspace-bar-status">
+            <span class="status-dot"></span>
+            <span class="status-label">RAG SECURED CORE</span>
         </div>
     </div>
     """,
@@ -41,11 +42,8 @@ st.markdown(
 )
 
 # Header Section
+st.markdown(f'<span class="scheme-category-badge">{scheme["category"]}</span><span class="scheme-type-label">Direct Growth</span>', unsafe_allow_html=True)
 st.markdown(f'<div class="scheme-title">{scheme["name"]}</div>', unsafe_allow_html=True)
-st.markdown(
-    f'<span class="scheme-badge">DIRECT</span><span class="scheme-badge">GROWTH</span><span style="color:#8A99AD; font-size:0.85rem;">{scheme["category"]}</span>',
-    unsafe_allow_html=True
-)
 st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
 # Grid Layout
@@ -280,80 +278,7 @@ with right_panel:
         unsafe_allow_html=True
     )
     
-    st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>OVERLAPPING STOCKS</span>", unsafe_allow_html=True)
-    st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
+
     
-    if common_data:
-        common_data = sorted(common_data, key=lambda x: x["shared_val"], reverse=True)
-        rows_overlap = ""
-        for item in common_data:
-            rows_overlap += f"""
-            <tr>
-                <td style="color:var(--text-highlight-color); font-weight:600; padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Company']}</td>
-                <td style="color:var(--text-muted-color); padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Sector']}</td>
-                <td style="color:var(--text-highlight-color); text-align:right; padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Allocation A']}</td>
-                <td style="color:var(--text-highlight-color); text-align:right; padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Allocation B']}</td>
-                <td style="color:var(--primary-color); text-align:right; font-weight:700; padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-color);">{item['Shared Overlap']}</td>
-            </tr>
-            """
-            
-        st.markdown(
-            textwrap.dedent(f"""
-            <table style="width:100%; border-collapse:collapse; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
-                <thead>
-                    <tr style="border-bottom:1px solid var(--border-color); text-align:left; background:var(--bg-color);">
-                        <th style="padding:0.75rem 1rem; color:var(--text-muted-color); font-weight:700;">Company</th>
-                        <th style="padding:0.75rem 1rem; color:var(--text-muted-color); font-weight:700;">Sector</th>
-                        <th style="padding:0.75rem 1rem; color:var(--text-muted-color); font-weight:700; text-align:right;">{scheme['name']}</th>
-                        <th style="padding:0.75rem 1rem; color:var(--text-muted-color); font-weight:700; text-align:right;">{comp_scheme['name']}</th>
-                        <th style="padding:0.75rem 1rem; color:var(--primary-color); font-weight:700; text-align:right;">Shared Overlap</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows_overlap}
-                </tbody>
-            </table>
-            """),
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            "<div style=\"background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:1.5rem; text-align:center; color:var(--text-muted-color); font-size:0.85rem; margin-bottom:1.5rem;\">"
-            "🟢 No overlapping holdings found in these two funds. Excellent diversification!"
-            "</div>",
-            unsafe_allow_html=True
-        )
-        
-    # Unique portfolio drivers
-    st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>UNIQUE PORTFOLIO DRIVERS</span>", unsafe_allow_html=True)
-    st.markdown("<div style='margin-bottom:0.8rem;'></div>", unsafe_allow_html=True)
-    
-    col_unique_a, col_unique_b = st.columns(2)
-    
-    with col_unique_a:
-        st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:var(--text-muted-color); text-transform:uppercase;'>Unique to {scheme['name']}</span>", unsafe_allow_html=True)
-        st.markdown("<div style='margin-bottom:0.4rem;'></div>", unsafe_allow_html=True)
-        unique_a_keys = [c for c in holdings_a.keys() if c not in common_companies]
-        if unique_a_keys:
-            unique_a_keys = sorted(unique_a_keys, key=lambda x: holdings_a[x]['alloc'], reverse=True)
-            list_items = ""
-            for u in unique_a_keys:
-                orig_name = holdings_a[u]['original_name']
-                list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:var(--text-highlight-color);'><span style='font-weight:600;'>{orig_name}</span> <span style='color:var(--text-muted-color);'>({holdings_a[u]['alloc']:.2f}%)</span></li>"
-            st.markdown(f"<ul style='list-style-type:square; padding-left:1.2rem;'>{list_items}</ul>", unsafe_allow_html=True)
-        else:
-            st.markdown("<div style='color:var(--text-muted-color); font-size:0.8rem;'>No unique holdings.</div>", unsafe_allow_html=True)
-            
-    with col_unique_b:
-        st.markdown(f"<span style='font-size:0.75rem; font-weight:700; color:var(--text-muted-color); text-transform:uppercase;'>Unique to {comp_scheme['name']}</span>", unsafe_allow_html=True)
-        st.markdown("<div style='margin-bottom:0.4rem;'></div>", unsafe_allow_html=True)
-        unique_b_keys = [c for c in holdings_b.keys() if c not in common_companies]
-        if unique_b_keys:
-            unique_b_keys = sorted(unique_b_keys, key=lambda x: holdings_b[x]['alloc'], reverse=True)
-            list_items = ""
-            for u in unique_b_keys:
-                orig_name = holdings_b[u]['original_name']
-                list_items += f"<li style='margin-bottom:0.4rem; font-size:0.85rem; color:var(--text-highlight-color);'><span style='font-weight:600;'>{orig_name}</span> <span style='color:var(--text-muted-color);'>({holdings_b[u]['alloc']:.2f}%)</span></li>"
-            st.markdown(f"<ul style='list-style-type:square; padding-left:1.2rem;'>{list_items}</ul>", unsafe_allow_html=True)
-        else:
-            st.markdown("<div style='color:var(--text-muted-color); font-size:0.8rem;'>No unique holdings.</div>", unsafe_allow_html=True)
+# Render the floating chatbot
+render_floating_chatbot(selected_key)

@@ -23,24 +23,34 @@ CHUNK_OVERLAP = 200
 # Strict fund isolation rules
 MAX_FUNDS = 5
 
-# Google Stitch UI Design Tokens
+# Google Stitch UI Design Tokens (Material Design 3 Terminal)
 DEFAULT_STITCH_DESIGN = {
-    "primary_color": "#E2FF3B",
-    "bg_color": "#080A0C",
-    "card_bg_color": "#0E1217",
-    "border_color": "#1C232E",
-    "text_color": "#BAC7D5",
-    "text_highlight_color": "#FFFFFF",
-    "text_muted_color": "#8A99AD",
-    "success_color": "#10B981",
-    "danger_color": "#EF4444",
-    "warning_color": "#F59E0B",
+    "primary_color": "#adc6ff",
+    "on_primary": "#002e6a",
+    "bg_color": "#0b1326",
+    "card_bg_color": "#171f33",
+    "surface_container_low": "#131b2e",
+    "surface_lowest": "#060e20",
+    "surface_high": "#222a3d",
+    "surface_highest": "#2d3449",
+    "surface_bright": "#31394d",
+    "border_color": "#424754",
+    "text_color": "#dae2fd",
+    "text_highlight_color": "#dae2fd",
+    "text_muted_color": "#c2c6d6",
+    "outline_color": "#8c909f",
+    "success_color": "#4edea3",
+    "secondary_container": "#00a572",
+    "danger_color": "#ffb4ab",
+    "error_container": "#93000a",
+    "warning_color": "#ffb3ad",
     "font_header": "'Outfit', sans-serif",
-    "font_body": "'Plus Jakarta Sans', sans-serif",
+    "font_body": "'Outfit', sans-serif",
     "font_mono": "'JetBrains Mono', monospace",
-    "border_radius_sm": "4px",
-    "border_radius_md": "8px",
-    "border_radius_lg": "12px",
+    "border_radius_sm": "2px",
+    "border_radius_md": "4px",
+    "border_radius_lg": "8px",
+    "border_radius_xl": "12px",
     "spacing_unit": "8px",
     "card_shadow": "none"
 }
@@ -54,9 +64,8 @@ def load_stitch_design():
         try:
             with open(STITCH_DESIGN_PATH, "r") as f:
                 loaded = json.load(f)
-                for k, v in loaded.items():
-                    if k in design:
-                        design[k] = v
+                # Accept all keys from file, not just those in defaults
+                design.update(loaded)
         except Exception:
             pass
     return design

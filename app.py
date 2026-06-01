@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+from collections import defaultdict
 
 # Set page config for wide layout
 st.set_page_config(
@@ -10,35 +11,38 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-from src.ui_helpers import inject_css, render_top_navigation, render_sidebar, get_all_nav_data_cached, fetch_nav_history_cached
+from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_all_nav_data_cached, fetch_nav_history_cached, render_floating_chatbot
 from src.fund_metadata import FUND_DATA
 import src.config as config
 
-# 1. Inject Dhan-Style CSS & render top navigation
+# 1. Inject CSS, ticker bar, terminal navigation, and sidebar
 inject_css()
+render_ticker_bar()
 render_top_navigation()
-
-# 2. Render sidebar and retrieve currently active scheme selection
 selected_key = render_sidebar()
 scheme = FUND_DATA[selected_key]
 
 # --- WORKSPACE STATUS BAR ---
 st.markdown(
     """
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:0.8rem; margin-bottom:1.5rem; margin-top:0.5rem;">
-        <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted-color); letter-spacing:0.12em; text-transform:uppercase;">
+    <div class="workspace-bar">
+        <div class="workspace-bar-label">
             ARTHAAI WORKSPACE &nbsp;/&nbsp; SCHEME RESEARCH & OVERVIEW
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-            <span style="display:inline-block; width:6px; height:6px; background-color:var(--success-color); border-radius:50%; box-shadow:0 0 8px var(--success-color);"></span>
-            <span style="font-size:0.65rem; font-weight:700; color:var(--success-color); letter-spacing:0.05em; text-transform:uppercase;">RAG SECURED CORE</span>
+        <div class="workspace-bar-status">
+            <span class="status-dot"></span>
+            <span class="status-label">RAG SECURED CORE</span>
         </div>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Fetch NAV metrics pool
+# --- SCHEME HEADER ---
+st.markdown(f'<span class="scheme-category-badge">{scheme["category"]}</span><span class="scheme-type-label">Direct Growth</span>', unsafe_allow_html=True)
+st.markdown(f'<div class="scheme-title">{scheme["name"]}</div>', unsafe_allow_html=True)
+
+# Fetch NAV metrics
 all_nav_data = get_all_nav_data_cached()
 live_nav_data = all_nav_data[selected_key]
 display_nav = live_nav_data["nav"]
@@ -47,71 +51,103 @@ display_change_positive = live_nav_data["change_positive"]
 nav_date = live_nav_data["date"]
 is_live = live_nav_data["is_live"]
 
-# Scheme details block
-st.markdown(f'<div class="scheme-title">{scheme["name"]}</div>', unsafe_allow_html=True)
-st.markdown(
-    f'<span class="scheme-badge">DIRECT</span><span class="scheme-badge">GROWTH</span><span style="color:#8A99AD; font-size:0.85rem;">{scheme["category"]}</span>',
-    unsafe_allow_html=True
-)
-st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
-
-# NAV box layout
-change_class = "nav-change-pos" if display_change_positive else "nav-change-neg"
+change_color = "var(--success-color)" if display_change_positive else "var(--danger-color)"
+change_arrow = "▲" if display_change_positive else "▼"
 live_badge = (
-    f'<span style="background:rgba(16,185,129,0.1); color:var(--success-color); font-size:0.65rem; font-weight:700; '
-    f'padding:2px 7px; border-radius:4px; border:1px solid rgba(16,185,129,0.3); '
-    f'margin-left:8px; vertical-align:middle;">&#9679; LIVE · {nav_date}</span>'
+    f'<span style="background:rgba(78,222,163,0.1); color:var(--success-color); font-size:10px; font-weight:700; '
+    f'padding:2px 8px; border-radius:4px; border:1px solid rgba(78,222,163,0.2); margin-left:12px;">● LIVE · {nav_date}</span>'
 ) if is_live else (
-    f'<span style="background:rgba(245,158,11,0.1); color:var(--primary-color); font-size:0.65rem; font-weight:700; '
-    f'padding:2px 7px; border-radius:4px; border:1px solid rgba(245,158,11,0.3); '
-    f'margin-left:8px; vertical-align:middle;">&#9679; STATIC · Refresh to go live</span>'
+    f'<span style="background:rgba(173,198,255,0.1); color:var(--primary-color); font-size:10px; font-weight:700; '
+    f'padding:2px 8px; border-radius:4px; border:1px solid rgba(173,198,255,0.2); margin-left:12px;">● STATIC</span>'
 )
+
 st.markdown(
     f"""
-    <div class="nav-box">
-        <div class="nav-label">NET ASSET VALUE (NAV) {live_badge}</div>
-        <div class="nav-val">{display_nav}</div>
-        <div class="{change_class}">{display_change}</div>
+    <div class="nav-section">
+        <div class="nav-metric">
+            <span class="nav-metric-label">NAV</span>
+            <span class="nav-metric-value">{display_nav} <span class="nav-change-inline" style="color:{change_color};">{change_arrow}{display_change}</span></span>
+        </div>
+        <div class="nav-divider"></div>
+        <div class="nav-metric">
+            <span class="nav-metric-label">AUM</span>
+            <span class="nav-metric-value">{scheme['aum']}</span>
+        </div>
+        <div class="nav-divider"></div>
+        <div class="nav-metric">
+            <span class="nav-metric-label">EXPENSE RATIO</span>
+            <span class="nav-metric-value">{scheme['expense_ratio']}</span>
+        </div>
+        {live_badge}
     </div>
     """,
     unsafe_allow_html=True
 )
 
-st.divider()
+st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
-# CAGR Return Cards
-st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>HISTORICAL PERFORMANCE Snapshot (CAGR)</span>", unsafe_allow_html=True)
+# --- CAGR RETURN CARDS (Terminal Display-lg Style) ---
+st.markdown("<span style='font-size:0.8rem; font-weight:600; color:var(--outline-color);'>HISTORICAL PERFORMANCE (CAGR)</span>", unsafe_allow_html=True)
 st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
+
+returns = [
+    ("1Y RETURN", scheme["return_1y"], "trending_up", "OUTPERFORMING", "badge-outperforming", "vs Category Avg"),
+    ("3Y RETURN", scheme["return_3y"], "timeline", "STABLE", "badge-stable", "Annualized CAGR"),
+    ("5Y RETURN", scheme["return_5y"], "monitoring", "CONSISTENT", "badge-consistent", "Long-Term Growth"),
+]
+
 r_col1, r_col2, r_col3 = st.columns(3)
-with r_col1:
-    st.markdown(f'<div class="return-card"><div class="nav-label">1Y RETURN</div><div class="return-num">{scheme["return_1y"]}</div></div>', unsafe_allow_html=True)
-with r_col2:
-    st.markdown(f'<div class="return-card"><div class="nav-label">3Y RETURN</div><div class="return-num">{scheme["return_3y"]}</div></div>', unsafe_allow_html=True)
-with r_col3:
-    st.markdown(f'<div class="return-card"><div class="nav-label">5Y RETURN</div><div class="return-num">{scheme["return_5y"]}</div></div>', unsafe_allow_html=True)
+for i, (label, value, icon, badge_text, badge_class, compare_text) in enumerate(returns):
+    col = [r_col1, r_col2, r_col3][i]
+    val_class = "return-card-value-green" if i == 0 else "return-card-value-default"
+    with col:
+        st.markdown(
+            f"""
+            <div class="return-card-terminal">
+                <div class="return-card-label">{label}</div>
+                <div class="return-card-value {val_class}">{value}</div>
+                <div class="return-card-status">
+                    <span class="performance-badge {badge_class}">{badge_text}</span>
+                    <span class="return-card-compare">{compare_text}</span>
+                </div>
+                <span class="material-symbols-outlined return-card-bg-icon">{icon}</span>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
-# Period selector
+# --- NAV PRICE HISTORY CHART ---
 period_key = f"nav_period_{selected_key}"
 if period_key not in st.session_state:
     st.session_state[period_key] = "1Y"
 
-st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>NAV PRICE HISTORY (LIVE · MFAPI)</span>", unsafe_allow_html=True)
+# Chart container
+st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+
+st.markdown(
+    """
+    <div class="chart-header">
+        <div class="chart-title">
+            <span class="material-symbols-outlined chart-title-icon">show_chart</span>
+            NAV Price History
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 period_cols = st.columns(6)
 period_labels = ["1M", "6M", "1Y", "3Y", "5Y", "All"]
 for i, period_label in enumerate(period_labels):
     with period_cols[i]:
         is_active = st.session_state[period_key] == period_label
-        btn_style = (
-            f"background:{config.STITCH_DESIGN['primary_color']}; color:{config.STITCH_DESIGN['bg_color']}; font-weight:700;"
-            if is_active else
-            f"background:{config.STITCH_DESIGN['card_bg_color']}; color:{config.STITCH_DESIGN['text_muted_color']}; font-weight:500;"
-        )
         if st.button(
             period_label,
             key=f"period_{selected_key}_{period_label}",
             use_container_width=True,
+            type="primary" if is_active else "secondary",
         ):
             st.session_state[period_key] = period_label
             st.rerun()
@@ -126,8 +162,8 @@ if df_hist is not None and len(df_hist) > 1:
     df_hist["pct_change"] = ((df_hist["nav"] - start_nav) / start_nav * 100).round(2)
     df_hist["date_str"] = df_hist["date"].dt.strftime("%d %b %Y")
     is_positive = df_hist["nav"].iloc[-1] >= df_hist["nav"].iloc[0]
-    line_color = "#10B981" if is_positive else "#EF4444"
-    area_color_start = "rgba(16,185,129,0.25)" if is_positive else "rgba(239,68,68,0.25)"
+    line_color = config.STITCH_DESIGN["success_color"] if is_positive else config.STITCH_DESIGN["danger_color"]
+    area_color_start = "rgba(78,222,163,0.25)" if is_positive else "rgba(255,180,171,0.25)"
 
     base = alt.Chart(df_hist).encode(
         x=alt.X(
@@ -163,7 +199,7 @@ if df_hist is not None and len(df_hist) > 1:
             gradient="linear",
             stops=[
                 alt.GradientStop(color=area_color_start, offset=0),
-                alt.GradientStop(color="rgba(8,10,12,0.0)", offset=1),
+                alt.GradientStop(color="rgba(11,19,38,0.0)", offset=1),
             ],
             x1=1, x2=1, y1=1, y2=0,
         ),
@@ -191,18 +227,18 @@ if df_hist is not None and len(df_hist) > 1:
     sign = "+" if period_ret >= 0 else ""
     st.markdown(
         f"""
-        <div style="display:flex; gap:1rem; margin-top:-0.5rem; margin-bottom:1.5rem;">
-            <div style="flex:1; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
-                <div style="font-size:0.65rem; color:var(--text-muted-color); font-weight:600;">PERIOD RETURN</div>
-                <div style="font-size:1rem; font-weight:700; color:{ret_color};">{sign}{period_ret:.1f}%</div>
+        <div class="mini-stats-row">
+            <div class="mini-stat-card">
+                <div class="mini-stat-label">PERIOD RETURN</div>
+                <div class="mini-stat-value" style="color:{ret_color};">{sign}{period_ret:.1f}%</div>
             </div>
-            <div style="flex:1; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
-                <div style="font-size:0.65rem; color:var(--text-muted-color); font-weight:600;">{selected_period} HIGH</div>
-                <div style="font-size:1rem; font-weight:700; color:var(--text-highlight-color)">₹{period_high:,.2f}</div>
+            <div class="mini-stat-card">
+                <div class="mini-stat-label">{selected_period} HIGH</div>
+                <div class="mini-stat-value" style="color:var(--text-highlight-color)">₹{period_high:,.2f}</div>
             </div>
-            <div style="flex:1; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; padding:0.6rem 0.8rem; text-align:center;">
-                <div style="font-size:0.65rem; color:var(--text-muted-color); font-weight:600;">{selected_period} LOW</div>
-                <div style="font-size:1rem; font-weight:700; color:var(--text-highlight-color)">₹{period_low:,.2f}</div>
+            <div class="mini-stat-card">
+                <div class="mini-stat-label">{selected_period} LOW</div>
+                <div class="mini-stat-value" style="color:var(--text-highlight-color)">₹{period_low:,.2f}</div>
             </div>
         </div>
         """,
@@ -210,19 +246,113 @@ if df_hist is not None and len(df_hist) > 1:
     )
 else:
     st.markdown(
-        "<div style='color:#8A99AD; font-size:0.85rem; padding:1rem; text-align:center;'>⚠️ Could not load chart data. Check your internet connection.</div>",
+        "<div style='color:var(--outline-color); font-size:0.85rem; padding:1rem; text-align:center;'>⚠️ Could not load chart data. Check your internet connection.</div>",
         unsafe_allow_html=True,
     )
 
-st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)  # Close chart-container
 
-# Fund Description
-st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>FUND DESCRIPTION</span>", unsafe_allow_html=True)
+# --- BENTO GRID: Sector Allocation + Risk Metrics ---
+bento_left, bento_right = st.columns([1.4, 1.0], gap="large")
+
+with bento_left:
+    # Sector Allocation
+    sector_map = defaultdict(float)
+    for _, sector, alloc_str in scheme["holdings"]:
+        try:
+            alloc_val = float(alloc_str.replace("%", "").strip())
+            sector_map[sector] += alloc_val
+        except ValueError:
+            pass
+
+    sorted_sectors = sorted(sector_map.items(), key=lambda x: x[1], reverse=True)[:6]
+    bar_colors = ["sector-bar-primary", "sector-bar-secondary", "sector-bar-primary", "sector-bar-outline", "sector-bar-warning", "sector-bar-outline"]
+
+    st.markdown(
+        """
+        <div class="sector-card">
+            <div class="sector-card-header">
+                <span class="sector-card-title">Sector Allocation</span>
+                <span style="font-size:11px; color:var(--outline-color);">Top 6 Sectors</span>
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    for i, (sector_name, alloc) in enumerate(sorted_sectors):
+        bar_class = bar_colors[i % len(bar_colors)]
+        st.markdown(
+            f"""
+            <div class="sector-row">
+                <div class="sector-row-label">
+                    <span>{sector_name}</span>
+                    <span>{alloc:.1f}%</span>
+                </div>
+                <div class="sector-bar-track">
+                    <div class="sector-bar-fill {bar_class}" style="width:{min(alloc * 2.5, 100)}%;"></div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with bento_right:
+    # Risk Metrics Cards
+    st.markdown(
+        f"""
+        <div class="stat-card" style="margin-bottom:16px;">
+            <span class="stat-card-label">RISKOMETER</span>
+            <span class="stat-card-value" style="color:var(--warning-color);">{scheme['riskometer']}</span>
+            <span class="stat-card-note">SEBI Risk Classification</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        f"""
+        <div class="stat-card" style="margin-bottom:16px;">
+            <span class="stat-card-label">FUND MANAGER</span>
+            <span class="stat-card-value">{scheme['manager']}</span>
+            <span class="stat-card-note-success">✓ Active Management</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        f"""
+        <div class="stat-card">
+            <span class="stat-card-label">MINIMUM SIP</span>
+            <span class="stat-card-value" style="color:var(--success-color);">{scheme['min_sip']}</span>
+            <span class="stat-card-note">Per Month</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
+
+# --- TERMINAL INSIGHTS CARD ---
 st.markdown(
     f"""
-    <div style="font-size:0.88rem; color:#BAC7D5; line-height:1.5; padding: 0.5rem 0; margin-bottom:1.5rem;">
-    {scheme['desc']}
+    <div class="insights-card">
+        <div>
+            <div class="insights-title">Terminal Insights</div>
+            <div class="insights-text">
+                {scheme['desc']}<br/>
+                <span style="color:var(--text-highlight-color); font-weight:600;">Use the floating AI chatbot</span> to query deeper analysis on portfolio risk, sector concentration, and historical returns.
+            </div>
+        </div>
+        <span class="material-symbols-outlined insights-icon">psychology</span>
     </div>
     """,
     unsafe_allow_html=True
 )
+
+st.markdown("<div style='margin-bottom:2rem;'></div>", unsafe_allow_html=True)
+
+# Render the floating chatbot
+render_floating_chatbot(selected_key)

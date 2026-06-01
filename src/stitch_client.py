@@ -164,7 +164,7 @@ def main():
         # Fallback to the first project in list if available
         projects_list = projects_res.get("projects", [])
         if projects_list:
-            proj_id = projects_list[0].get("id")
+            proj_id = projects_list[0].get("id") or projects_list[0].get("name", "").split("/")[-1]
             print(f"👉 No STITCH_PROJECT_ID specified. Using first project found: '{projects_list[0].get('name')}' ({proj_id})")
         else:
             print("⚠️ No projects found in your Stitch account.")
@@ -183,7 +183,7 @@ def main():
     screen_id = STITCH_SCREEN_ID
     if not screen_id:
         if screens_list:
-            screen_id = screens_list[0].get("id")
+            screen_id = screens_list[0].get("id") or screens_list[0].get("name", "").split("/")[-1]
             print(f"👉 No STITCH_SCREEN_ID specified. Using first screen: '{screens_list[0].get('name')}' ({screen_id})")
         else:
             print("⚠️ No screens found in project. Using default theme.")
