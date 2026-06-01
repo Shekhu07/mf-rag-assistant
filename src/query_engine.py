@@ -13,7 +13,7 @@ from langchain_core.documents import Document
 from langchain_core.messages import SystemMessage, HumanMessage
 
 # Load environment variables
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # Setup paths and imports
 sys.path.append(str(Path(__file__).resolve().parent))
@@ -23,6 +23,10 @@ from semantic_cache import check_semantic_cache, add_to_semantic_cache
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+# Diagnostics: Log environment keys containing key/token/gemini to trace name mismatches
+key_diagnostics = [k for k in os.environ.keys() if 'key' in k.lower() or 'token' in k.lower() or 'gemini' in k.lower()]
+logger.info(f"Loaded key-related environment variables: {key_diagnostics}")
 
 # Module-level singletons — initialized once, reused on every query
 _vector_store_cache: Optional[QdrantVectorStore] = None
