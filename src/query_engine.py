@@ -119,7 +119,7 @@ def get_llm(api_key: str):
             model=config.GENERATION_MODEL,
             temperature=config.GENERATION_TEMPERATURE,
             google_api_key=api_key,
-            max_retries=0
+            max_retries=2
         )
         logger.info("LLM client initialized and cached.")
     return _llm_cache
