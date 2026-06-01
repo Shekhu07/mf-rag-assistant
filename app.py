@@ -618,7 +618,7 @@ st.markdown(
 
 # Initialize session state for selected scheme
 if "selected_scheme" not in st.session_state:
-    st.session_state["selected_scheme"] = "sbi_bluechip"
+    st.session_state["selected_scheme"] = "parag_parikh_flexi"
 selected_key = st.session_state["selected_scheme"]
 
 # --- PARALLEL NAV PRE-FETCHING ---
@@ -639,11 +639,11 @@ with st.sidebar:
     st.markdown("<span style='font-size:0.7rem; font-weight:700; color:#8A99AD; letter-spacing:0.08em; display:block; margin-bottom:0.8rem;'>SCHEMES WORKSPACE</span>", unsafe_allow_html=True)
     
     short_names = {
-        "sbi_bluechip": "SBI Bluechip",
-        "parag_parikh_flexi": "Parag Parikh Cap",
-        "hdfc_top100": "HDFC Top 100",
-        "icici_prudential": "ICICI Pru Bluechip",
-        "mirae_asset": "Mirae Asset Large"
+        "parag_parikh_flexi": "PP Flexi Cap",
+        "pp_tax_saver": "PP Tax Saver ELSS",
+        "pp_conservative": "PP Cons Hybrid",
+        "pp_liquid": "PP Liquid Fund",
+        "pp_dynamic": "PP Dynamic Alloc"
     }
 
     for key, item in FUND_DATA.items():
@@ -1444,11 +1444,11 @@ with right_col:
     else:
         # Fallback to public factsheet pages
         factsheet_urls = {
-            "sbi_bluechip": "https://www.sbimf.com/en-us/downloads/factsheets",
             "parag_parikh_flexi": "https://amc.ppfas.com/schemes/ppfas-flexi-cap-fund/",
-            "hdfc_top100": "https://www.hdfcfund.com/information/factsheet",
-            "icici_prudential": "https://www.icicipruamc.com/downloads/factsheets",
-            "mirae_asset": "https://www.miraeassetmf.co.in/downloads/factsheets"
+            "pp_tax_saver": "https://amc.ppfas.com/schemes/parag-parikh-tax-saver-fund/",
+            "pp_conservative": "https://amc.ppfas.com/schemes/parag-parikh-conservative-hybrid-fund/",
+            "pp_liquid": "https://amc.ppfas.com/schemes/parag-parikh-liquid-fund/",
+            "pp_dynamic": "https://amc.ppfas.com/schemes/parag-parikh-dynamic-asset-allocation-fund/"
         }
         url = factsheet_urls.get(selected_key)
         if url:

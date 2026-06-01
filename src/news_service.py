@@ -14,11 +14,11 @@ from langchain_core.messages import SystemMessage, HumanMessage
 logger = logging.getLogger(__name__)
 
 NEWS_QUERIES = {
-    "sbi_bluechip": '("SBI Mutual Fund" OR "SBI Bluechip") AND (bought OR sold OR portfolio OR holdings OR stock OR exit OR entry OR buy OR sell)',
     "parag_parikh_flexi": '("Parag Parikh Mutual Fund" OR "PPFAS" OR "Parag Parikh Flexi") AND (bought OR sold OR portfolio OR holdings OR stock OR exit OR entry OR buy OR sell)',
-    "hdfc_top100": '("HDFC Mutual Fund" OR "HDFC Top 100") AND (bought OR sold OR portfolio OR holdings OR stock OR exit OR entry OR buy OR sell)',
-    "icici_prudential": '("ICICI Prudential Mutual Fund" OR "ICICI Pru") AND (bought OR sold OR portfolio OR holdings OR stock OR exit OR entry OR buy OR sell)',
-    "mirae_asset": '("Mirae Asset Mutual Fund" OR "Mirae Asset Large") AND (bought OR sold OR portfolio OR holdings OR stock OR exit OR entry OR buy OR sell)'
+    "pp_tax_saver": '("Parag Parikh Tax Saver" OR "PPFAS ELSS" OR "Parag Parikh ELSS") AND (bought OR sold OR portfolio OR holdings OR stock OR exit OR entry OR buy OR sell)',
+    "pp_conservative": '("Parag Parikh Conservative" OR "PPFAS Conservative" OR "Parag Parikh Hybrid") AND (bought OR sold OR portfolio OR holdings OR stock OR exit OR entry OR buy OR sell)',
+    "pp_liquid": '("Parag Parikh Liquid" OR "PPFAS Liquid") AND (bought OR sold OR portfolio OR holdings OR stock OR exit OR entry OR buy OR sell)',
+    "pp_dynamic": '("Parag Parikh Dynamic" OR "PPFAS Dynamic" OR "Parag Parikh Asset Allocation") AND (bought OR sold OR portfolio OR holdings OR stock OR exit OR entry OR buy OR sell)'
 }
 
 def fetch_google_news(fund_id: str, max_results: int = 6) -> List[Dict]:

@@ -19,11 +19,11 @@ MFAPI_BASE = "https://api.mfapi.in/mf"
 
 # Mapping from internal fund_id → MFAPI scheme code (Direct Growth plans)
 MFAPI_SCHEME_CODES = {
-    "sbi_bluechip":     119598,   # SBI Large Cap Fund - Direct Plan - Growth
-    "parag_parikh_flexi": 122639, # Parag Parikh Flexi Cap Fund - Direct Plan - Growth
-    "hdfc_top100":      119018,   # HDFC Large Cap Fund - Growth Option - Direct Plan
-    "icici_prudential": 120586,   # ICICI Prudential Large Cap Fund - Direct Plan - Growth
-    "mirae_asset":      118825,   # Mirae Asset Large Cap Fund - Direct Plan - Growth
+    "parag_parikh_flexi":   122639, # Parag Parikh Flexi Cap Fund - Direct Plan - Growth
+    "pp_tax_saver":         147481, # Parag Parikh ELSS Tax Saver Fund - Direct Plan - Growth
+    "pp_conservative":      148958, # Parag Parikh Conservative Hybrid Fund - Direct Plan - Growth
+    "pp_liquid":            143269, # Parag Parikh Liquid Fund - Direct Plan - Growth
+    "pp_dynamic":           152468, # Parag Parikh Dynamic Asset Allocation Fund - Direct Plan - Growth
 }
 
 # In-memory NAV cache: {fund_id: {"nav": str, "date": str, "change": str, "change_positive": bool}}
