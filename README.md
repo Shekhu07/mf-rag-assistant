@@ -30,7 +30,10 @@ A **production-grade Mutual Fund Research Assistant** built with Streamlit, Lang
 - **Fund Isolation** — Each query is strictly isolated to the selected fund's documents in Qdrant.
 - **Real-time NAV Integration** — Retrieves live NAV metrics dynamically from MFAPI endpoints.
 - **Rate-Limit Resilience** — Automatic fallback to high-fidelity local metadata when Gemini API quota is exceeded.
-- **Premium Dark UI** — Dark, premium interface with markdown tables, animated chat bubbles, and a collapsible sources panel.
+- **Premium Dark UI & Clean Layout** — A sleek dashboard designed as an executive terminal, featuring:
+  - **Hero Q&A Chatbot**: Placed front and center on the main page for direct, primary interaction.
+  - **Horizontal Top Navigation**: Clean page links (`⚡ AI Chatbot`, `📊 Overview`, `📈 Holdings`, `💰 SIP Calc`, `📰 News`) placed centered at the top of the interface.
+  - **Dedicated Scheme Selector Sidebar**: A clean sidebar showing only the mutual fund schemes selector, free of clutter.
 - **5 Funds Supported** out of the box:
   - SBI Bluechip Fund Direct Growth
   - Parag Parikh Flexi Cap Fund Direct Growth
