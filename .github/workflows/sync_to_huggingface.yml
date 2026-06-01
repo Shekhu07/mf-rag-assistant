@@ -30,4 +30,4 @@ jobs:
           git lfs migrate import --include="*.pdf,*.png" --yes
           
           # Force push the LFS-migrated branch to Hugging Face Space
-          git push --force https://oauth2:$HF_TOKEN@huggingface.co/spaces/Abhishek292000/artha-ai main
+          git push --force https://oauth2:$HF_TOKEN@huggingface.co/spaces/Abhishek292000/artha-ai HEAD:main
