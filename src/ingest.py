@@ -128,7 +128,7 @@ def ingest_documents():
     if qdrant_host != "localhost":
         try:
             url = qdrant_host if (qdrant_host.startswith("http://") or qdrant_host.startswith("https://")) else f"http://{qdrant_host}:6333"
-            client = QdrantClient(url=url, api_key=qdrant_api_key, timeout=5)
+            client = QdrantClient(url=url, api_key=qdrant_api_key, timeout=60)
             client.get_collections()
         except Exception as e:
             logger.warning(f"Failed to connect to Qdrant at {qdrant_host}: {e}. Falling back to local database.")
