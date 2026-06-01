@@ -1,0 +1,505 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+/* Global Overrides */
+.stApp {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+    font-family: var(--font-body);
+}
+
+/* Make default header transparent and allow click-through to nav bar links */
+header[data-testid="stHeader"], [data-testid="stHeader"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    pointer-events: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Hide Deploy and Main Menu buttons specifically to prevent hiding collapse control */
+[data-testid="stAppDeployButton"] {
+    display: none !important;
+}
+[data-testid="stMainMenu"] {
+    display: none !important;
+}
+
+/* Style and ensure the sidebar collapse toggle button is fully visible and clickable */
+[data-testid="stSidebarCollapseButton"], [data-testid="collapsedControl"] {
+    pointer-events: auto !important;
+    background-color: var(--card-bg-color) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    color: var(--primary-color) !important;
+    display: flex !important;
+    z-index: 1000000 !important;
+    margin-top: 10px !important;
+    margin-left: 12px !important;
+}
+
+[data-testid="stSidebarCollapseButton"]:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-highlight-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+[data-testid="stDecoration"] {
+    display: none !important;
+}
+
+/* Reset top padding to sit the custom header naturally at the top */
+.block-container {
+    padding-top: 0rem !important;
+}
+
+/* Top Navigation bar */
+.dhan-nav {
+    background-color: var(--card-bg-color);
+    padding: 0.8rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    margin: 0rem -5rem 2rem -5rem;
+}
+
+.dhan-logo {
+    color: var(--primary-color);
+    font-family: var(--font-header);
+    font-weight: 800;
+    font-size: 1.6rem;
+    margin-right: 2rem;
+    margin-left: 2.8rem; /* Leaves room for the sidebar collapse button */
+    letter-spacing: -0.5px;
+}
+
+/* Typography */
+.scheme-title {
+    font-family: var(--font-header);
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: var(--text-highlight-color);
+    margin-bottom: 0.2rem;
+}
+
+.scheme-badge {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.scheme-cat {
+    font-size: 0.88rem;
+    color: var(--text-muted-color);
+    margin-bottom: 1.5rem;
+}
+
+/* NAV Section */
+.nav-box {
+    margin-bottom: 2rem;
+}
+
+.nav-label {
+    font-size: 0.85rem;
+    color: var(--text-muted-color);
+    font-weight: 500;
+    margin-bottom: 0.1rem;
+}
+
+.nav-val {
+    font-size: 2.2rem;
+    color: var(--text-highlight-color);
+    font-weight: 800;
+    font-family: var(--font-header);
+    display: inline-block;
+    margin-right: 0.8rem;
+}
+
+.nav-change-pos {
+    color: var(--success-color);
+    font-weight: 700;
+    font-size: 1rem;
+    display: inline-block;
+}
+
+.nav-change-neg {
+    color: var(--danger-color);
+    font-weight: 700;
+    font-size: 1rem;
+    display: inline-block;
+}
+
+/* Cards and Containers */
+.dhan-box {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.dhan-box-header {
+    font-family: var(--font-header);
+    font-weight: 600;
+    color: var(--text-highlight-color);
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+/* Metrics Inside Cards */
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+    font-size: 0.88rem;
+}
+
+.metric-label {
+    color: var(--text-muted-color);
+}
+
+.metric-value {
+    color: var(--text-highlight-color);
+    font-weight: 600;
+}
+
+/* Returns Dashboard Card */
+.return-card {
+    text-align: center;
+    padding: 0.8rem;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.return-num {
+    color: var(--success-color);
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-family: var(--font-header);
+}
+
+/* Holdings Table */
+.holdings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.holdings-table th {
+    text-align: left;
+    color: var(--text-muted-color);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+    padding: 8px 4px;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+}
+.holdings-table td {
+    padding: 10px 4px;
+    border-bottom: 1px dashed var(--border-color);
+    color: var(--text-color);
+}
+
+/* Riskometer Card */
+.riskometer-box {
+    border-left: 4px solid var(--danger-color);
+    background-color: rgba(239, 68, 68, 0.1);
+    border-radius: 6px;
+    padding: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--danger-color);
+}
+
+/* Fund Summary Card */
+.fund-summary-card {
+    background: linear-gradient(135deg, var(--card-bg-color), var(--bg-color));
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin-bottom: 1.4rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+.fund-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.84rem;
+}
+.fund-summary-row:last-child { border-bottom: none; }
+.fund-summary-label { color: var(--text-muted-color); font-weight: 500; }
+.fund-summary-value { color: var(--text-highlight-color); font-weight: 600; text-align: right; }
+
+/* Dhan RAG Chat Analyst Container & Bubbles */
+.chat-row-user {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    margin-bottom: 1.2rem;
+    width: 100%;
+}
+
+.chat-row-analyst {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 1.2rem;
+    width: 100%;
+}
+
+.chat-bubble-new {
+    max-width: 86%;
+    padding: 0.9rem 1.15rem;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    position: relative;
+    font-family: var(--font-body);
+}
+
+.chat-bubble-new-user {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-highlight-color) !important;
+    border-radius: 16px 16px 0px 16px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+}
+
+.chat-bubble-new-analyst {
+    background: var(--card-bg-color) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+    border-radius: 16px 16px 16px 0px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+    border-left: 3px solid var(--primary-color) !important;
+}
+
+/* Style markdown tables inside the analyst bubbles */
+.chat-bubble-new-analyst table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 0.8rem 0 !important;
+    font-size: 0.8rem !important;
+}
+.chat-bubble-new-analyst th {
+    background-color: var(--bg-color) !important;
+    color: var(--text-muted-color) !important;
+    padding: 6px 10px !important;
+    text-align: left !important;
+    font-weight: 700 !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+.chat-bubble-new-analyst td {
+    padding: 6px 10px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-highlight-color) !important;
+}
+.chat-bubble-new-analyst tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Copy/Helpful actions inside chatbot response */
+.chat-bubble-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.65rem;
+    color: var(--text-muted-color);
+    font-weight: 500;
+}
+.chat-bubble-footer span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.chat-bubble-footer span:hover {
+    color: var(--primary-color);
+}
+
+.chat-avatar-user {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--card-bg-color), var(--bg-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    margin-left: 10px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.chat-avatar-analyst {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--card-bg-color), var(--bg-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    margin-right: 10px;
+    color: var(--primary-color);
+    border: 1px solid rgba(226, 255, 59, 0.3);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.chat-source-chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: -0.6rem;
+    margin-bottom: 1.2rem;
+    padding-left: 42px;
+}
+
+.chat-source-chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted-color);
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.chat-source-chip:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--primary-color);
+    color: var(--text-highlight-color);
+}
+
+.chat-source-item {
+    font-size: 0.76rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 5px;
+}
+
+/* Glowing focus outline inside stChatInput textarea */
+div[data-testid="column"] .stChatInput textarea {
+    background-color: var(--card-bg-color) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-highlight-color) !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+div[data-testid="column"] .stChatInput textarea:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 10px rgba(226, 255, 59, 0.2) !important;
+}
+
+/* Streamlit tabs styling override */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 24px;
+}
+.stTabs [data-baseweb="tab"] {
+    height: 50px;
+    white-space: pre-wrap;
+    background-color: transparent;
+    border: none;
+    color: var(--text-muted-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.stTabs [data-baseweb="tab"]:hover {
+    color: var(--text-highlight-color);
+}
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+/* SaaS-Style Sidebar Navigation Switcher */
+[data-testid="stSidebar"] {
+    background-color: var(--bg-color) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+
+[data-testid="stSidebar"] .stButton > button {
+    background-color: transparent !important;
+    color: var(--text-muted-color) !important;
+    border: none !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
+    padding: 0.6rem 0.8rem !important;
+    width: 100% !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-highlight-color) !important;
+}
+
+.active-nav-item {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-left: 3.5px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 0.6rem 0.8rem;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    letter-spacing: 0.02em;
+}
+
+.active-nav-nav {
+    font-size: 0.8rem;
+    color: var(--text-highlight-color);
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+/* News Feed Styling */
+a.news-link {
+    color: var(--text-highlight-color) !important;
+    text-decoration: none !important;
+    transition: color 0.15s ease-in-out !important;
+}
+a.news-link:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Download Button override */
+div.stDownloadButton > button {
+    background-color: var(--card-bg-color) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: none !important;
+}
+div.stDownloadButton > button:hover {
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
