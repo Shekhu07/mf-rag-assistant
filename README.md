@@ -1,3 +1,14 @@
+---
+title: Artha AI
+emoji: ⚡
+colorFrom: indigo
+colorTo: yellow
+sdk: streamlit
+sdk_version: 1.30.0
+app_file: app.py
+pinned: false
+---
+
 # ⚡ ArthaAI MF RAG Assistant
 
 A **production-grade Mutual Fund Research Assistant** built with Streamlit, LangChain, Qdrant, and Gemini 2.5 Flash. Analyze factsheets, compare returns, check expense ratios, and ask deep questions about any mutual fund — all in a sleek, premium dark UI.
