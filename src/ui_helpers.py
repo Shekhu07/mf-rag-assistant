@@ -78,31 +78,35 @@ def query_fund_api(query: str, fund_id: str, chat_history: list, extra_context: 
 # --- UI INJECTION HELPERS ---
 def inject_css():
     """Injects root styling variables and reads the style.css file."""
+    # Load Stitch design system tokens dynamically on every page load
+    design = config.load_stitch_design()
+    
     # 1. Inject root variables
     st.markdown(f"""
     <style>
         :root {{
-            --primary-color: {config.STITCH_DESIGN["primary_color"]};
-            --bg-color: {config.STITCH_DESIGN["bg_color"]};
-            --card-bg-color: {config.STITCH_DESIGN["card_bg_color"]};
-            --border-color: {config.STITCH_DESIGN["border_color"]};
-            --text-color: {config.STITCH_DESIGN["text_color"]};
-            --text-highlight-color: {config.STITCH_DESIGN["text_highlight_color"]};
-            --text-muted-color: {config.STITCH_DESIGN["text_muted_color"]};
-            --success-color: {config.STITCH_DESIGN["success_color"]};
-            --danger-color: {config.STITCH_DESIGN["danger_color"]};
-            --warning-color: {config.STITCH_DESIGN["warning_color"]};
-            --font-header: {config.STITCH_DESIGN["font_header"]};
-            --font-body: {config.STITCH_DESIGN["font_body"]};
-            --font-mono: {config.STITCH_DESIGN["font_mono"]};
-            --border-radius-sm: {config.STITCH_DESIGN["border_radius_sm"]};
-            --border-radius-md: {config.STITCH_DESIGN["border_radius_md"]};
-            --border-radius-lg: {config.STITCH_DESIGN["border_radius_lg"]};
-            --spacing-unit: {config.STITCH_DESIGN["spacing_unit"]};
-            --card-shadow: {config.STITCH_DESIGN["card_shadow"]};
+            --primary-color: {design["primary_color"]};
+            --bg-color: {design["bg_color"]};
+            --card-bg-color: {design["card_bg_color"]};
+            --border-color: {design["border_color"]};
+            --text-color: {design["text_color"]};
+            --text-highlight-color: {design["text_highlight_color"]};
+            --text-muted-color: {design["text_muted_color"]};
+            --success-color: {design["success_color"]};
+            --danger-color: {design["danger_color"]};
+            --warning-color: {design["warning_color"]};
+            --font-header: {design["font_header"]};
+            --font-body: {design["font_body"]};
+            --font-mono: {design["font_mono"]};
+            --border-radius-sm: {design["border_radius_sm"]};
+            --border-radius-md: {design["border_radius_md"]};
+            --border-radius-lg: {design["border_radius_lg"]};
+            --spacing-unit: {design["spacing_unit"]};
+            --card-shadow: {design["card_shadow"]};
         }}
     </style>
     """, unsafe_allow_html=True)
+
     
     # 2. Inject static style.css content
     css_path = Path(__file__).resolve().parent.parent / "assets" / "style.css"
