@@ -326,12 +326,27 @@ def reformulate_query(query: str, chat_history: list, api_key: str) -> str:
         return query
 
 def is_query_relative(query: str) -> bool:
-    """Returns True if the query likely depends on chat history context (contains pronouns/deictic terms)."""
-    relative_tokens = {"it", "its", "them", "they", "those", "that", "this", "he", "she", "him", "her", "his", "their", "previous", "earlier", "above", "latter", "former", "other", "why", "how", "what about", "who"}
-    # Strip common punctuation and split into words
-    cleaned_query = query.lower().replace("?", "").replace(".", "").replace(",", "")
+    """
+    Returns True if the query likely depends on chat history context 
+    (contains pronouns or context-dependent reference terms).
+    """
+    # Context-dependent tokens indicating reference to previous turns
+    relative_tokens = {
+        "it", "its", "them", "they", "those", "that", "this", "these",
+        "he", "she", "him", "her", "his", "their", "theirs", "himself", "herself",
+        "previous", "earlier", "above", "latter", "former", "other", "another", "additional",
+        "same", "different", "similar"
+    }
+    # Clean the query: lowercase and remove basic punctuation
+    import string
+    cleaned_query = query.lower().translate(str.maketrans("", "", string.punctuation))
     words = set(cleaned_query.split())
-    return not words.isdisjoint(relative_tokens)
+    
+    # Check for context-dependent phrases
+    phrases = ["what about", "how about", "any other", "what is the other"]
+    has_phrase = any(phrase in cleaned_query for phrase in phrases)
+    
+    return has_phrase or not words.isdisjoint(relative_tokens)
 
 def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, extra_context: str = None) -> tuple[str, list]:
     """
