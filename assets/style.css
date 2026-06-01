@@ -138,9 +138,10 @@ header[data-testid="stHeader"], [data-testid="stHeader"] {
 .dhan-box {
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--border-radius-md);
     padding: 1.2rem;
     margin-bottom: 1.5rem;
+    box-shadow: var(--card-shadow);
 }
 
 .dhan-box-header {
@@ -221,10 +222,10 @@ header[data-testid="stHeader"], [data-testid="stHeader"] {
 .fund-summary-card {
     background: linear-gradient(135deg, var(--card-bg-color), var(--bg-color));
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: var(--border-radius-md);
     padding: 1.2rem;
     margin-bottom: 1.4rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    box-shadow: var(--card-shadow);
 }
 .fund-summary-row {
     display: flex;

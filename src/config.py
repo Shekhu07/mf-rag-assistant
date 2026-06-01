@@ -34,8 +34,15 @@ DEFAULT_STITCH_DESIGN = {
     "text_muted_color": "#8A99AD",
     "success_color": "#10B981",
     "danger_color": "#EF4444",
+    "warning_color": "#F59E0B",
     "font_header": "'Outfit', sans-serif",
-    "font_body": "'Plus Jakarta Sans', sans-serif"
+    "font_body": "'Plus Jakarta Sans', sans-serif",
+    "font_mono": "'JetBrains Mono', monospace",
+    "border_radius_sm": "4px",
+    "border_radius_md": "8px",
+    "border_radius_lg": "12px",
+    "spacing_unit": "8px",
+    "card_shadow": "none"
 }
 
 STITCH_DESIGN_PATH = BASE_DIR / "stitch_design.json"

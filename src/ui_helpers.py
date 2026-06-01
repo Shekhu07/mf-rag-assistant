@@ -91,8 +91,15 @@ def inject_css():
             --text-muted-color: {config.STITCH_DESIGN["text_muted_color"]};
             --success-color: {config.STITCH_DESIGN["success_color"]};
             --danger-color: {config.STITCH_DESIGN["danger_color"]};
+            --warning-color: {config.STITCH_DESIGN["warning_color"]};
             --font-header: {config.STITCH_DESIGN["font_header"]};
             --font-body: {config.STITCH_DESIGN["font_body"]};
+            --font-mono: {config.STITCH_DESIGN["font_mono"]};
+            --border-radius-sm: {config.STITCH_DESIGN["border_radius_sm"]};
+            --border-radius-md: {config.STITCH_DESIGN["border_radius_md"]};
+            --border-radius-lg: {config.STITCH_DESIGN["border_radius_lg"]};
+            --spacing-unit: {config.STITCH_DESIGN["spacing_unit"]};
+            --card-shadow: {config.STITCH_DESIGN["card_shadow"]};
         }}
     </style>
     """, unsafe_allow_html=True)
