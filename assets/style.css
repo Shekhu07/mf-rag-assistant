@@ -483,57 +483,81 @@ header[data-testid="stHeader"], [data-testid="stHeader"] {
 }
 
 /* ===== Sidebar ===== */
-[data-testid="stSidebar"] {
+section[data-testid="stSidebar"] {
     background-color: var(--surface-container-low) !important;
     border-right: 1px solid var(--border-color) !important;
 }
-[data-testid="stSidebar"] .stButton > button {
+section[data-testid="stSidebar"] > div {
+    background-color: var(--surface-container-low) !important;
+}
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    background-color: var(--surface-container-low) !important;
+}
+section[data-testid="stSidebar"] button {
     background-color: transparent !important;
     color: var(--outline-color) !important;
     border: none !important;
     text-align: left !important;
     justify-content: flex-start !important;
-    padding: 0.5rem 0.8rem !important;
+    padding: 0.55rem 0.8rem !important;
     width: 100% !important;
-    border-radius: 4px !important;
+    border-radius: 6px !important;
     font-size: 0.85rem !important;
-    font-weight: 400 !important;
+    font-weight: 500 !important;
+    font-family: var(--font-body) !important;
     transition: all 0.2s ease-in-out !important;
     box-shadow: none !important;
+    letter-spacing: 0 !important;
 }
-[data-testid="stSidebar"] .stButton > button:hover {
-    background-color: var(--card-bg-color) !important;
+section[data-testid="stSidebar"] button:hover {
+    background-color: var(--surface-high) !important;
     color: var(--text-highlight-color) !important;
+}
+section[data-testid="stSidebar"] button:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+section[data-testid="stSidebar"] button p {
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    font-family: var(--font-body) !important;
+    color: inherit !important;
+}
+section[data-testid="stSidebar"] hr {
+    border-color: var(--border-color) !important;
+    opacity: 0.4 !important;
+}
+section[data-testid="stSidebar"] .stMarkdown p {
+    font-family: var(--font-body) !important;
 }
 
 .active-nav-item {
-    background-color: var(--surface-highest);
-    border-right: 2px solid var(--primary-color);
+    background: linear-gradient(90deg, transparent, rgba(173, 198, 255, 0.08));
+    border-left: 3px solid var(--primary-color);
     color: var(--primary-color);
-    padding: 0.5rem 0.8rem;
-    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0 6px 6px 0;
     font-size: 0.85rem;
     font-weight: 700;
     margin-bottom: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-family: var(--font-body);
 }
 .active-nav-nav {
     font-size: 14px;
     color: var(--primary-color);
 }
 
-/* ===== Floating Chat Widget (Glassmorphism) ===== */
-div[data-testid="element-container"]:has(div.floating-btn-anchor),
-div.element-container:has(div.floating-btn-anchor) {
+/* ===== Floating Chat Widget ===== */
+#floating-chatbot-wrapper {
     position: fixed !important;
     bottom: 24px !important;
     right: 24px !important;
-    z-index: 100000 !important;
+    z-index: 999999 !important;
 }
-div[data-testid="element-container"]:has(div.floating-btn-anchor) button,
-div.element-container:has(div.floating-btn-anchor) button {
+#floating-chatbot-wrapper button {
     width: auto !important;
     height: auto !important;
     border-radius: 999px !important;
@@ -546,36 +570,67 @@ div.element-container:has(div.floating-btn-anchor) button {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 12px 20px !important;
+    padding: 14px 22px !important;
     gap: 8px !important;
     cursor: pointer !important;
-    transition: all 0.2s ease-in-out !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     letter-spacing: 0.03em !important;
+    font-family: var(--font-body) !important;
 }
-div[data-testid="element-container"]:has(div.floating-btn-anchor) button:hover,
-div.element-container:has(div.floating-btn-anchor) button:hover {
-    transform: scale(1.05) !important;
-    box-shadow: 0 12px 40px rgba(173, 198, 255, 0.15) !important;
+#floating-chatbot-wrapper button p {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: var(--on-primary) !important;
+    font-family: var(--font-body) !important;
+}
+#floating-chatbot-wrapper button:hover {
+    transform: scale(1.05) translateY(-2px) !important;
+    box-shadow: 0 12px 40px rgba(173, 198, 255, 0.2) !important;
 }
 
-div[data-testid="element-container"]:has(div.floating-chat-anchor),
-div.element-container:has(div.floating-chat-anchor) {
+#floating-chat-panel {
     position: fixed !important;
     bottom: 80px !important;
     right: 24px !important;
-    width: 340px !important;
-    max-height: 420px !important;
-    background: rgba(23, 31, 51, 0.85) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    width: 380px !important;
+    max-height: 500px !important;
+    background: rgba(23, 31, 51, 0.92) !important;
+    backdrop-filter: blur(24px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.5) !important;
+    border: 1px solid rgba(173, 198, 255, 0.12) !important;
     border-radius: 16px !important;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.5) !important;
-    z-index: 99999 !important;
-    display: flex !important;
-    flex-direction: column !important;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(173, 198, 255, 0.06) !important;
+    z-index: 999998 !important;
     overflow: hidden !important;
-    padding: 0 !important;
+}
+#floating-chat-panel [data-testid="stVerticalBlock"] {
+    gap: 0 !important;
+}
+#floating-chat-panel button {
+    font-family: var(--font-body) !important;
+}
+#floating-chat-panel button p {
+    font-family: var(--font-body) !important;
+    color: inherit !important;
+}
+#floating-chat-panel [data-testid="stTextInput"] input {
+    background-color: var(--surface-lowest) !important;
+    color: var(--text-highlight-color) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    font-family: var(--font-body) !important;
+    font-size: 13px !important;
+}
+#floating-chat-panel [data-testid="stTextInput"] input::placeholder {
+    color: var(--outline-color) !important;
+}
+#floating-chat-panel [data-testid="stFormSubmitButton"] button {
+    background-color: var(--primary-color) !important;
+    color: var(--on-primary) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    padding: 0.5rem 0.8rem !important;
 }
 
 .floating-chat-header {
@@ -704,3 +759,8 @@ a.news-link:hover { color: var(--primary-color) !important; }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+/* Hide Streamlit default page navigation in sidebar */
+[data-testid="stSidebarNav"] {
+    display: none !important;
+}

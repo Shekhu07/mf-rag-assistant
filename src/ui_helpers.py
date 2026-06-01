@@ -155,7 +155,7 @@ def render_ticker_bar():
     )
 
 def render_top_navigation():
-    """Renders the terminal-style top navigation bar."""
+    """Renders the terminal-style top navigation bar with working page links."""
     logo_base64 = ""
     logo_path = Path(__file__).resolve().parent.parent / "assets" / "logo.png"
     if logo_path.exists():
@@ -180,15 +180,58 @@ def render_top_navigation():
                     <div class="terminal-logo-sub">Terminal v2.4</div>
                 </div>
             </div>
-            <div style="display:flex; align-items:center; margin-left:2rem;">
-                <span class="terminal-nav-link terminal-nav-link-active">Mutual Funds</span>
-                <span class="terminal-nav-link terminal-nav-link-inactive">Markets</span>
-                <span class="terminal-nav-link terminal-nav-link-inactive">Portfolio</span>
-            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
+
+    # Horizontal page navigation using Streamlit buttons
+    nav_cols = st.columns([1, 1, 1, 1, 1, 2])
+    nav_pages = [
+        ("⚡ AI Chatbot", "pages/4_AI_Chatbot.py"),
+        ("📊 Overview", "app.py"),
+        ("📈 Holdings", "pages/1_Holdings_&_Overlap.py"),
+        ("💰 SIP Calc", "pages/2_SIP_Calculator.py"),
+        ("📰 News", "pages/3_News_Feed.py"),
+    ]
+    for i, (label, page) in enumerate(nav_pages):
+        with nav_cols[i]:
+            if st.button(label, key=f"topnav_{label}", use_container_width=True):
+                if page == "app.py":
+                    st.switch_page("app.py")
+                else:
+                    st.switch_page(page)
+
+    # Style the top nav buttons
+    st.markdown("""
+    <style>
+        /* Top nav buttons - horizontal pill style */
+        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(1) button,
+        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(2) button {
+            background-color: var(--surface-container-low) !important;
+            color: var(--text-muted-color) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px !important;
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            font-family: var(--font-body) !important;
+            padding: 0.45rem 0.5rem !important;
+            transition: all 0.2s ease !important;
+        }
+        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(1) button:hover,
+        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(2) button:hover {
+            background-color: var(--surface-high) !important;
+            color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(1) button p,
+        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(2) button p {
+            font-family: var(--font-body) !important;
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 def render_sidebar():
     """Renders the mutual fund scheme selector sidebar."""
@@ -238,40 +281,88 @@ def render_sidebar():
                 if st.button(btn_label, key=f"sidebar_btn_{key}", use_container_width=True):
                     st.session_state["selected_scheme"] = key
                     st.rerun()
-
-        st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
-        st.divider()
-
-        if st.button("🔄 Refresh Live NAV", key="sidebar_refresh", use_container_width=True):
-            clear_nav_cache()
-            st.cache_data.clear()
-            st.rerun()
-
-        st.markdown(
-            """
-            <div style="font-size:0.68rem; color:var(--outline-color); line-height:1.45; margin-top:0.8rem; border-top:1px solid var(--border-color); padding-top:0.8rem;">
-                <b>RAG Isolation Mode</b>: Database queries are isolated strictly to this scheme's documents.
-                <div style="margin-top: 6px;"></div>
-                <b>Disclaimer</b>: Mutual Fund investments are subject to market risks. Read all scheme-related documents carefully. AI insights and Google News feed are for informational purposes only and do not constitute financial advice. NAV data is sourced live from public feeds (MFAPI). This platform is an independent educational tool and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Dhan (Moneylicious Securities Pvt. Ltd.) or any of its subsidiaries.
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
     return selected_key
 
 def render_floating_chatbot(selected_key: str):
-    """Renders a floating RAG chatbot widget with glassmorphism styling."""
+    """Renders a floating RAG chatbot widget — FAB button + inline chat panel."""
     import markdown
+    import streamlit.components.v1 as components
 
     if "show_float_chat" not in st.session_state:
         st.session_state["show_float_chat"] = False
 
-    with st.container():
-        st.markdown('<div class="floating-btn-anchor"></div>', unsafe_allow_html=True)
-        btn_label = "✖ Close" if st.session_state["show_float_chat"] else "✦ ArthaAI Terminal"
-        if st.button(btn_label, key="float_chat_toggle_btn"):
+    # Hidden Streamlit button that toggles the chat state (clickable by JS)
+    col_hide = st.columns([1])[0]
+    with col_hide:
+        toggled = st.button("🔄 Toggle ArthaAI Chat", key="float_chat_toggle_btn", use_container_width=True)
+        if toggled:
             st.session_state["show_float_chat"] = not st.session_state["show_float_chat"]
             st.rerun()
+
+    # Style the toggle button to be visible and attractive (not hidden)
+    st.markdown("""
+    <style>
+        /* Style the toggle chat button as a prominent inline button */
+        button[data-testid="baseButton-secondary"] p {
+            font-family: var(--font-body) !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Floating Action Button via components.html (real JS + CSS positioning)
+    is_open = st.session_state["show_float_chat"]
+    fab_label = "✖ Close" if is_open else "✦ ArthaAI"
+    fab_bg = "#ffb4ab" if is_open else "#adc6ff"
+    fab_color = "#1a1a2e"
+
+    components.html(
+        f"""
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&display=swap');
+            body {{ margin: 0; padding: 0; overflow: hidden; background: transparent; }}
+            .fab {{
+                position: fixed;
+                bottom: 28px;
+                right: 28px;
+                z-index: 999999;
+                background: {fab_bg};
+                color: {fab_color};
+                border: none;
+                border-radius: 999px;
+                padding: 14px 24px;
+                font-size: 13px;
+                font-weight: 700;
+                font-family: 'Outfit', sans-serif;
+                cursor: pointer;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 2px rgba(173, 198, 255, 0.1);
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                letter-spacing: 0.03em;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }}
+            .fab:hover {{
+                transform: scale(1.06) translateY(-2px);
+                box-shadow: 0 14px 44px rgba(173, 198, 255, 0.25);
+            }}
+            .fab:active {{
+                transform: scale(0.98);
+            }}
+        </style>
+        <button class="fab" onclick="
+            // Find and click the hidden Streamlit toggle button
+            const allButtons = parent.document.querySelectorAll('button');
+            for (const btn of allButtons) {{
+                const text = (btn.innerText || btn.textContent || '').trim();
+                if (text.includes('Toggle ArthaAI Chat')) {{
+                    btn.click();
+                    break;
+                }}
+            }}
+        ">{fab_label}</button>
+        """,
+        height=0,
+    )
 
     if st.session_state["show_float_chat"]:
         scheme = FUND_DATA[selected_key]
@@ -285,53 +376,66 @@ def render_floating_chatbot(selected_key: str):
                 }
             ]
 
-        with st.container():
-            st.markdown('<div class="floating-chat-anchor"></div>', unsafe_allow_html=True)
-
-            st.markdown(
-                f"""
-                <div class="floating-chat-header">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="color:var(--primary-color); font-size:18px;">⚡</span>
-                        <span style="font-weight:700; color:var(--text-highlight-color); font-size:14px;">ArthaAI Assistant</span>
+        # --- Inline Chat Panel ---
+        st.markdown("<div style='margin-top:1.5rem;'></div>", unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div style="background: linear-gradient(135deg, rgba(173, 198, 255, 0.06), rgba(78, 222, 163, 0.03));
+                border: 1px solid rgba(173, 198, 255, 0.15); border-radius: 16px; overflow: hidden;">
+                <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+                    background: rgba(173, 198, 255, 0.08); display:flex; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="color:var(--primary-color); font-size:20px;">⚡</span>
+                        <div>
+                            <div style="font-weight:700; color:var(--text-highlight-color); font-size:15px; font-family:var(--font-body);">ArthaAI RAG Assistant</div>
+                            <div style="font-size:10px; color:var(--outline-color); text-transform:uppercase; letter-spacing:0.05em; font-family:var(--font-body);">
+                                Grounded: {scheme['name'][:30]}
+                            </div>
+                        </div>
                     </div>
-                    <div style="font-size:10px; color:var(--outline-color); text-transform:uppercase; letter-spacing:0.05em;">
-                        Grounded: {scheme['name'][:25]}...
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="display:inline-block; width:6px; height:6px; background-color:var(--success-color); border-radius:50%; box-shadow:0 0 8px var(--success-color);"></span>
+                        <span style="font-size:10px; font-weight:700; color:var(--success-color); letter-spacing:0.05em;">ACTIVE</span>
                     </div>
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-            chat_viewport = st.container(height=260)
-            with chat_viewport:
-                for chat in st.session_state[chat_key]:
-                    if chat["role"] == "user":
-                        st.markdown(
-                            f"""<div class="float-chat-row-user"><div class="float-chat-bubble float-chat-bubble-user">{chat['content']}</div></div>""",
-                            unsafe_allow_html=True
-                        )
-                    else:
-                        html_content = markdown.markdown(chat['content'], extensions=['tables', 'nl2br'])
-                        st.markdown(
-                            f"""<div class="float-chat-row-analyst"><div class="float-chat-bubble float-chat-bubble-analyst">{html_content}</div></div>""",
-                            unsafe_allow_html=True
-                        )
+        # Chat messages viewport
+        chat_viewport = st.container(height=350)
+        with chat_viewport:
+            for chat in st.session_state[chat_key]:
+                if chat["role"] == "user":
+                    st.markdown(
+                        f"""<div class="float-chat-row-user"><div class="float-chat-bubble float-chat-bubble-user">{chat['content']}</div></div>""",
+                        unsafe_allow_html=True
+                    )
+                else:
+                    html_content = markdown.markdown(chat['content'], extensions=['tables', 'nl2br'])
+                    st.markdown(
+                        f"""<div class="float-chat-row-analyst"><div class="float-chat-bubble float-chat-bubble-analyst">{html_content}</div></div>""",
+                        unsafe_allow_html=True
+                    )
 
-            with st.form(key=f"float_chat_form_{selected_key}", clear_on_submit=True):
-                col_in, col_btn = st.columns([5, 1])
-                with col_in:
-                    q_input = st.text_input("Ask AI Terminal...", placeholder="Ask AI Terminal...", label_visibility="collapsed", key=f"float_input_{selected_key}")
-                with col_btn:
-                    submitted = st.form_submit_button("➔")
+        # Chat input form
+        with st.form(key=f"float_chat_form_{selected_key}", clear_on_submit=True):
+            col_in, col_btn = st.columns([5, 1])
+            with col_in:
+                q_input = st.text_input("Ask AI Terminal...", placeholder="e.g. What are the top holdings?", label_visibility="collapsed", key=f"float_input_{selected_key}")
+            with col_btn:
+                submitted = st.form_submit_button("➔")
 
-            if submitted and q_input:
-                st.session_state[chat_key].append({"role": "user", "content": q_input})
-                with st.spinner("Analyzing..."):
-                    ans, sources = query_fund_api(q_input, selected_key, st.session_state[chat_key][:-1])
-                    st.session_state[chat_key].append({
-                        "role": "analyst",
-                        "content": ans,
-                        "sources": sources
-                    })
-                st.rerun()
+        if submitted and q_input:
+            st.session_state[chat_key].append({"role": "user", "content": q_input})
+            with st.spinner("Analyzing..."):
+                ans, sources = query_fund_api(q_input, selected_key, st.session_state[chat_key][:-1])
+                st.session_state[chat_key].append({
+                    "role": "analyst",
+                    "content": ans,
+                    "sources": sources
+                })
+            st.rerun()
+
+

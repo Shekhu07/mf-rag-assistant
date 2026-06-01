@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_all_nav_data_cached, fetch_nav_history_cached, render_floating_chatbot
+from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_all_nav_data_cached, fetch_nav_history_cached
 from src.fund_metadata import FUND_DATA
 import src.config as config
 
@@ -37,6 +37,89 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# ============================================================
+# HERO SECTION: RAG CHATBOT (Front & Center)
+# ============================================================
+import markdown as md_lib
+from src.ui_helpers import query_fund_api
+
+chat_key = f"main_chat_{selected_key}"
+if chat_key not in st.session_state:
+    st.session_state[chat_key] = [
+        {
+            "role": "analyst",
+            "content": f"Analysis of **{scheme['name']}** loaded. I can answer questions about portfolio holdings, sector allocation, returns, expense ratios, risk metrics, and more. Try asking me something!"
+        }
+    ]
+
+st.markdown(
+    f"""
+    <div style="background: linear-gradient(135deg, rgba(173, 198, 255, 0.08), rgba(78, 222, 163, 0.04));
+        border: 1px solid rgba(173, 198, 255, 0.15); border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem;">
+        <div style="padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: rgba(173, 198, 255, 0.06); display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:36px; height:36px; background:var(--primary-color); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--on-primary); font-weight:800;">⚡</div>
+                <div>
+                    <div style="font-weight:700; color:var(--text-highlight-color); font-size:16px; font-family:var(--font-body);">ArthaAI RAG Assistant</div>
+                    <div style="font-size:11px; color:var(--outline-color); font-family:var(--font-body);">
+                        Grounded on: <strong style="color:var(--primary-color);">{scheme['name']}</strong> &nbsp;·&nbsp; RAG Isolation Active
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span style="display:inline-block; width:8px; height:8px; background-color:var(--success-color); border-radius:50%; box-shadow:0 0 10px var(--success-color);"></span>
+                <span style="font-size:11px; font-weight:700; color:var(--success-color); letter-spacing:0.05em;">LIVE</span>
+            </div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Chat messages viewport
+chat_viewport = st.container(height=320)
+with chat_viewport:
+    for chat in st.session_state[chat_key]:
+        if chat["role"] == "user":
+            st.markdown(
+                f"""<div class="float-chat-row-user"><div class="float-chat-bubble float-chat-bubble-user">{chat['content']}</div></div>""",
+                unsafe_allow_html=True
+            )
+        else:
+            html_content = md_lib.markdown(chat['content'], extensions=['tables', 'nl2br'])
+            st.markdown(
+                f"""<div class="float-chat-row-analyst"><div class="float-chat-bubble float-chat-bubble-analyst">{html_content}</div></div>""",
+                unsafe_allow_html=True
+            )
+
+# Chat input form
+with st.form(key=f"main_chat_form_{selected_key}", clear_on_submit=True):
+    chat_col_in, chat_col_btn = st.columns([6, 1])
+    with chat_col_in:
+        chat_input = st.text_input(
+            "Ask ArthaAI...",
+            placeholder="e.g. What are the top 5 holdings? What is the expense ratio?",
+            label_visibility="collapsed",
+            key=f"main_chat_input_{selected_key}"
+        )
+    with chat_col_btn:
+        chat_submitted = st.form_submit_button("Ask ➔", use_container_width=True)
+
+if chat_submitted and chat_input:
+    st.session_state[chat_key].append({"role": "user", "content": chat_input})
+    with st.spinner("⚡ Analyzing with RAG..."):
+        ans, sources = query_fund_api(chat_input, selected_key, st.session_state[chat_key][:-1])
+        st.session_state[chat_key].append({
+            "role": "analyst",
+            "content": ans,
+            "sources": sources
+        })
+    st.rerun()
+
+st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
+st.divider()
 
 # --- SCHEME HEADER ---
 st.markdown(f'<span class="scheme-category-badge">{scheme["category"]}</span><span class="scheme-type-label">Direct Growth</span>', unsafe_allow_html=True)
@@ -343,7 +426,7 @@ st.markdown(
             <div class="insights-title">Terminal Insights</div>
             <div class="insights-text">
                 {scheme['desc']}<br/>
-                <span style="color:var(--text-highlight-color); font-weight:600;">Use the floating AI chatbot</span> to query deeper analysis on portfolio risk, sector concentration, and historical returns.
+                <span style="color:var(--text-highlight-color); font-weight:600;">Use the RAG chatbot above</span> to query deeper analysis on portfolio risk, sector concentration, and historical returns.
             </div>
         </div>
         <span class="material-symbols-outlined insights-icon">psychology</span>
@@ -353,6 +436,3 @@ st.markdown(
 )
 
 st.markdown("<div style='margin-bottom:2rem;'></div>", unsafe_allow_html=True)
-
-# Render the floating chatbot
-render_floating_chatbot(selected_key)
