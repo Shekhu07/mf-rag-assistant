@@ -1,23 +1,25 @@
 # ⚡ ArthaAI MF RAG Assistant
 
-A **production-grade Mutual Fund Research Assistant** built with Streamlit, LangChain, ChromaDB, and Gemini 2.5 Flash. Analyze factsheets, compare returns, check expense ratios, and ask deep questions about any mutual fund — all in a sleek, premium dark UI.
+A **production-grade Mutual Fund Research Assistant** built with Streamlit, LangChain, Qdrant, and Gemini 2.5 Flash. Analyze factsheets, compare returns, check expense ratios, and ask deep questions about any mutual fund — all in a sleek, premium dark UI.
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.x-red?logo=streamlit)
 ![LangChain](https://img.shields.io/badge/LangChain-0.x-green)
-![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_Store-purple)
+![Qdrant](https://img.shields.io/badge/Qdrant-Vector_Store-blue?logo=qdrant)
 ![Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-orange?logo=google)
 
 ---
 
 ## 🧠 Features
 
-- **RAG-Powered Q&A** — Ask any question about a mutual fund's factsheet using Retrieval-Augmented Generation
-- **Fund Isolation** — Each query is strictly scoped to the selected fund's documents in ChromaDB
-- **Instant Answers** — Returns Info, Expense Specs, and Top Holdings load instantly from local metadata (no API call)
-- **Conversational Memory** — Multi-turn chat with query reformulation for follow-up questions
-- **Rate-Limit Resilience** — Automatic fallback to local metadata when Gemini API quota is exceeded
-- **Premium Dark UI** — Dark, premium interface with markdown tables, animated chat bubbles, and a collapsible sources panel
+- **Hybrid Search (Dense + BM25)** — Combines dense semantic vector embeddings with sparse BM25 keyword matching using Reciprocal Rank Fusion (RRF) to retrieve precise financial numbers and tickers.
+- **Dual-Layer Semantic Cache** — Short-circuits identical queries in under **1.5ms** (4400x speedup!) via exact case-insensitive string matching, and falls back to cosine-similarity vector comparisons to avoid redundant LLM and embedding API calls.
+- **Intent-Based Routing Gateway** — Fast-tracks greetings/pleasantries and simple financial metric lookups directly to static text and offline fallbacks, reducing rate limits and network calls.
+- **RAG-Powered Q&A** — Ask deep questions about a mutual fund's factsheet using Retrieval-Augmented Generation.
+- **Fund Isolation** — Each query is strictly isolated to the selected fund's documents in Qdrant.
+- **Real-time NAV Integration** — Retrieves live NAV metrics dynamically from MFAPI endpoints.
+- **Rate-Limit Resilience** — Automatic fallback to high-fidelity local metadata when Gemini API quota is exceeded.
+- **Premium Dark UI** — Dark, premium interface with markdown tables, animated chat bubbles, and a collapsible sources panel.
 - **5 Funds Supported** out of the box:
   - SBI Bluechip Fund Direct Growth
   - Parag Parikh Flexi Cap Fund Direct Growth
@@ -37,12 +39,13 @@ mf-rag-assistant/
 ├── requirements.txt        # Python dependencies
 ├── .env.template           # Template for environment variables
 ├── deploy/
-│   ├── docker-compose.yml  # Orchestrates Streamlit & Nginx containers
+│   ├── docker-compose.yml  # Orchestrates Streamlit, Qdrant & Nginx containers
 │   └── nginx_streamlit.conf # Nginx reverse proxy configuration
 ├── src/
 │   ├── config.py           # Paths, model names, chunking config
-│   ├── ingest.py           # PDF ingestion → ChromaDB pipeline
-│   ├── query_engine.py     # RAG retrieval + Gemini generation
+│   ├── ingest.py           # PDF ingestion → Qdrant Vector DB pipeline
+│   ├── query_engine.py     # RAG retrieval + Gemini generation + RRF + Routing
+│   ├── semantic_cache.py   # Vector and exact-string semantic cache module
 │   ├── fund_metadata.py    # Local fund metadata (NAV, returns, etc.)
 │   └── utils.py            # PDF text extraction helpers
 └── data/
@@ -88,11 +91,11 @@ Place PDF factsheets in `data/<fund_id>/factsheet.pdf`. The supported fund IDs a
 - `icici_prudential`
 - `mirae_asset`
 
-### 6. Ingest documents into ChromaDB
+### 6. Ingest documents into Qdrant Vector Store
 ```bash
 python3 src/ingest.py
 ```
-This processes all PDFs and text files, chunks them, embeds them, and stores them in the local `vector_store/` directory.
+This processes all PDFs and text files, chunks them, generates 3072-dimensional embeddings, and stores them in the Qdrant vector database (automatically falling back to local file storage `vector_store/qdrant_local/` if no server is running).
 
 ### 7. Run the app
 ```bash
@@ -134,6 +137,7 @@ docker compose -f deploy/docker-compose.yml down
 | Variable | Description |
 |----------|-------------|
 | `GEMINI_API_KEY` | Your Google Gemini API key (required) |
+| `QDRANT_HOST` | Host address of Qdrant vector database (defaults to `localhost` or SQLite fallback) |
 
 > ⚠️ **Never commit your `.env` file.** It is excluded by `.gitignore`.
 
