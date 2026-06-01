@@ -27,3 +27,7 @@ test_*.py
 # Exclude OS-specific metadata files
 .DS_Store
 Thumbs.db
+
+# Exclude local vector database files
+vector_store/
+

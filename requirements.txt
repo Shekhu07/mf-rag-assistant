@@ -16,3 +16,4 @@ rank_bm25==0.2.2
 fastapi==0.110.0
 uvicorn==0.28.0
 tenacity==8.2.3
+huggingface-hub==0.28.0
