@@ -19,4 +19,15 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          # Set Git identity for history rewriting
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          
+          # Initialize Git LFS
+          git lfs install
+          
+          # Migrate local history to LFS pointers for binary files
+          git lfs migrate import --include="*.pdf,*.png" --yes
+          
+          # Force push the LFS-migrated branch to Hugging Face Space
           git push --force https://oauth2:$HF_TOKEN@huggingface.co/spaces/Abhishek292000/artha-ai main
