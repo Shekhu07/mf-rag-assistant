@@ -264,12 +264,18 @@ def reformulate_query(query: str, chat_history: list, api_key: str) -> str:
     formatted_history = format_chat_history(chat_history)
     
     system_instruction = (
-        "You are an assistant designed to reformulate user questions for search retrieval.\n"
-        "Given the following Chat History and a follow-up User Question, rewrite the follow-up "
-        "question into a standalone, self-contained question that can be searched in a vector "
-        "database without needing any previous context. Keep the reformulated query concise, "
-        "specific, and focused on key financial terms.\n"
-        "Do NOT answer the question. Just output the rewritten standalone question and nothing else.\n\n"
+        "You are a professional financial query reformulator.\n"
+        "Your task is to rewrite a follow-up User Question into a standalone, self-contained search query for a retrieval system.\n\n"
+        "Rules:\n"
+        "1. Resolve all relative pronouns (e.g., 'it', 'its', 'they', 'this fund', 'him', 'her') into the concrete mutual fund scheme name from the chat history.\n"
+        "2. Always explicitly incorporate the specific mutual fund name (e.g., 'SBI Bluechip Fund Growth') into the reformulated query to ensure accurate embedding generation.\n"
+        "3. Keep the query concise, focused entirely on key search terms (ISINs, ratios, managers, holdings), and strip out conversational filler (e.g., 'can you find', 'please tell me').\n"
+        "4. Do NOT answer the question. Only output the reformulated query and nothing else.\n\n"
+        "Examples:\n"
+        "- History: User: What is the NAV of SBI Bluechip? Analyst: The NAV is 85.0. User: What about its expense ratio?\n"
+        "  Output: expense ratio of SBI Bluechip Fund Growth\n"
+        "- History: User: Who manages Parag Parikh Flexi Cap? Analyst: Rajeev Thakkar. User: Show me their top holdings.\n"
+        "  Output: top holdings of Parag Parikh Flexi Cap Fund\n\n"
         f"Chat History:\n{formatted_history}"
     )
     
@@ -526,15 +532,16 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
         history_context = f"Conversation History:\n{formatted_history}\n\n"
 
     system_instruction = (
-        "You are a highly precise and objective AI financial analyst assistant specializing in mutual fund analysis.\n"
-        "You are tasked with answering queries about a specific mutual fund using the provided factsheet, live NAV context, and optional recent news/transaction context.\n"
-        "You also have access to the conversation history below to help you answer follow-up queries or maintain context.\n\n"
+        "You are a highly precise, objective, and analytical AI Financial Analyst specializing in Indian Mutual Funds.\n"
+        f"You are answering a query about the mutual fund scheme: '{fund_id}' using the provided Context (factsheets, live NAV, news, and history).\n\n"
         "Strict Grounding Rules:\n"
-        "1. Answer the question using ONLY the facts, numbers, and statements provided in the Context (including live NAV and recent news/portfolio changes context) below.\n"
-        "2. Do NOT use outside knowledge, extrapolate, make assumptions, or speculate.\n"
-        "3. If the context does not contain the answer or does not have enough information to answer, you must respond exactly with: "
-        "'I am sorry, but I do not have that information in the provided documentation for this mutual fund.'\n"
-        "4. Keep your answer factual, precise, concise, and directly derived from the source text.\n\n"
+        "1. Base your answer ONLY on facts, numbers, dates, and statements explicitly provided in the Context below. Do not assume, extrapolate, or use pre-trained external financial knowledge.\n"
+        "2. If the context does not contain enough information to answer the question, respond EXACTLY with:\n"
+        "   'I am sorry, but I do not have that information in the provided documentation for this mutual fund.'\n"
+        "3. Do not mention or reference the existence of any 'context', 'provided documents', or 'factsheets' in your final response. Speak naturally as a direct financial advisor analyzing the fund.\n"
+        "4. Highlight critical numbers, percentages, and names in bold.\n"
+        "5. Format data comparison or metrics in clean markdown tables when helpful.\n"
+        "6. When citing details, append the source indicator (e.g., '[Source 1]') to the end of the sentence.\n\n"
         f"{history_context}"
         f"Context:\n{context_text}"
     )
