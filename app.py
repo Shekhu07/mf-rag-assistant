@@ -16,7 +16,7 @@ import src.config as config
 # Import mutual fund scheme details
 from src.fund_metadata import FUND_DATA
 from src.nav_service import get_live_nav, clear_nav_cache, fetch_nav_history
-from src.news_service import fetch_google_news, analyze_sentiment_with_llm
+from src.news_service import fetch_google_news
 
 # --- PAGE SETUP ---
 st.set_page_config(
@@ -53,9 +53,7 @@ def fetch_nav_history_cached(fund_id: str, period: str):
 def fetch_google_news_cached(fund_id: str):
     return fetch_google_news(fund_id)
 
-@st.cache_data(ttl=1800)
-def analyze_sentiment_cached(articles, fund_name, api_key):
-    return analyze_sentiment_with_llm(articles, fund_name, api_key)# --- HIGH FIDELITY DHAN WEB STYLE CSS WITH STITCH DESIGN TOKENS ---
+# --- HIGH FIDELITY DHAN WEB STYLE CSS WITH STITCH DESIGN TOKENS ---
 st.markdown(f"""
 <style>
     :root {{
@@ -685,7 +683,7 @@ with st.sidebar:
         <div style="font-size:0.68rem; color:#5A697D; line-height:1.45; margin-top:0.8rem; border-top:1px solid #1C232E; padding-top:0.8rem;">
             <b>RAG Isolation Mode</b>: Database queries are isolated strictly to this scheme's documents.
             <div style="margin-top: 6px;"></div>
-            <b>Disclaimer</b>: Mutual Fund investments are subject to market risks. Read all scheme-related documents carefully. AI insights and sentiment analysis are for informational purposes only and do not constitute financial advice. NAV data is sourced live from public feeds (MFAPI). This platform is an independent educational tool and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Dhan (Moneylicious Securities Pvt. Ltd.) or any of its subsidiaries.
+            <b>Disclaimer</b>: Mutual Fund investments are subject to market risks. Read all scheme-related documents carefully. AI insights and Google News feed are for informational purposes only and do not constitute financial advice. NAV data is sourced live from public feeds (MFAPI). This platform is an independent educational tool and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Dhan (Moneylicious Securities Pvt. Ltd.) or any of its subsidiaries.
         </div>
         """,
         unsafe_allow_html=True
@@ -754,7 +752,7 @@ with left_col:
     )
     
     # 3. Dhan Scheme Tabs
-    tab_overview, tab_holdings, tab_sip, tab_news, tab_overlap = st.tabs(["Overview & Returns", "Holdings Portfolio", "💰 SIP Calculator", "📰 News & Sentiment", "⚖️ Compare & Overlap"])
+    tab_overview, tab_holdings, tab_sip, tab_news, tab_overlap = st.tabs(["Overview & Returns", "Holdings Portfolio", "💰 SIP Calculator", "📰 News Feed", "⚖️ Compare & Overlap"])
     
     with tab_overview:
         import pandas as pd
@@ -1085,25 +1083,14 @@ with left_col:
 
     with tab_news:
         st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
-        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>NEWS SENTIMENT ANALYSIS & TRANSACTION TRACKER</span>", unsafe_allow_html=True)
+        st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>RECENT GOOGLE NEWS ARTICLES FEED</span>", unsafe_allow_html=True)
         st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
 
         with st.spinner("Fetching latest news from Google News..."):
             articles = fetch_google_news_cached(selected_key)
 
         if articles:
-            # Analyze sentiment and buys/sells using Gemini
-            with st.spinner("Analyzing news sentiment and buys/sells with Gemini..."):
-                api_key = os.environ.get("GEMINI_API_KEY", "")
-                analysis_report = analyze_sentiment_cached(articles, scheme["name"], api_key)
-            
-            # Show LLM Analysis Report
-            st.markdown(analysis_report)
-            
-            # Show raw headlines below
-            st.markdown("<div style='margin-bottom:1.8rem; border-bottom:1px solid #1C232E; padding-bottom:1rem;'></div>", unsafe_allow_html=True)
-            st.markdown("<span style='font-size:0.8rem; font-weight:600; color:#8A99AD;'>RECENT GOOGLE NEWS ARTICLES FEED</span>", unsafe_allow_html=True)
-            st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
             
             for art in articles:
                 date_str = art["date"]
@@ -1640,28 +1627,26 @@ with right_col:
             with st.spinner("Analyzing context..."):
                 extra_ctx = None
                 
-                # Dynamic check: Only perform news sentiment analysis if query relates to news, sentiment, or recent changes
-                news_keywords = ["news", "sentiment", "recent", "buy", "sell", "holding changes", "article", "headline", "bought", "sold", "active", "transaction", "latest news"]
+                # Dynamic check: Only perform news context query if query relates to news or recent changes
+                news_keywords = ["news", "recent", "buy", "sell", "holding changes", "article", "headline", "bought", "sold", "active", "transaction", "latest news"]
                 is_news_query = any(k in q_input.lower() for k in news_keywords)
                 
                 if is_news_query:
-                    api_key = os.environ.get("GEMINI_API_KEY")
-                    if api_key:
-                        news_report_key = f"news_report_{selected_key}"
-                        # Check session state cache first
-                        if news_report_key in st.session_state:
-                            extra_ctx = st.session_state[news_report_key]
-                        else:
-                            try:
-                                articles = fetch_google_news_cached(selected_key)
-                                if articles:
-                                    analysis_report = analyze_sentiment_cached(articles, scheme["name"], api_key)
-                                    if analysis_report:
-                                        st.session_state[news_report_key] = analysis_report
-                                        extra_ctx = analysis_report
-                            except Exception as e:
-                                import logging
-                                logging.getLogger(__name__).warning(f"Failed to fetch news context for chat: {e}")
+                    news_report_key = f"news_report_{selected_key}"
+                    # Check session state cache first
+                    if news_report_key in st.session_state:
+                        extra_ctx = st.session_state[news_report_key]
+                    else:
+                        try:
+                            articles = fetch_google_news_cached(selected_key)
+                            if articles:
+                                headlines_text = "\n".join([f"- {a['title']} (Source: {a['source']})" for a in articles[:5]])
+                                analysis_report = f"Recent News Headlines for {scheme['name']}:\n{headlines_text}"
+                                st.session_state[news_report_key] = analysis_report
+                                extra_ctx = analysis_report
+                        except Exception as e:
+                            import logging
+                            logging.getLogger(__name__).warning(f"Failed to fetch news context for chat: {e}")
     
                 ans, docs = query_fund(q_input, selected_key, st.session_state[chat_key][:-1], extra_context=extra_ctx)
                 

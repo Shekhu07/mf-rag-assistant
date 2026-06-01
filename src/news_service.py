@@ -1,7 +1,7 @@
 """
 src/news_service.py
 ------------------
-Fetches Google News RSS feed for mutual funds and runs sentiment analysis and transaction tracking.
+Fetches Google News RSS feed for mutual funds.
 """
 
 import requests
@@ -68,60 +68,4 @@ def fetch_google_news(fund_id: str, max_results: int = 6) -> List[Dict]:
         logger.error(f"Error fetching Google News for {fund_id}: {e}")
         return []
 
-def analyze_sentiment_with_llm(articles: List[Dict], fund_name: str, api_key: str) -> str:
-    """
-    Invokes Gemini to analyze news sentiment and portfolio transaction details.
-    """
-    if not articles:
-        return "No recent news articles found to perform sentiment analysis."
-        
-    try:
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        import src.config as config
-        
-        llm = ChatGoogleGenerativeAI(
-            model=config.GENERATION_MODEL,
-            temperature=0.1,  # low temperature for stable fact extraction
-            google_api_key=api_key,
-            max_retries=0
-        )
-        
-        bullet_list = ""
-        for idx, art in enumerate(articles):
-            bullet_list += f"[{idx+1}] Title: {art['title']} (Source: {art['source']}, Date: {art['date']})\n"
-            
-        system_prompt = (
-            "You are a Senior Portfolio Analyst at ArthaAI. Your goal is to analyze financial news headlines "
-            "concerning a fund house and synthesize their portfolio actions (specifically what they are buying and selling)."
-        )
-        
-        user_prompt = f"""
-Analyze the recent news headlines for **{fund_name}**:
-
-{bullet_list}
-
-Please output a structured report with:
-1. **OVERALL SENTIMENT**: Bullet list/heading with a single sentence (e.g. Bullish, Neutral, or Bearish) and short rationale.
-2. **PORTFOLIO TRANSACTIONS (BUYS & SELLS)**: 
-   - Identify what stocks they have bought, sold, entered, or exited based on these headlines. 
-   - Present this as a bulleted list with clear tags like **[BUY/ENTRY]** or **[SELL/EXIT]**.
-   - If a headline does not state buys/sells, do not invent them. If no transactions are detected, write "No specific buys/sells reported in these headlines."
-3. **EXECUTIVE SUMMARY**: A concise, 2-3 sentence synthesis of the news trend.
-
-Format your response in clean, professional markdown, suitable for a high-fidelity investment terminal. Use bold font for stock names. Do not use generic greetings.
-"""
-
-        messages = [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=user_prompt)
-        ]
-        
-        resp = llm.invoke(messages)
-        return resp.content
-        
-    except Exception as e:
-        logger.error(f"Error during sentiment LLM analysis: {e}")
-        err_msg = str(e)
-        if "api_key" in err_msg.lower() or "api key" in err_msg.lower() or "not found" in err_msg.lower():
-            return "⚠️ *Sentiment Analysis is unavailable: GEMINI_API_KEY is missing or invalid. Please check your Hugging Face Space Secrets configuration.*"
-        return f"⚠️ *Sentiment Analysis is temporarily unavailable ({err_msg}). Showing raw headlines below.*"
+# LLM sentiment analysis function removed.

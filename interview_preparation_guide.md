@@ -20,7 +20,7 @@ graph TD
         
         Streamlit -->|News Query| CacheNews{News Cache 30m}
         CacheNews -->|Cache Miss| GoogleNews[Google News RSS]
-        GoogleNews -->|Sentiment Analysis| GeminiSentiment[Gemini 2.5 Flash]
+        GoogleNews -->|Render Articles| Streamlit
     end
     
     subgraph Optimized RAG Chat Pipeline
@@ -135,7 +135,7 @@ $$\text{Match Percentage} = \max\left(0, \min\left(100, \text{int}\left(\left(1.
 **Answer:** On application load, the dashboard fetches live NAV values for all 5 mutual funds from the public AMFI API. If done sequentially, the 5 HTTP requests would take ~4-5 seconds, blocking the page load. By wrapping it in a `ThreadPoolExecutor` with `max_workers=5`, we dispatch the 5 API requests in parallel, dropping the page load time to under 1 second.
 
 ### 11. How does Streamlit's `@st.cache_data` work, and how did you use it?
-**Answer:** `@st.cache_data` caches the return values of functions. If a function is called with the same arguments, Streamlit skips execution and returns the cached result. I set up caching for NAV history, Google News queries, and sentiment reports with a Time-To-Live (TTL) configuration (e.g., 5 mins for NAV, 30 mins for news) to avoid API request floods and speed up page changes.
+**Answer:** `@st.cache_data` caches the return values of functions. If a function is called with the same arguments, Streamlit skips execution and returns the cached result. I set up caching for NAV history and Google News queries with a Time-To-Live (TTL) configuration (e.g., 5 mins for NAV, 30 mins for news) to avoid API request floods and speed up page changes.
 
 ### 12. How does your app react if you change the API Key in the `.env` file at runtime?
 **Answer:** I built a dynamic invalidation check inside `get_llm()` and `get_vector_store()`. The functions track the API key value. If they detect that the key in the environment has changed, they invalidate the cache (`_llm_cache = None`, `_vector_store_cache = None`) and rebuild the clients immediately, ensuring key rotations don't require restarting the server.
