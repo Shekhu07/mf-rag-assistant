@@ -190,8 +190,9 @@ def render_top_navigation():
     )
 
     # Detect current running script for navigation highlighting
-    import sys
-    current_script = Path(sys.argv[0]).name
+    from streamlit.runtime.scriptrunner import get_script_run_ctx
+    ctx = get_script_run_ctx()
+    current_script = Path(ctx.main_script_path).name if ctx else "app.py"
     is_on_app = (current_script == "app.py")
 
     # Horizontal page navigation using Streamlit buttons
