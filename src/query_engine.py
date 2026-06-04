@@ -277,14 +277,8 @@ def enforce_single_citation(answer: str, fund_id: str) -> str:
     if "do not have that information" in answer or "sorry" in answer.lower():
         return answer
 
-    factsheet_urls = {
-        "parag_parikh_flexi": "https://amc.ppfas.com/schemes/ppfas-flexi-cap-fund/",
-        "pp_tax_saver": "https://amc.ppfas.com/schemes/parag-parikh-tax-saver-fund/",
-        "pp_conservative": "https://amc.ppfas.com/schemes/parag-parikh-conservative-hybrid-fund/",
-        "pp_liquid": "https://amc.ppfas.com/schemes/parag-parikh-liquid-fund/",
-        "pp_dynamic": "https://amc.ppfas.com/schemes/parag-parikh-dynamic-asset-allocation-fund/"
-    }
-    factsheet_url = factsheet_urls.get(fund_id, "https://amc.ppfas.com/")
+    from src.fund_metadata import FUND_DATA
+    factsheet_url = FUND_DATA.get(fund_id, {}).get("factsheet_url", "https://amc.ppfas.com/")
     citation_text = f"\n\nOfficial Factsheet Link: [Official Factsheet & Scheme Details]({factsheet_url})"
     
     # Check if a citation link is already present
@@ -624,14 +618,8 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
     if formatted_history:
         history_context = f"Conversation History:\n{formatted_history}\n\n"
 
-    factsheet_urls = {
-        "parag_parikh_flexi": "https://amc.ppfas.com/schemes/ppfas-flexi-cap-fund/",
-        "pp_tax_saver": "https://amc.ppfas.com/schemes/parag-parikh-tax-saver-fund/",
-        "pp_conservative": "https://amc.ppfas.com/schemes/parag-parikh-conservative-hybrid-fund/",
-        "pp_liquid": "https://amc.ppfas.com/schemes/parag-parikh-liquid-fund/",
-        "pp_dynamic": "https://amc.ppfas.com/schemes/parag-parikh-dynamic-asset-allocation-fund/"
-    }
-    factsheet_url = factsheet_urls.get(fund_id, "https://amc.ppfas.com/")
+    from src.fund_metadata import FUND_DATA
+    factsheet_url = FUND_DATA.get(fund_id, {}).get("factsheet_url", "https://amc.ppfas.com/")
 
     system_instruction = (
         "You are a highly precise, objective, and analytical AI Financial Analyst specializing in Indian Mutual Funds.\n"

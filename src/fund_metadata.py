@@ -56,7 +56,8 @@ FUND_DATA = {
             ("Mindspace Business Parks REIT", "Real Estate", "0.03%"),
             ("Parag Parikh Liquid Fund", "Debt / Cash", "0.46%")
         ],
-        "desc": "Dynamically invests across cap sizes, with up to 35% exposure in global stocks like Alphabet and Amazon."
+        "desc": "Dynamically invests across cap sizes, with up to 35% exposure in global stocks like Alphabet and Amazon.",
+        "factsheet_url": "https://amc.ppfas.com/schemes/ppfas-flexi-cap-fund/"
     },
     "pp_tax_saver": {
         "name": "Parag Parikh ELSS Tax Saver Fund Direct Growth",
@@ -90,7 +91,8 @@ FUND_DATA = {
             ("Cipla Ltd", "Healthcare", "1.35%"),
             ("Zydus Lifesciences Ltd", "Healthcare", "1.25%")
         ],
-        "desc": "An equity-linked savings scheme focusing on long-term capital growth with a statutory 3-year lock-in period."
+        "desc": "An equity-linked savings scheme focusing on long-term capital growth with a statutory 3-year lock-in period.",
+        "factsheet_url": "https://amc.ppfas.com/schemes/parag-parikh-tax-saver-fund/"
     },
     "pp_conservative": {
         "name": "Parag Parikh Conservative Hybrid Fund Direct Growth",
@@ -119,7 +121,8 @@ FUND_DATA = {
             ("Coal India Ltd", "Energy / Oil & Gas", "1.95%"),
             ("ITC Ltd", "Fast Moving Consumer Goods", "1.80%")
         ],
-        "desc": "Focuses on generating regular income through G-Secs and debt instruments, with a small portion in equity and REITs."
+        "desc": "Focuses on generating regular income through G-Secs and debt instruments, with a small portion in equity and REITs.",
+        "factsheet_url": "https://amc.ppfas.com/schemes/parag-parikh-conservative-hybrid-fund/"
     },
     "pp_liquid": {
         "name": "Parag Parikh Liquid Fund Direct Growth",
@@ -144,7 +147,8 @@ FUND_DATA = {
             ("NABARD Commercial Paper", "Commercial Paper / CDs", "5.40%"),
             ("Union Bank of India CD", "Commercial Paper / CDs", "4.60%")
         ],
-        "desc": "Invests in highly liquid, high-quality, short-term debt and money market securities for cash parking."
+        "desc": "Invests in highly liquid, high-quality, short-term debt and money market securities for cash parking.",
+        "factsheet_url": "https://amc.ppfas.com/schemes/parag-parikh-liquid-fund/"
     },
     "pp_dynamic": {
         "name": "Parag Parikh Dynamic Asset Allocation Fund Direct Growth",
@@ -172,6 +176,7 @@ FUND_DATA = {
             ("ITC Ltd", "Fast Moving Consumer Goods", "2.40%"),
             ("Coal India Ltd", "Energy / Oil & Gas", "1.90%")
         ],
-        "desc": "Dynamically shifts asset allocation between equity, derivatives, and fixed-income depending on market valuations."
+        "desc": "Dynamically shifts asset allocation between equity, derivatives, and fixed-income depending on market valuations.",
+        "factsheet_url": "https://amc.ppfas.com/schemes/parag-parikh-dynamic-asset-allocation-fund/"
     }
 }
