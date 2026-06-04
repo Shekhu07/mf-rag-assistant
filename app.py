@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent))
 
 import markdown as md_lib
-from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_nav_data_cached, prefetch_other_funds, fetch_nav_history_cached, query_fund_api
+from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_nav_data_cached, prefetch_other_funds, fetch_nav_history_cached, query_fund_api, fetch_google_news_cached
 from src.fund_metadata import FUND_DATA
 import src.config as config
 
@@ -275,6 +275,19 @@ elif st.session_state["active_view"] == "overview":
                 """,
                 unsafe_allow_html=True
             )
+
+    st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
+
+    # --- LATEST NEWS EXPANDER ---
+    with st.expander("📰 Latest News & Updates"):
+        with st.spinner("Fetching latest news..."):
+            news_items = fetch_google_news_cached(selected_key)
+            if news_items:
+                for item in news_items[:3]:
+                    st.markdown(f"**[{item['title']}]({item['link']})**")
+                    st.caption(f"{item.get('source', '')} • {item.get('date', '')}")
+            else:
+                st.info("No recent news found for this fund.")
 
     st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
