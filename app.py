@@ -203,8 +203,8 @@ elif st.session_state["active_view"] == "overview":
         f'<span style="background:rgba(78,222,163,0.1); color:var(--success-color); font-size:10px; font-weight:700; '
         f'padding:2px 8px; border-radius:4px; border:1px solid rgba(78,222,163,0.2); margin-left:12px;">● LIVE · {nav_date}</span>'
     ) if is_live else (
-        f'<span style="background:rgba(173,198,255,0.1); color:var(--primary-color); font-size:10px; font-weight:700; '
-        f'padding:2px 8px; border-radius:4px; border:1px solid rgba(173,198,255,0.2); margin-left:12px;">● STATIC</span>'
+        f'<span style="background:rgba(255,193,7,0.1); color:#ffc107; font-size:10px; font-weight:700; '
+        f'padding:2px 8px; border-radius:4px; border:1px solid rgba(255,193,7,0.2); margin-left:12px;">● Data as of {nav_date} — live fetch unavailable</span>'
     )
 
     st.markdown(

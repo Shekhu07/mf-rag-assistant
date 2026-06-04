@@ -115,7 +115,7 @@ def get_live_nav(fund_id: str, static_nav: str, static_change: str, static_chang
             "nav": static_nav,
             "change": static_change,
             "change_positive": static_change_positive,
-            "date": "Static",
+            "date": "03-06-2026",
             "is_live": False,
         }
 

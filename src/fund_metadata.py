@@ -3,7 +3,7 @@ FUND_DATA = {
     "parag_parikh_flexi": {
         "name": "Parag Parikh Flexi Cap Fund Direct Growth",
         "category": "Equity - Flexi Cap",
-        "nav": "₹ 84.62",
+        "nav": "₹ 89.33",
         "change": "+0.42% (1D)",
         "change_positive": True,
         "aum": "₹ 1,40,949 Cr",
@@ -61,7 +61,7 @@ FUND_DATA = {
     "pp_tax_saver": {
         "name": "Parag Parikh ELSS Tax Saver Fund Direct Growth",
         "category": "Equity - ELSS (Tax Saver)",
-        "nav": "₹ 34.12",
+        "nav": "₹ 31.34",
         "change": "+0.38% (1D)",
         "change_positive": True,
         "aum": "₹ 5,617 Cr",
@@ -95,7 +95,7 @@ FUND_DATA = {
     "pp_conservative": {
         "name": "Parag Parikh Conservative Hybrid Fund Direct Growth",
         "category": "Hybrid - Conservative Hybrid",
-        "nav": "₹ 15.24",
+        "nav": "₹ 15.72",
         "change": "+0.05% (1D)",
         "change_positive": True,
         "aum": "₹ 3,344 Cr",
@@ -124,7 +124,7 @@ FUND_DATA = {
     "pp_liquid": {
         "name": "Parag Parikh Liquid Fund Direct Growth",
         "category": "Debt - Liquid Fund",
-        "nav": "₹ 62.45",
+        "nav": "₹ 1,542.00",
         "change": "+0.02% (1D)",
         "change_positive": True,
         "aum": "₹ 5,260 Cr",
@@ -149,7 +149,7 @@ FUND_DATA = {
     "pp_dynamic": {
         "name": "Parag Parikh Dynamic Asset Allocation Fund Direct Growth",
         "category": "Hybrid - Dynamic Asset Allocation",
-        "nav": "₹ 11.20",
+        "nav": "₹ 11.62",
         "change": "+0.08% (1D)",
         "change_positive": True,
         "aum": "₹ 2,709 Cr",
