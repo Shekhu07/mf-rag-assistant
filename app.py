@@ -15,7 +15,8 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_nav_data_cached, prefetch_other_funds, fetch_nav_history_cached
+import markdown as md_lib
+from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_nav_data_cached, prefetch_other_funds, fetch_nav_history_cached, query_fund_api
 from src.fund_metadata import FUND_DATA
 import src.config as config
 
@@ -53,8 +54,6 @@ if st.session_state["active_view"] == "chatbot":
     # ============================================================
     # HERO SECTION: RAG CHATBOT (Front & Center)
     # ============================================================
-    import markdown as md_lib
-    from src.ui_helpers import query_fund_api
 
     chat_key = f"main_chat_{selected_key}"
     if chat_key not in st.session_state:
