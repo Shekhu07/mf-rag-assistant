@@ -443,6 +443,7 @@ elif st.session_state["active_view"] == "overview":
                 pass
 
         sorted_sectors = sorted(sector_map.items(), key=lambda x: x[1], reverse=True)[:6]
+        max_alloc = max(sorted_sectors[0][1], 1.0) if sorted_sectors else 1.0
         bar_colors = ["sector-bar-primary", "sector-bar-secondary", "sector-bar-primary", "sector-bar-outline", "sector-bar-warning", "sector-bar-outline"]
 
         st.markdown(
@@ -466,7 +467,7 @@ elif st.session_state["active_view"] == "overview":
                         <span>{alloc:.1f}%</span>
                     </div>
                     <div class="sector-bar-track">
-                        <div class="sector-bar-fill {bar_class}" style="width:{min(alloc * 2.5, 100)}%;"></div>
+                        <div class="sector-bar-fill {bar_class}" style="width:{alloc / max_alloc * 100:.1f}%;"></div>
                     </div>
                 </div>
                 """,
