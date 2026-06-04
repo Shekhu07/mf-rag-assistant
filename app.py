@@ -11,6 +11,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent))
+
 from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_all_nav_data_cached, fetch_nav_history_cached
 from src.fund_metadata import FUND_DATA
 import src.config as config
