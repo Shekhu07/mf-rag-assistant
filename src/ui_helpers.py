@@ -189,11 +189,22 @@ def render_top_navigation():
         unsafe_allow_html=True
     )
 
-    # Detect current running script for navigation highlighting
+    # Detect current running page for navigation highlighting
+    # NOTE: ctx.main_script_path always returns the entrypoint (app.py), even on sub-pages.
+    # We must use page_script_hash + pages_manager.get_pages() to find the actual current page.
     from streamlit.runtime.scriptrunner import get_script_run_ctx
     ctx = get_script_run_ctx()
-    current_script = Path(ctx.main_script_path).name if ctx else "app.py"
-    is_on_app = (current_script == "app.py")
+    current_page_script = "app.py"  # fallback
+    if ctx:
+        try:
+            pages = ctx.pages_manager.get_pages()
+            current_hash = ctx.page_script_hash
+            page_info = pages.get(current_hash)
+            if page_info and page_info.get("script_path"):
+                current_page_script = Path(page_info["script_path"]).name
+        except Exception:
+            pass
+    is_on_app = (current_page_script == "app.py")
 
     # Horizontal page navigation using Streamlit buttons
     nav_cols = st.columns([1, 1, 1, 1, 1, 2])
@@ -230,7 +241,7 @@ def render_top_navigation():
 
     # 3. Holdings Page Button
     with nav_cols[2]:
-        is_active_holdings = (current_script == "1_Holdings_&_Overlap.py")
+        is_active_holdings = (current_page_script == "1_Holdings_&_Overlap.py")
         if st.button(
             "📈 Holdings",
             key="nav_holdings",
@@ -241,7 +252,7 @@ def render_top_navigation():
 
     # 4. SIP Calculator Page Button
     with nav_cols[3]:
-        is_active_sip = (current_script == "2_SIP_Calculator.py")
+        is_active_sip = (current_page_script == "2_SIP_Calculator.py")
         if st.button(
             "💰 SIP Calc",
             key="nav_sip",
@@ -252,7 +263,7 @@ def render_top_navigation():
 
     # 5. News Feed Page Button
     with nav_cols[4]:
-        is_active_news = (current_script == "3_News_Feed.py")
+        is_active_news = (current_page_script == "3_News_Feed.py")
         if st.button(
             "📰 News",
             key="nav_news",

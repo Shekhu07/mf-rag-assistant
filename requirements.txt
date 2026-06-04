@@ -10,10 +10,13 @@ requests==2.32.5
 markdown==3.9
 altair==5.5.0
 pandas==2.3.3
+numpy==2.3.1
 qdrant-client==1.16.1
 langchain-qdrant==0.2.1
 rank_bm25==0.2.2
 fastapi==0.110.0
 uvicorn==0.28.0
+pydantic==2.9.2
 tenacity==8.2.3
 huggingface-hub==0.28.0
+streamlit==1.50.0

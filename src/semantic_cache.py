@@ -106,7 +106,7 @@ def add_to_semantic_cache(query: str, query_embedding: list, response: str, fund
     
     # Avoid duplicate cache records for identical queries
     for rec in records:
-        if rec.get("fund_id") == fund_id and rec.get("query").strip().lower() == query.strip().lower():
+        if rec.get("fund_id") == fund_id and rec.get("query", "").strip().lower() == query.strip().lower():
             return
             
     records.append({
