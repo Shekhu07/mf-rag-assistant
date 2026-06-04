@@ -9,6 +9,7 @@ Live NAV fetcher using the free MFAPI (https://api.mfapi.in).
 
 import requests
 import logging
+import threading
 from datetime import datetime
 from typing import Optional
 
@@ -28,6 +29,7 @@ MFAPI_SCHEME_CODES = {
 
 # In-memory NAV cache: {fund_id: {"nav": str, "date": str, "change": str, "change_positive": bool}}
 _nav_cache: dict = {}
+_nav_cache_lock = threading.Lock()
 
 
 def fetch_latest_nav(fund_id: str, timeout: int = 4) -> Optional[dict]:
@@ -84,7 +86,8 @@ def fetch_latest_nav(fund_id: str, timeout: int = 4) -> Optional[dict]:
             "change_positive": change_positive,
         }
 
-        _nav_cache[fund_id] = result
+        with _nav_cache_lock:
+            _nav_cache[fund_id] = result
         logger.info(f"Fetched live NAV for {fund_id}: {result['nav']} on {nav_date}")
         return result
 
@@ -158,7 +161,8 @@ def fetch_nav_history(fund_id: str, period: str = "1Y", timeout: int = 6) -> Opt
             df_all["nav"] = df_all["nav"].astype(float)
             df_all = df_all.sort_values("date").reset_index(drop=True)
 
-            _nav_cache[cache_key] = df_all
+            with _nav_cache_lock:
+                _nav_cache[cache_key] = df_all
             logger.info(f"Fetched {len(df_all)} historical NAV records for {fund_id}")
 
         except Exception as e:
@@ -183,5 +187,6 @@ def fetch_nav_history(fund_id: str, period: str = "1Y", timeout: int = 6) -> Opt
 def clear_nav_cache():
     """Clears the in-memory NAV cache (useful for manual refresh)."""
     global _nav_cache
-    _nav_cache = {}
+    with _nav_cache_lock:
+        _nav_cache = {}
     logger.info("NAV cache cleared.")
