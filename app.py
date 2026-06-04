@@ -364,6 +364,11 @@ elif st.session_state["active_view"] == "overview":
                 ),
                 title=None,
             ),
+            tooltip=[
+                alt.Tooltip("date_str:N", title="Date"),
+                alt.Tooltip("nav:Q", title="NAV (₹)", format=".2f"),
+                alt.Tooltip("pct_change:Q", title="Change (%)", format=".2f")
+            ]
         )
 
         area = base.mark_area(
@@ -376,12 +381,7 @@ elif st.session_state["active_view"] == "overview":
                 ],
                 x1=1, x2=1, y1=1, y2=0,
             ),
-            interpolate="monotone",
-            tooltip=[
-                alt.Tooltip("date_str:N", title="Date"),
-                alt.Tooltip("nav:Q", title="NAV (₹)", format=".2f"),
-                alt.Tooltip("pct_change:Q", title="Change (%)", format=".2f")
-            ]
+            interpolate="monotone"
         )
 
         chart = area.properties(
