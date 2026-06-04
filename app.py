@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_all_nav_data_cached, fetch_nav_history_cached
+from src.ui_helpers import inject_css, render_top_navigation, render_ticker_bar, render_sidebar, get_nav_data_cached, prefetch_other_funds, fetch_nav_history_cached
 from src.fund_metadata import FUND_DATA
 import src.config as config
 
@@ -186,9 +186,11 @@ elif st.session_state["active_view"] == "overview":
     st.markdown(f'<span class="scheme-category-badge">{scheme["category"]}</span><span class="scheme-type-label">Direct Growth</span>', unsafe_allow_html=True)
     st.markdown(f'<div class="scheme-title">{scheme["name"]}</div>', unsafe_allow_html=True)
 
-    # Fetch NAV metrics
-    all_nav_data = get_all_nav_data_cached()
-    live_nav_data = all_nav_data[selected_key]
+    # Fetch NAV metrics for the selected fund
+    live_nav_data = get_nav_data_cached(selected_key)
+    
+    # Prefetch other funds in the background so they load instantly when clicked
+    prefetch_other_funds(selected_key)
     display_nav = live_nav_data["nav"]
     display_change = live_nav_data["change"]
     display_change_positive = live_nav_data["change_positive"]

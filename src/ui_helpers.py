@@ -17,22 +17,31 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # --- CACHED DATA WRAPPERS ---
 @st.cache_data(ttl=300)
-def get_all_nav_data_cached():
-    from concurrent.futures import ThreadPoolExecutor
-    all_nav_data = {}
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {
-            key: executor.submit(
-                get_live_nav,
-                key,
-                item["nav"],
-                item["change"],
-                item["change_positive"]
-            )
-            for key, item in FUND_DATA.items()
-        }
-        all_nav_data = {key: fut.result() for key, fut in futures.items()}
-    return all_nav_data
+def get_nav_data_cached(fund_id: str):
+    item = FUND_DATA[fund_id]
+    return get_live_nav(
+        fund_id,
+        item["nav"],
+        item["change"],
+        item["change_positive"]
+    )
+
+def prefetch_other_funds(selected_key: str):
+    """Prefetch the remaining 4 funds in a background thread."""
+    import threading
+    from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
+
+    ctx = get_script_run_ctx()
+
+    def _prefetch():
+        for key in FUND_DATA.keys():
+            if key != selected_key:
+                get_nav_data_cached(key)
+
+    thread = threading.Thread(target=_prefetch)
+    if ctx:
+        add_script_run_ctx(thread, ctx)
+    thread.start()
 
 @st.cache_data(ttl=300)
 def fetch_nav_history_cached(fund_id: str, period: str):
