@@ -350,6 +350,12 @@ def render_sidebar():
                 if st.button(btn_label, key=f"sidebar_btn_{key}", use_container_width=True):
                     st.session_state["selected_scheme"] = key
                     st.rerun()
+
+    # Reset active view to overview when a different scheme is selected
+    if "last_selected_scheme" not in st.session_state or st.session_state["last_selected_scheme"] != selected_key:
+        st.session_state["active_view"] = "overview"
+        st.session_state["last_selected_scheme"] = selected_key
+
     return selected_key
 
 def render_floating_chatbot(selected_key: str):
