@@ -236,16 +236,31 @@ elif st.session_state["active_view"] == "overview":
     st.markdown("<span style='font-size:0.8rem; font-weight:600; color:var(--outline-color);'>HISTORICAL PERFORMANCE (CAGR)</span>", unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
 
+    def get_performance_badge(return_str: str, default_compare: str):
+        try:
+            val = float(return_str.replace('%', '').strip())
+            if val >= 15.0:
+                return "OUTPERFORMING", "badge-outperforming", "trending_up", "return-card-value-green", default_compare
+            elif val >= 8.0:
+                return "STABLE", "badge-stable", "timeline", "return-card-value-default", default_compare
+            else:
+                return "LAGGING", "badge-lagging", "trending_down", "return-card-value-danger", "Underperforming"
+        except Exception:
+            return "STABLE", "badge-stable", "timeline", "return-card-value-default", default_compare
+
+    r1_badge, r1_class, r1_icon, r1_val_class, r1_comp = get_performance_badge(scheme["return_1y"], "vs Category Avg")
+    r3_badge, r3_class, r3_icon, r3_val_class, r3_comp = get_performance_badge(scheme["return_3y"], "Annualized CAGR")
+    r5_badge, r5_class, r5_icon, r5_val_class, r5_comp = get_performance_badge(scheme["return_5y"], "Long-Term Growth")
+
     returns = [
-        ("1Y RETURN", scheme["return_1y"], "trending_up", "OUTPERFORMING", "badge-outperforming", "vs Category Avg"),
-        ("3Y RETURN", scheme["return_3y"], "timeline", "STABLE", "badge-stable", "Annualized CAGR"),
-        ("5Y RETURN", scheme["return_5y"], "monitoring", "CONSISTENT", "badge-consistent", "Long-Term Growth"),
+        ("1Y RETURN", scheme["return_1y"], r1_icon, r1_badge, r1_class, r1_comp, r1_val_class),
+        ("3Y RETURN", scheme["return_3y"], r3_icon, r3_badge, r3_class, r3_comp, r3_val_class),
+        ("5Y RETURN", scheme["return_5y"], r5_icon, r5_badge, r5_class, r5_comp, r5_val_class),
     ]
 
     r_col1, r_col2, r_col3 = st.columns(3)
-    for i, (label, value, icon, badge_text, badge_class, compare_text) in enumerate(returns):
+    for i, (label, value, icon, badge_text, badge_class, compare_text, val_class) in enumerate(returns):
         col = [r_col1, r_col2, r_col3][i]
-        val_class = "return-card-value-green" if i == 0 else "return-card-value-default"
         with col:
             st.markdown(
                 f"""

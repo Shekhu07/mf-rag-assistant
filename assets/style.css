@@ -276,6 +276,7 @@ header[data-testid="stHeader"], [data-testid="stHeader"] {
 }
 .return-card-value-green { color: var(--success-color); }
 .return-card-value-default { color: var(--text-highlight-color); }
+.return-card-value-danger { color: var(--danger-color); }
 .return-card-status {
     display: flex;
     align-items: center;
@@ -301,6 +302,10 @@ header[data-testid="stHeader"], [data-testid="stHeader"] {
 .badge-consistent {
     background-color: rgba(78, 222, 163, 0.15);
     color: var(--success-color);
+}
+.badge-lagging {
+    background-color: rgba(255, 180, 171, 0.15);
+    color: var(--danger-color);
 }
 .return-card-compare {
     font-size: 11px;
