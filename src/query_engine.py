@@ -350,7 +350,7 @@ def reformulate_query(query: str, chat_history: list, api_key: str) -> str:
         
         import time
         success = False
-        retries = 1
+        retries = 3
         delay = 1.0
         response = None
         while not success and retries > 0:
@@ -663,7 +663,7 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
         ]
         
         success = False
-        retries = 1
+        retries = 3
         delay = 1.0
         response = None
         while not success and retries > 0:
