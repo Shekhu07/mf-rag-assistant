@@ -62,12 +62,18 @@ with left_panel:
         df = pd.DataFrame(scheme["holdings"], columns=["Company", "Sector", "Allocation"])
         df["AllocNum"] = df["Allocation"].str.replace("%", "").astype(float)
         
-        chart = alt.Chart(df).mark_arc(innerRadius=65, outerRadius=110, stroke=config.STITCH_DESIGN["bg_color"], strokeWidth=2).encode(
+        # Aggregate by Sector
+        sector_df = df.groupby("Sector", as_index=False)["AllocNum"].sum()
+        sector_df = sector_df.sort_values(by="AllocNum", ascending=False)
+        sector_df["Allocation"] = sector_df["AllocNum"].apply(lambda x: f"{x:.2f}%")
+        
+        chart = alt.Chart(sector_df).mark_arc(innerRadius=65, outerRadius=110, stroke=config.STITCH_DESIGN["bg_color"], strokeWidth=2).encode(
             theta=alt.Theta(field="AllocNum", type="quantitative"),
             color=alt.Color(
-                field="Company", 
+                field="Sector", 
                 type="nominal", 
-                scale=alt.Scale(range=[config.STITCH_DESIGN["primary_color"], config.STITCH_DESIGN["success_color"], "#3B82F6", "#F59E0B", "#EC4899"]),
+                sort=alt.EncodingSortField(field="AllocNum", op="sum", order="descending"),
+                scale=alt.Scale(range=[config.STITCH_DESIGN["primary_color"], config.STITCH_DESIGN["success_color"], "#3B82F6", "#F59E0B", "#EC4899", "#8B5CF6", "#10B981", "#EF4444", "#F97316", "#06B6D4"]),
                 legend=alt.Legend(
                     title=None,
                     orient="right",
@@ -79,7 +85,6 @@ with left_panel:
                 )
             ),
             tooltip=[
-                alt.Tooltip(field="Company", type="nominal"),
                 alt.Tooltip(field="Sector", type="nominal"),
                 alt.Tooltip(field="Allocation", type="nominal")
             ]
