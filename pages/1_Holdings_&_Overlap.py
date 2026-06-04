@@ -95,40 +95,6 @@ with left_panel:
     except Exception as chart_err:
         st.error(f"Error rendering chart: {chart_err}")
 
-    # Detailed holdings table below chart
-    st.markdown("<div style='margin-top:2rem;'></div>", unsafe_allow_html=True)
-    st.markdown("<span style='font-size:0.85rem; font-weight:600; color:#8A99AD;'>DETAILED PORTFOLIO HOLDINGS LIST</span>", unsafe_allow_html=True)
-    st.markdown("<div style='margin-bottom:0.8rem;'></div>", unsafe_allow_html=True)
-
-    rows = ""
-    for i, (company, sector, alloc) in enumerate(scheme["holdings"]):
-        rows += f"""
-        <tr>
-            <td style="color:var(--text-muted-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">{i+1}</td>
-            <td style="color:var(--text-highlight-color); font-weight:600; padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">{company}</td>
-            <td style="color:var(--text-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color);">{sector}</td>
-            <td style="color:var(--primary-color); padding:0.5rem 0.8rem; border-bottom:1px solid var(--border-color); font-weight:700; text-align:right;">{alloc}</td>
-        </tr>
-        """
-
-    st.markdown(
-        f"""
-        <table class="holdings-table" style="width:100%; border-collapse:collapse; background:var(--card-bg-color); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; font-size:0.85rem; margin-bottom:1.5rem;">
-            <thead>
-                <tr style="border-bottom:1px solid var(--border-color); text-align:left; background:var(--bg-color);">
-                    <th style="padding:0.6rem 0.8rem; color:var(--text-muted-color); font-weight:700; width:50px;">#</th>
-                    <th style="padding:0.6rem 0.8rem; color:var(--text-muted-color); font-weight:700;">Company</th>
-                    <th style="padding:0.6rem 0.8rem; color:var(--text-muted-color); font-weight:700;">Sector</th>
-                    <th style="padding:0.6rem 0.8rem; color:var(--text-muted-color); font-weight:700; text-align:right; width:100px;">Allocation</th>
-                </tr>
-            </thead>
-            <tbody>
-                {rows}
-            </tbody>
-        </table>
-        """,
-        unsafe_allow_html=True
-    )
 
 with right_panel:
     st.markdown("<span style='font-size:0.85rem; font-weight:600; color:#8A99AD;'>MUTUAL FUND SCHEME COMPARE & OVERLAP ANALYZER</span>", unsafe_allow_html=True)
