@@ -133,10 +133,10 @@ def inject_css():
 def render_ticker_bar():
     """Renders the scrolling live market ticker bar at the top of the page."""
     ticker_data = [
-        ("NIFTY 50", "22,453.30", "+0.45%", "up"),
-        ("SENSEX", "73,876.84", "+0.38%", "up"),
-        ("BANK NIFTY", "48,115.50", "-0.12%", "down"),
-        ("USD/INR", "83.42", "0.00%", "flat"),
+        ("NIFTY 50", "23,416.55", "+0.05%", "up"),
+        ("SENSEX", "74,360.01", "+0.02%", "up"),
+        ("BANK NIFTY", "54,266.00", "+1.00%", "up"),
+        ("USD/INR", "95.70", "-0.01%", "down"),
     ]
 
     items_html = ""
