@@ -156,6 +156,10 @@ def render_ticker_bar():
 
 def render_top_navigation():
     """Renders the terminal-style top navigation bar with working page links."""
+    # Initialize view state
+    if "active_view" not in st.session_state:
+        st.session_state["active_view"] = "overview"
+
     logo_base64 = ""
     logo_path = Path(__file__).resolve().parent.parent / "assets" / "logo.png"
     if logo_path.exists():
@@ -185,22 +189,76 @@ def render_top_navigation():
         unsafe_allow_html=True
     )
 
+    # Detect current running script for navigation highlighting
+    import sys
+    current_script = Path(sys.argv[0]).name
+    is_on_app = (current_script == "app.py")
+
     # Horizontal page navigation using Streamlit buttons
     nav_cols = st.columns([1, 1, 1, 1, 1, 2])
-    nav_pages = [
-        ("⚡ AI Chatbot", "pages/4_AI_Chatbot.py"),
-        ("📊 Overview", "app.py"),
-        ("📈 Holdings", "pages/1_Holdings_&_Overlap.py"),
-        ("💰 SIP Calc", "pages/2_SIP_Calculator.py"),
-        ("📰 News", "pages/3_News_Feed.py"),
-    ]
-    for i, (label, page) in enumerate(nav_pages):
-        with nav_cols[i]:
-            if st.button(label, key=f"topnav_{label}", use_container_width=True):
-                if page == "app.py":
-                    st.switch_page("app.py")
-                else:
-                    st.switch_page(page)
+
+    # 1. Overview Page Button
+    with nav_cols[0]:
+        is_active_overview = is_on_app and (st.session_state.get("active_view", "overview") == "overview")
+        if st.button(
+            "📊 Overview",
+            key="nav_overview",
+            use_container_width=True,
+            type="primary" if is_active_overview else "secondary",
+        ):
+            st.session_state["active_view"] = "overview"
+            if not is_on_app:
+                st.switch_page("app.py")
+            else:
+                st.rerun()
+
+    # 2. AI Chatbot Button
+    with nav_cols[1]:
+        is_active_chatbot = is_on_app and (st.session_state.get("active_view", "overview") == "chatbot")
+        if st.button(
+            "🤖 AI Chatbot",
+            key="nav_chatbot",
+            use_container_width=True,
+            type="primary" if is_active_chatbot else "secondary",
+        ):
+            st.session_state["active_view"] = "chatbot"
+            if not is_on_app:
+                st.switch_page("app.py")
+            else:
+                st.rerun()
+
+    # 3. Holdings Page Button
+    with nav_cols[2]:
+        is_active_holdings = (current_script == "1_Holdings_&_Overlap.py")
+        if st.button(
+            "📈 Holdings",
+            key="nav_holdings",
+            use_container_width=True,
+            type="primary" if is_active_holdings else "secondary",
+        ):
+            st.switch_page("pages/1_Holdings_&_Overlap.py")
+
+    # 4. SIP Calculator Page Button
+    with nav_cols[3]:
+        is_active_sip = (current_script == "2_SIP_Calculator.py")
+        if st.button(
+            "💰 SIP Calc",
+            key="nav_sip",
+            use_container_width=True,
+            type="primary" if is_active_sip else "secondary",
+        ):
+            st.switch_page("pages/2_SIP_Calculator.py")
+
+    # 5. News Feed Page Button
+    with nav_cols[4]:
+        is_active_news = (current_script == "3_News_Feed.py")
+        if st.button(
+            "📰 News",
+            key="nav_news",
+            use_container_width=True,
+            type="primary" if is_active_news else "secondary",
+        ):
+            st.switch_page("pages/3_News_Feed.py")
 
     # Style the top nav buttons
     st.markdown("""
@@ -229,9 +287,20 @@ def render_top_navigation():
             font-family: var(--font-body) !important;
             font-size: 0.8rem !important;
             font-weight: 600 !important;
+            color: inherit !important;
+        }
+        /* Top nav active button styling override */
+        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"] button[data-testid="baseButton-primary"] {
+            background-color: var(--primary-color) !important;
+            color: var(--bg-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"] button[data-testid="baseButton-primary"] p {
+            color: var(--bg-color) !important;
         }
     </style>
     """, unsafe_allow_html=True)
+
 
 def render_sidebar():
     """Renders the mutual fund scheme selector sidebar."""
