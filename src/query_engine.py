@@ -32,6 +32,7 @@ logger.info(f"Loaded key-related environment variables: {key_diagnostics}")
 _vector_store_cache: Optional[QdrantVectorStore] = None
 _vector_store_api_key: Optional[str] = None
 _llm_cache = None
+_bm25_retriever_cache: dict = {}
 
 def get_vector_store() -> QdrantVectorStore:
     """Loads and returns the local Qdrant DB (cached at module level)."""
@@ -510,35 +511,45 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
 
     hybrid_results = []
     try:
+        global _bm25_retriever_cache
         from qdrant_client.http import models
-        # Scroll to fetch all chunks of the fund (usually < 150 chunks)
-        records, _ = db.client.scroll(
-            collection_name=config.COLLECTION_NAME,
-            scroll_filter=models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key="metadata.fund_id",
-                        match=models.MatchValue(value=fund_id)
-                    )
-                ]
-            ),
-            limit=1000,
-            with_payload=True,
-            with_vectors=False
-        )
         
-        fund_docs = []
-        for rec in records:
-            payload = rec.payload or {}
-            metadata = payload.get("metadata", {})
-            page_content = payload.get("page_content", "")
-            if page_content:
-                fund_docs.append(Document(page_content=page_content, metadata=metadata))
-                
-        if fund_docs:
+        if fund_id not in _bm25_retriever_cache:
+            # Scroll to fetch all chunks of the fund (usually < 150 chunks)
+            records, _ = db.client.scroll(
+                collection_name=config.COLLECTION_NAME,
+                scroll_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="metadata.fund_id",
+                            match=models.MatchValue(value=fund_id)
+                        )
+                    ]
+                ),
+                limit=1000,
+                with_payload=True,
+                with_vectors=False
+            )
+            
+            fund_docs = []
+            for rec in records:
+                payload = rec.payload or {}
+                metadata = payload.get("metadata", {})
+                page_content = payload.get("page_content", "")
+                if page_content:
+                    fund_docs.append(Document(page_content=page_content, metadata=metadata))
+                    
+            if fund_docs:
+                retriever = BM25Retriever.from_documents(fund_docs)
+                retriever.k = 20
+                _bm25_retriever_cache[fund_id] = retriever
+            else:
+                _bm25_retriever_cache[fund_id] = None
+
+        bm25_retriever = _bm25_retriever_cache.get(fund_id)
+        
+        if bm25_retriever:
             # Run sparse keyword retriever
-            bm25_retriever = BM25Retriever.from_documents(fund_docs)
-            bm25_retriever.k = 20
             sparse_results = bm25_retriever.invoke(search_query)
             
             # Reciprocal Rank Fusion (RRF)
