@@ -211,39 +211,41 @@ def render_top_navigation():
     # ── Hidden Streamlit buttons ─────────────────────────────────────────────
     # These are invisible in the UI. The JS onclick on the nav pills finds and
     # clicks them, which triggers a Streamlit rerun (no full browser reload).
+    st.markdown('<div id="artha-nav-proxy">', unsafe_allow_html=True)
     btn_col = st.columns([1, 1, 1, 1, 1])
     with btn_col[0]:
-        if st.button("nav_overview_hidden", key="__nav_overview", label_visibility="collapsed"):
+        if st.button("nav_overview_hidden", key="__nav_overview"):
             st.session_state["active_view"] = "overview"
             if not is_on_app:
                 st.switch_page("app.py")
             else:
                 st.rerun()
     with btn_col[1]:
-        if st.button("nav_chatbot_hidden", key="__nav_chatbot", label_visibility="collapsed"):
+        if st.button("nav_chatbot_hidden", key="__nav_chatbot"):
             st.session_state["active_view"] = "chatbot"
             if not is_on_app:
                 st.switch_page("app.py")
             else:
                 st.rerun()
     with btn_col[2]:
-        if st.button("nav_holdings_hidden", key="__nav_holdings", label_visibility="collapsed"):
+        if st.button("nav_holdings_hidden", key="__nav_holdings"):
             st.switch_page("pages/1_Holdings_&_Overlap.py")
     with btn_col[3]:
-        if st.button("nav_sip_hidden", key="__nav_sip", label_visibility="collapsed"):
+        if st.button("nav_sip_hidden", key="__nav_sip"):
             st.switch_page("pages/2_SIP_Calculator.py")
     with btn_col[4]:
-        if st.button("nav_news_hidden", key="__nav_news", label_visibility="collapsed"):
+        if st.button("nav_news_hidden", key="__nav_news"):
             st.switch_page("pages/3_News_Feed.py")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown(
         f"""
         <style>
-            /* Hide the proxy button row completely */
-            [data-testid="stHorizontalBlock"]:has(button[data-testid="baseButton-secondary"][kind="secondary"]) {{
-                display: none !important;
-            }}
-            /* Safer: hide any button whose aria-label starts with nav_ */
+            /* Hide the entire proxy button row */
+            #artha-nav-proxy,
+            #artha-nav-proxy + div,
+            div:has(> #artha-nav-proxy) {{ display: none !important; }}
+            
             button[aria-label^="nav_"] {{ display: none !important; }}
 
             .unified-nav {{
