@@ -15,6 +15,12 @@ import src.config as config
 # Load environment variables
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
+LOGO_SVG = '''<svg width="26" height="26" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M100 30L40 170H70L100 95L130 170H160L100 30Z" fill="var(--primary-color)"/>
+  <circle cx="100" cy="95" r="8" fill="#ffffff"><animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" /></circle>
+  <rect x="75" y="125" width="50" height="2" fill="var(--primary-color)" opacity="0.5"/>
+</svg>'''
+
 # --- CACHED DATA WRAPPERS ---
 @st.cache_data(ttl=300)
 def get_nav_data_cached(fund_id: str):
