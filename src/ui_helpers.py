@@ -361,11 +361,11 @@ def render_top_navigation():
                 </div>
             </div>
             <div class="nav-links">
-                <span class="{nav_class(is_overview)}"  onclick="__arthaNavClick('nav_overview_hidden')">📊 Overview</span>
-                <span class="{nav_class(is_chatbot)}"   onclick="__arthaNavClick('nav_chatbot_hidden')">🤖 AI Chatbot</span>
-                <span class="{nav_class(is_holdings)}"  onclick="__arthaNavClick('nav_holdings_hidden')">📈 Holdings</span>
-                <span class="{nav_class(is_sip)}"       onclick="__arthaNavClick('nav_sip_hidden')">💰 SIP Calc</span>
-                <span class="{nav_class(is_news)}"      onclick="__arthaNavClick('nav_news_hidden')">📰 News</span>
+                <span class="{nav_class(is_overview)}"  onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_overview_hidden';}});if(b)b.click();}})()">📊 Overview</span>
+                <span class="{nav_class(is_chatbot)}"   onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_chatbot_hidden';}});if(b)b.click();}})()">🤖 AI Chatbot</span>
+                <span class="{nav_class(is_holdings)}"  onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_holdings_hidden';}});if(b)b.click();}})()">📈 Holdings</span>
+                <span class="{nav_class(is_sip)}"       onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_sip_hidden';}});if(b)b.click();}})()">💰 SIP Calc</span>
+                <span class="{nav_class(is_news)}"      onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_news_hidden';}});if(b)b.click();}})()">📰 News</span>
             </div>
         </div>
         """,
