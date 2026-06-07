@@ -1,5 +1,7 @@
+# pyrefly: ignore [missing-import]
 import streamlit as st
 import pandas as pd
+# pyrefly: ignore [missing-import]
 import altair as alt
 
 # Set page config for wide layout

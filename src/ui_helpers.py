@@ -183,24 +183,7 @@ def render_top_navigation():
     else:
         logo_html = '<div class="terminal-logo-icon">A</div>'
 
-    st.markdown(
-        f"""
-        <div class="terminal-nav">
-            <div style="display:flex; align-items:center; gap:10px; margin-left:2.8rem;">
-                {logo_html}
-                <div>
-                    <div class="terminal-logo-text">ArthaAI</div>
-                    <div class="terminal-logo-sub">Terminal v2.4</div>
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Detect current running page for navigation highlighting
-    # NOTE: ctx.main_script_path always returns the entrypoint (app.py), even on sub-pages.
-    # We must use page_script_hash + pages_manager.get_pages() to find the actual current page.
+    # Detect current running page for active nav highlighting
     from streamlit.runtime.scriptrunner import get_script_run_ctx
     ctx = get_script_run_ctx()
     current_page_script = "app.py"  # fallback
@@ -214,113 +197,121 @@ def render_top_navigation():
         except Exception:
             pass
     is_on_app = (current_page_script == "app.py")
+    active_view = st.session_state.get("active_view", "overview")
 
-    # Horizontal page navigation using Streamlit buttons
-    nav_cols = st.columns([1, 1, 1, 1, 1, 2])
+    def nav_class(condition):
+        return "nav-link nav-link-active" if condition else "nav-link"
 
-    # 1. Overview Page Button
-    with nav_cols[0]:
-        is_active_overview = is_on_app and (st.session_state.get("active_view", "overview") == "overview")
-        if st.button(
-            "📊 Overview",
-            key="nav_overview",
-            use_container_width=True,
-            type="primary" if is_active_overview else "secondary",
-        ):
-            st.session_state["active_view"] = "overview"
-            if not is_on_app:
-                st.switch_page("app.py")
-            else:
-                st.rerun()
+    is_overview  = is_on_app and active_view == "overview"
+    is_chatbot   = is_on_app and active_view == "chatbot"
+    is_holdings  = current_page_script == "1_Holdings_&_Overlap.py"
+    is_sip       = current_page_script == "2_SIP_Calculator.py"
+    is_news      = current_page_script == "3_News_Feed.py"
 
-    # 2. AI Chatbot Button
-    with nav_cols[1]:
-        is_active_chatbot = is_on_app and (st.session_state.get("active_view", "overview") == "chatbot")
-        if st.button(
-            "🤖 AI Chatbot",
-            key="nav_chatbot",
-            use_container_width=True,
-            type="primary" if is_active_chatbot else "secondary",
-        ):
+    st.markdown(
+        f"""
+        <style>
+            .unified-nav {{
+                background-color: var(--surface-container-low);
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                align-items: center;
+                padding: 0 2rem;
+                height: 54px;
+                margin: 0 -5rem 0 -5rem;
+                gap: 0;
+            }}
+            .nav-brand {{
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+                margin-right: 2rem;
+            }}
+            .nav-brand-text {{ line-height: 1.1; }}
+            .nav-brand-title {{
+                color: var(--primary-color);
+                font-family: var(--font-header);
+                font-weight: 700;
+                font-size: 1.05rem;
+                letter-spacing: -0.01em;
+            }}
+            .nav-brand-sub {{
+                font-size: 0.6rem;
+                color: var(--outline-color);
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                font-weight: 500;
+                opacity: 0.6;
+            }}
+            .nav-links {{
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                flex: 1;
+            }}
+            .nav-link {{
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 5px 13px;
+                border-radius: 6px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                font-family: var(--font-body);
+                color: var(--text-muted-color);
+                background: transparent;
+                border: 1px solid transparent;
+                cursor: pointer;
+                text-decoration: none !important;
+                transition: background 0.15s, color 0.15s, border-color 0.15s;
+                white-space: nowrap;
+            }}
+            .nav-link:hover {{
+                background: var(--surface-high);
+                color: var(--primary-color);
+                border-color: var(--primary-color);
+                text-decoration: none !important;
+            }}
+            .nav-link-active {{
+                background: var(--primary-color) !important;
+                color: var(--bg-color) !important;
+                border-color: var(--primary-color) !important;
+            }}
+            .nav-link-active:hover {{
+                background: var(--primary-color) !important;
+                color: var(--bg-color) !important;
+            }}
+        </style>
+        <div class="unified-nav">
+            <div class="nav-brand">
+                {logo_html}
+                <div class="nav-brand-text">
+                    <div class="nav-brand-title">ArthaAI</div>
+                    <div class="nav-brand-sub">Terminal v2.4</div>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a class="{nav_class(is_overview)}"  href="/"        target="_self">📊 Overview</a>
+                <a class="{nav_class(is_chatbot)}"   href="/?view=chatbot" target="_self">🤖 AI Chatbot</a>
+                <a class="{nav_class(is_holdings)}"  href="/Holdings_&_Overlap" target="_self">📈 Holdings</a>
+                <a class="{nav_class(is_sip)}"       href="/SIP_Calculator"     target="_self">💰 SIP Calc</a>
+                <a class="{nav_class(is_news)}"      href="/News_Feed"          target="_self">📰 News</a>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Handle ?view=chatbot query param to switch active view on load
+    try:
+        params = st.query_params
+        if params.get("view") == "chatbot" and is_on_app:
             st.session_state["active_view"] = "chatbot"
-            if not is_on_app:
-                st.switch_page("app.py")
-            else:
-                st.rerun()
-
-    # 3. Holdings Page Button
-    with nav_cols[2]:
-        is_active_holdings = (current_page_script == "1_Holdings_&_Overlap.py")
-        if st.button(
-            "📈 Holdings",
-            key="nav_holdings",
-            use_container_width=True,
-            type="primary" if is_active_holdings else "secondary",
-        ):
-            st.switch_page("pages/1_Holdings_&_Overlap.py")
-
-    # 4. SIP Calculator Page Button
-    with nav_cols[3]:
-        is_active_sip = (current_page_script == "2_SIP_Calculator.py")
-        if st.button(
-            "💰 SIP Calc",
-            key="nav_sip",
-            use_container_width=True,
-            type="primary" if is_active_sip else "secondary",
-        ):
-            st.switch_page("pages/2_SIP_Calculator.py")
-
-    # 5. News Feed Page Button
-    with nav_cols[4]:
-        is_active_news = (current_page_script == "3_News_Feed.py")
-        if st.button(
-            "📰 News",
-            key="nav_news",
-            use_container_width=True,
-            type="primary" if is_active_news else "secondary",
-        ):
-            st.switch_page("pages/3_News_Feed.py")
-
-    # Style the top nav buttons
-    st.markdown("""
-    <style>
-        /* Top nav buttons - horizontal pill style */
-        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(1) button,
-        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(2) button {
-            background-color: var(--surface-container-low) !important;
-            color: var(--text-muted-color) !important;
-            border: 1px solid var(--border-color) !important;
-            border-radius: 8px !important;
-            font-size: 0.8rem !important;
-            font-weight: 600 !important;
-            font-family: var(--font-body) !important;
-            padding: 0.45rem 0.5rem !important;
-            transition: all 0.2s ease !important;
-        }
-        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(1) button:hover,
-        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(2) button:hover {
-            background-color: var(--surface-high) !important;
-            color: var(--primary-color) !important;
-            border-color: var(--primary-color) !important;
-        }
-        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(1) button p,
-        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"]:nth-of-type(2) button p {
-            font-family: var(--font-body) !important;
-            font-size: 0.8rem !important;
-            font-weight: 600 !important;
-            color: inherit !important;
-        }
-        /* Top nav active button styling override */
-        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"] button[data-testid="baseButton-primary"] {
-            background-color: var(--primary-color) !important;
-            color: var(--bg-color) !important;
-            border-color: var(--primary-color) !important;
-        }
-        .stApp > div > div > div > div > div > [data-testid="stHorizontalBlock"] button[data-testid="baseButton-primary"] p {
-            color: var(--bg-color) !important;
-        }
-    </style>
-    """, unsafe_allow_html=True)
+            st.query_params.clear()
+            st.rerun()
+    except Exception:
+        pass
 
 
 def render_sidebar():
