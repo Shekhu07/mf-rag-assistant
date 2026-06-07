@@ -189,16 +189,9 @@ def render_top_navigation():
     is_sip      = current_page_script == "2_SIP_Calculator.py"
     is_news     = current_page_script == "3_News_Feed.py"
 
-    # Load logo
-    logo_base64 = ""
-    logo_path = Path(__file__).resolve().parent.parent / "assets" / "logo.png"
-    if logo_path.exists():
-        try:
-            with open(logo_path, "rb") as f:
-                logo_base64 = base64.b64encode(f.read()).decode("utf-8")
-        except Exception:
-            pass
-    logo_src = f"data:image/png;base64,{logo_base64}" if logo_base64 else ""
+    is_holdings = current_page_script == "1_Holdings_&_Overlap.py"
+    is_sip      = current_page_script == "2_SIP_Calculator.py"
+    is_news     = current_page_script == "3_News_Feed.py"
 
     # ── CSS: style the nav row ─────────────────────────────────────────────
     st.markdown("""
@@ -254,24 +247,14 @@ def render_top_navigation():
     logo_col, c1, c2, c3, c4, c5 = st.columns([2.2, 1, 1, 1, 1, 1])
 
     with logo_col:
-        if logo_src:
-            st.markdown(
-                f'<div style="display:flex;align-items:center;gap:10px;padding:4px 0;">'
-                f'<img src="{logo_src}" width="26" height="26" style="border-radius:4px;object-fit:contain;"/>'
-                f'<div><div style="color:var(--primary-color);font-family:var(--font-header);font-weight:700;font-size:1rem;letter-spacing:-0.01em;">ArthaAI</div>'
-                f'<div style="font-size:0.58rem;color:var(--outline-color);text-transform:uppercase;letter-spacing:0.1em;opacity:0.6;">Terminal v2.4</div></div>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-        else:
-            st.markdown(
-                '<div style="display:flex;align-items:center;gap:10px;padding:4px 0;">'
-                '<div style="width:26px;height:26px;background:var(--primary-color);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#0b1326;font-weight:800;font-size:14px;">A</div>'
-                '<div><div style="color:var(--primary-color);font-family:var(--font-header);font-weight:700;font-size:1rem;">ArthaAI</div>'
-                '<div style="font-size:0.58rem;color:var(--outline-color);text-transform:uppercase;letter-spacing:0.1em;opacity:0.6;">Terminal v2.4</div></div>'
-                '</div>',
-                unsafe_allow_html=True
-            )
+        st.markdown(
+            f'<div style="display:flex;align-items:center;gap:10px;padding:4px 0;">'
+            f'{LOGO_SVG}'
+            f'<div><div style="color:var(--primary-color);font-family:var(--font-header);font-weight:700;font-size:1rem;letter-spacing:-0.01em;">ArthaAI</div>'
+            f'<div style="font-size:0.58rem;color:var(--outline-color);text-transform:uppercase;letter-spacing:0.1em;opacity:0.6;">Pro Terminal v2.5</div></div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
 
     with c1:
         if st.button("📊 Overview",  key="nav_btn_overview",  use_container_width=True, type="primary" if is_overview else "secondary"):
@@ -311,11 +294,12 @@ def render_sidebar():
         st.markdown(
             f"""
             <div style="padding: 1.5rem 0.5rem 0.5rem 0.5rem; text-align: left; border-bottom: 1px solid var(--border-color); margin-bottom: 1.2rem;">
-                <div style="font-family: var(--font-header); font-weight: 800; font-size: 1.15rem; color: var(--primary-color); display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    📊 ArthaAI Terminal
+                <div style="font-family: var(--font-header); font-weight: 800; font-size: 1.15rem; color: var(--text-highlight-color); display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    {LOGO_SVG.replace('width="26" height="26"', 'width="28" height="28"')}
+                    ArthaAI
                 </div>
-                <div style="font-size: 0.68rem; font-weight: 600; color: var(--outline-color); letter-spacing: 0.05em; text-transform: uppercase;">
-                    Scheme Research Dashboard
+                <div style="font-size: 0.68rem; font-weight: 600; color: var(--primary-color); letter-spacing: 0.05em; text-transform: uppercase;">
+                    Pro Terminal v2.5
                 </div>
             </div>
             """,
