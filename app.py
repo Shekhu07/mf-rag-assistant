@@ -299,137 +299,147 @@ elif st.session_state["active_view"] == "overview":
         st.session_state[period_key] = "1Y"
 
     # Chart container
-    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+    st.markdown("""
+        <style>
+        /* Target the chart container specifically */
+        div[data-testid="stVerticalBlock"] > div:has(> div > div > .chart-header) {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 1.5rem;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-    st.markdown(
-        """
-        <div class="chart-header">
-            <div class="chart-title">
-                <span class="material-symbols-outlined chart-title-icon">show_chart</span>
-                NAV Price History
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    period_cols = st.columns(6)
-    period_labels = ["1M", "6M", "1Y", "3Y", "5Y", "All"]
-    for i, period_label in enumerate(period_labels):
-        with period_cols[i]:
-            is_active = st.session_state[period_key] == period_label
-            if st.button(
-                period_label,
-                key=f"period_{selected_key}_{period_label}",
-                use_container_width=True,
-                type="primary" if is_active else "secondary",
-            ):
-                st.session_state[period_key] = period_label
-                st.rerun()
-
-    # Fetch & Render Chart
-    selected_period = st.session_state[period_key]
-    with st.spinner(f"Loading {selected_period} NAV history..."):
-        df_hist = fetch_nav_history_cached(selected_key, period=selected_period)
-
-    if df_hist is not None and len(df_hist) > 1:
-        start_nav = df_hist["nav"].iloc[0]
-        df_hist["pct_change"] = ((df_hist["nav"] - start_nav) / start_nav * 100).round(2)
-        df_hist["date_str"] = df_hist["date"].dt.strftime("%d %b %Y")
-        is_positive = df_hist["nav"].iloc[-1] >= df_hist["nav"].iloc[0]
-        line_color = config.STITCH_DESIGN["success_color"] if is_positive else config.STITCH_DESIGN["danger_color"]
-        area_color_start = "rgba(78,222,163,0.25)" if is_positive else "rgba(255,180,171,0.25)"
-
-        base = alt.Chart(df_hist).encode(
-            x=alt.X(
-                "date:T",
-                axis=alt.Axis(
-                    format="%b '%y",
-                    labelColor=config.STITCH_DESIGN["text_muted_color"],
-                    labelFontSize=10,
-                    gridColor=config.STITCH_DESIGN["border_color"],
-                    domainColor=config.STITCH_DESIGN["border_color"],
-                    tickColor=config.STITCH_DESIGN["border_color"],
-                ),
-                title=None,
-            ),
-            y=alt.Y(
-                "nav:Q",
-                scale=alt.Scale(zero=False),
-                axis=alt.Axis(
-                    labelColor=config.STITCH_DESIGN["text_muted_color"],
-                    labelFontSize=10,
-                    gridColor=config.STITCH_DESIGN["border_color"],
-                    domainColor=config.STITCH_DESIGN["border_color"],
-                    tickColor=config.STITCH_DESIGN["border_color"],
-                    format=".0f",
-                ),
-                title=None,
-            ),
-            tooltip=[
-                alt.Tooltip("date_str:N", title="Date"),
-                alt.Tooltip("nav:Q", title="NAV (₹)", format=".2f"),
-                alt.Tooltip("pct_change:Q", title="Change (%)", format=".2f")
-            ]
-        )
-
-        area = base.mark_area(
-            line={"color": line_color, "strokeWidth": 2},
-            color=alt.Gradient(
-                gradient="linear",
-                stops=[
-                    alt.GradientStop(color=area_color_start, offset=0),
-                    alt.GradientStop(color="rgba(11,19,38,0.0)", offset=1),
-                ],
-                x1=1, x2=1, y1=1, y2=0,
-            ),
-            interpolate="monotone"
-        )
-
-        chart = area.properties(
-            height=220,
-        ).configure(
-            background="transparent",
-        ).configure_view(
-            strokeWidth=0,
-        )
-
-        st.altair_chart(chart, use_container_width=True)
-
-        # Mini stats
-        period_start = df_hist["nav"].iloc[0]
-        period_end = df_hist["nav"].iloc[-1]
-        period_high = df_hist["nav"].max()
-        period_low = df_hist["nav"].min()
-        period_ret = ((period_end - period_start) / period_start) * 100
-        ret_color = config.STITCH_DESIGN["success_color"] if period_ret >= 0 else config.STITCH_DESIGN["danger_color"]
-        sign = "+" if period_ret >= 0 else ""
+    with st.container():
         st.markdown(
-            f"""
-            <div class="mini-stats-row">
-                <div class="mini-stat-card">
-                    <div class="mini-stat-label">PERIOD RETURN</div>
-                    <div class="mini-stat-value" style="color:{ret_color};">{sign}{period_ret:.1f}%</div>
-                </div>
-                <div class="mini-stat-card">
-                    <div class="mini-stat-label">{selected_period} HIGH</div>
-                    <div class="mini-stat-value" style="color:var(--text-highlight-color)">₹{period_high:,.2f}</div>
-                </div>
-                <div class="mini-stat-card">
-                    <div class="mini-stat-label">{selected_period} LOW</div>
-                    <div class="mini-stat-value" style="color:var(--text-highlight-color)">₹{period_low:,.2f}</div>
+            """
+            <div class="chart-header">
+                <div class="chart-title">
+                    <span class="material-symbols-outlined chart-title-icon">show_chart</span>
+                    NAV Price History
                 </div>
             </div>
             """,
-            unsafe_allow_html=True,
-        )
-    else:
-        st.markdown(
-            "<div style='color:var(--outline-color); font-size:0.85rem; padding:1rem; text-align:center;'>⚠️ Could not load chart data. Check your internet connection.</div>",
-            unsafe_allow_html=True,
+            unsafe_allow_html=True
         )
 
-    st.markdown('</div>', unsafe_allow_html=True)  # Close chart-container
+        period_cols = st.columns(6)
+        period_labels = ["1M", "6M", "1Y", "3Y", "5Y", "All"]
+        for i, period_label in enumerate(period_labels):
+            with period_cols[i]:
+                is_active = st.session_state[period_key] == period_label
+                if st.button(
+                    period_label,
+                    key=f"period_{selected_key}_{period_label}",
+                    use_container_width=True,
+                    type="primary" if is_active else "secondary",
+                ):
+                    st.session_state[period_key] = period_label
+                    st.rerun()
+
+        # Fetch & Render Chart
+        selected_period = st.session_state[period_key]
+        with st.spinner(f"Loading {selected_period} NAV history..."):
+            df_hist = fetch_nav_history_cached(selected_key, period=selected_period)
+
+        if df_hist is not None and len(df_hist) > 1:
+            start_nav = df_hist["nav"].iloc[0]
+            df_hist["pct_change"] = ((df_hist["nav"] - start_nav) / start_nav * 100).round(2)
+            df_hist["date_str"] = df_hist["date"].dt.strftime("%d %b %Y")
+            is_positive = df_hist["nav"].iloc[-1] >= df_hist["nav"].iloc[0]
+            line_color = config.STITCH_DESIGN["success_color"] if is_positive else config.STITCH_DESIGN["danger_color"]
+            area_color_start = "rgba(78,222,163,0.25)" if is_positive else "rgba(255,180,171,0.25)"
+
+            base = alt.Chart(df_hist).encode(
+                x=alt.X(
+                    "date:T",
+                    axis=alt.Axis(
+                        format="%b '%y",
+                        labelColor=config.STITCH_DESIGN["text_muted_color"],
+                        labelFontSize=10,
+                        gridColor=config.STITCH_DESIGN["border_color"],
+                        domainColor=config.STITCH_DESIGN["border_color"],
+                        tickColor=config.STITCH_DESIGN["border_color"],
+                    ),
+                    title=None,
+                ),
+                y=alt.Y(
+                    "nav:Q",
+                    scale=alt.Scale(zero=False),
+                    axis=alt.Axis(
+                        labelColor=config.STITCH_DESIGN["text_muted_color"],
+                        labelFontSize=10,
+                        gridColor=config.STITCH_DESIGN["border_color"],
+                        domainColor=config.STITCH_DESIGN["border_color"],
+                        tickColor=config.STITCH_DESIGN["border_color"],
+                        format=".0f",
+                    ),
+                    title=None,
+                ),
+                tooltip=[
+                    alt.Tooltip("date_str:N", title="Date"),
+                    alt.Tooltip("nav:Q", title="NAV (₹)", format=".2f"),
+                    alt.Tooltip("pct_change:Q", title="Change (%)", format=".2f")
+                ]
+            )
+
+            area = base.mark_area(
+                line={"color": line_color, "strokeWidth": 2},
+                color=alt.Gradient(
+                    gradient="linear",
+                    stops=[
+                        alt.GradientStop(color=area_color_start, offset=0),
+                        alt.GradientStop(color="rgba(11,19,38,0.0)", offset=1),
+                    ],
+                    x1=1, x2=1, y1=1, y2=0,
+                ),
+                interpolate="monotone"
+            )
+
+            chart = area.properties(
+                height=220,
+            ).configure(
+                background="transparent",
+            ).configure_view(
+                strokeWidth=0,
+            )
+
+            st.altair_chart(chart, use_container_width=True)
+
+            # Mini stats
+            period_start = df_hist["nav"].iloc[0]
+            period_end = df_hist["nav"].iloc[-1]
+            period_high = df_hist["nav"].max()
+            period_low = df_hist["nav"].min()
+            period_ret = ((period_end - period_start) / period_start) * 100
+            ret_color = config.STITCH_DESIGN["success_color"] if period_ret >= 0 else config.STITCH_DESIGN["danger_color"]
+            sign = "+" if period_ret >= 0 else ""
+            st.markdown(
+                f"""
+                <div class="mini-stats-row">
+                    <div class="mini-stat-card">
+                        <div class="mini-stat-label">PERIOD RETURN</div>
+                        <div class="mini-stat-value" style="color:{ret_color};">{sign}{period_ret:.1f}%</div>
+                    </div>
+                    <div class="mini-stat-card">
+                        <div class="mini-stat-label">{selected_period} HIGH</div>
+                        <div class="mini-stat-value" style="color:var(--text-highlight-color)">₹{period_high:,.2f}</div>
+                    </div>
+                    <div class="mini-stat-card">
+                        <div class="mini-stat-label">{selected_period} LOW</div>
+                        <div class="mini-stat-value" style="color:var(--text-highlight-color)">₹{period_low:,.2f}</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                "<div style='color:var(--outline-color); font-size:0.85rem; padding:1rem; text-align:center;'>⚠️ Could not load chart data. Check your internet connection.</div>",
+                unsafe_allow_html=True,
+            )
 
     # --- BENTO GRID: Sector Allocation + Risk Metrics ---
     bento_left, bento_right = st.columns([1.4, 1.0], gap="large")
