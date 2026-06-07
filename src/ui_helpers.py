@@ -208,10 +208,9 @@ def render_top_navigation():
     is_sip       = current_page_script == "2_SIP_Calculator.py"
     is_news      = current_page_script == "3_News_Feed.py"
 
-    # ── Hidden Streamlit buttons ─────────────────────────────────────────────
-    # These are invisible in the UI. The JS onclick on the nav pills finds and
-    # clicks them, which triggers a Streamlit rerun (no full browser reload).
-    st.markdown('<div id="artha-nav-proxy">', unsafe_allow_html=True)
+    # ── Hidden Streamlit proxy buttons ───────────────────────────────────────
+    # Invisible triggers: JS from components.html clicks these to cause a
+    # Streamlit rerun (fast, in-process) rather than a full browser reload.
     btn_col = st.columns([1, 1, 1, 1, 1])
     with btn_col[0]:
         if st.button("nav_overview_hidden", key="__nav_overview"):
@@ -236,18 +235,50 @@ def render_top_navigation():
     with btn_col[4]:
         if st.button("nav_news_hidden", key="__nav_news"):
             st.switch_page("pages/3_News_Feed.py")
-    st.markdown('</div>', unsafe_allow_html=True)
 
+    # ── JS via components.html (real iframe — scripts actually execute) ───────
+    # This hides the proxy button row and wires up __arthaNavClick on the
+    # parent window so the nav span onclicks can trigger Streamlit reruns.
+    import streamlit.components.v1 as _components
+    _components.html(
+        """
+        <script>
+        (function() {
+            function hideProxyButtons() {
+                var btns = window.parent.document.querySelectorAll('button');
+                btns.forEach(function(b) {
+                    var txt = b.innerText && b.innerText.trim();
+                    if (txt && txt.match(/^nav_.*_hidden$/)) {
+                        var row = b.closest('[data-testid="stHorizontalBlock"]');
+                        if (row) { row.style.cssText = 'display:none!important;height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;'; }
+                    }
+                });
+            }
+
+            // Define the click handler on the PARENT window so nav spans can call it
+            window.parent.__arthaNavClick = function(label) {
+                var btns = window.parent.document.querySelectorAll('button');
+                for (var i = 0; i < btns.length; i++) {
+                    var txt = btns[i].innerText && btns[i].innerText.trim();
+                    if (txt === label) { btns[i].click(); return; }
+                }
+            };
+
+            // Run immediately and after short delays to catch Streamlit's async render
+            hideProxyButtons();
+            setTimeout(hideProxyButtons, 100);
+            setTimeout(hideProxyButtons, 400);
+        })();
+        </script>
+        """,
+        height=0,
+        scrolling=False,
+    )
+
+    # ── Unified visual navbar ────────────────────────────────────────────────
     st.markdown(
         f"""
         <style>
-            /* Hide the entire proxy button row */
-            #artha-nav-proxy,
-            #artha-nav-proxy + div,
-            div:has(> #artha-nav-proxy) {{ display: none !important; }}
-            
-            button[aria-label^="nav_"] {{ display: none !important; }}
-
             .unified-nav {{
                 background-color: var(--surface-container-low);
                 border-bottom: 1px solid var(--border-color);
@@ -337,29 +368,6 @@ def render_top_navigation():
                 <span class="{nav_class(is_news)}"      onclick="__arthaNavClick('nav_news_hidden')">📰 News</span>
             </div>
         </div>
-        <script>
-            // Find a hidden proxy button by its label text and click it.
-            // This triggers a Streamlit rerun without any browser navigation.
-            function __arthaNavClick(label) {{
-                var btns = window.parent.document.querySelectorAll('button');
-                for (var i = 0; i < btns.length; i++) {{
-                    if (btns[i].innerText && btns[i].innerText.trim() === label) {{
-                        btns[i].click();
-                        return;
-                    }}
-                }}
-            }}
-            // Also hide the proxy button row in the parent frame
-            (function hideProxyRow() {{
-                var btns = window.parent.document.querySelectorAll('button');
-                btns.forEach(function(b) {{
-                    if (b.innerText && b.innerText.trim().startsWith('nav_')) {{
-                        var row = b.closest('[data-testid="stHorizontalBlock"]');
-                        if (row) row.style.display = 'none';
-                    }}
-                }});
-            }})();
-        </script>
         """,
         unsafe_allow_html=True,
     )
