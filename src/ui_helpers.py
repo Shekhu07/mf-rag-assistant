@@ -208,9 +208,44 @@ def render_top_navigation():
     is_sip       = current_page_script == "2_SIP_Calculator.py"
     is_news      = current_page_script == "3_News_Feed.py"
 
+    # ── Hidden Streamlit buttons ─────────────────────────────────────────────
+    # These are invisible in the UI. The JS onclick on the nav pills finds and
+    # clicks them, which triggers a Streamlit rerun (no full browser reload).
+    btn_col = st.columns([1, 1, 1, 1, 1])
+    with btn_col[0]:
+        if st.button("nav_overview_hidden", key="__nav_overview", label_visibility="collapsed"):
+            st.session_state["active_view"] = "overview"
+            if not is_on_app:
+                st.switch_page("app.py")
+            else:
+                st.rerun()
+    with btn_col[1]:
+        if st.button("nav_chatbot_hidden", key="__nav_chatbot", label_visibility="collapsed"):
+            st.session_state["active_view"] = "chatbot"
+            if not is_on_app:
+                st.switch_page("app.py")
+            else:
+                st.rerun()
+    with btn_col[2]:
+        if st.button("nav_holdings_hidden", key="__nav_holdings", label_visibility="collapsed"):
+            st.switch_page("pages/1_Holdings_&_Overlap.py")
+    with btn_col[3]:
+        if st.button("nav_sip_hidden", key="__nav_sip", label_visibility="collapsed"):
+            st.switch_page("pages/2_SIP_Calculator.py")
+    with btn_col[4]:
+        if st.button("nav_news_hidden", key="__nav_news", label_visibility="collapsed"):
+            st.switch_page("pages/3_News_Feed.py")
+
     st.markdown(
         f"""
         <style>
+            /* Hide the proxy button row completely */
+            [data-testid="stHorizontalBlock"]:has(button[data-testid="baseButton-secondary"][kind="secondary"]) {{
+                display: none !important;
+            }}
+            /* Safer: hide any button whose aria-label starts with nav_ */
+            button[aria-label^="nav_"] {{ display: none !important; }}
+
             .unified-nav {{
                 background-color: var(--surface-container-low);
                 border-bottom: 1px solid var(--border-color);
@@ -254,7 +289,7 @@ def render_top_navigation():
                 display: inline-flex;
                 align-items: center;
                 gap: 5px;
-                padding: 5px 13px;
+                padding: 5px 14px;
                 border-radius: 6px;
                 font-size: 0.8rem;
                 font-weight: 600;
@@ -266,6 +301,7 @@ def render_top_navigation():
                 text-decoration: none !important;
                 transition: background 0.15s, color 0.15s, border-color 0.15s;
                 white-space: nowrap;
+                user-select: none;
             }}
             .nav-link:hover {{
                 background: var(--surface-high);
@@ -292,26 +328,39 @@ def render_top_navigation():
                 </div>
             </div>
             <div class="nav-links">
-                <a class="{nav_class(is_overview)}"  href="/"        target="_self">📊 Overview</a>
-                <a class="{nav_class(is_chatbot)}"   href="/?view=chatbot" target="_self">🤖 AI Chatbot</a>
-                <a class="{nav_class(is_holdings)}"  href="/Holdings_&_Overlap" target="_self">📈 Holdings</a>
-                <a class="{nav_class(is_sip)}"       href="/SIP_Calculator"     target="_self">💰 SIP Calc</a>
-                <a class="{nav_class(is_news)}"      href="/News_Feed"          target="_self">📰 News</a>
+                <span class="{nav_class(is_overview)}"  onclick="__arthaNavClick('nav_overview_hidden')">📊 Overview</span>
+                <span class="{nav_class(is_chatbot)}"   onclick="__arthaNavClick('nav_chatbot_hidden')">🤖 AI Chatbot</span>
+                <span class="{nav_class(is_holdings)}"  onclick="__arthaNavClick('nav_holdings_hidden')">📈 Holdings</span>
+                <span class="{nav_class(is_sip)}"       onclick="__arthaNavClick('nav_sip_hidden')">💰 SIP Calc</span>
+                <span class="{nav_class(is_news)}"      onclick="__arthaNavClick('nav_news_hidden')">📰 News</span>
             </div>
         </div>
+        <script>
+            // Find a hidden proxy button by its label text and click it.
+            // This triggers a Streamlit rerun without any browser navigation.
+            function __arthaNavClick(label) {{
+                var btns = window.parent.document.querySelectorAll('button');
+                for (var i = 0; i < btns.length; i++) {{
+                    if (btns[i].innerText && btns[i].innerText.trim() === label) {{
+                        btns[i].click();
+                        return;
+                    }}
+                }}
+            }}
+            // Also hide the proxy button row in the parent frame
+            (function hideProxyRow() {{
+                var btns = window.parent.document.querySelectorAll('button');
+                btns.forEach(function(b) {{
+                    if (b.innerText && b.innerText.trim().startsWith('nav_')) {{
+                        var row = b.closest('[data-testid="stHorizontalBlock"]');
+                        if (row) row.style.display = 'none';
+                    }}
+                }});
+            }})();
+        </script>
         """,
         unsafe_allow_html=True,
     )
-
-    # Handle ?view=chatbot query param to switch active view on load
-    try:
-        params = st.query_params
-        if params.get("view") == "chatbot" and is_on_app:
-            st.session_state["active_view"] = "chatbot"
-            st.query_params.clear()
-            st.rerun()
-    except Exception:
-        pass
 
 
 def render_sidebar():
