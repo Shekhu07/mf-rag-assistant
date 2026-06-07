@@ -138,12 +138,20 @@ def inject_css():
 
 def render_ticker_bar():
     """Renders the scrolling live market ticker bar at the top of the page."""
-    ticker_data = [
-        ("NIFTY 50", "23,416.55", "+0.05%", "up"),
-        ("SENSEX", "74,360.01", "+0.02%", "up"),
-        ("BANK NIFTY", "54,266.00", "+1.00%", "up"),
-        ("USD/INR", "95.70", "-0.01%", "down"),
-    ]
+    ticker_data = []
+    short_names = {
+        "parag_parikh_flexi": "PPFAS Flexi Cap",
+        "pp_tax_saver": "PPFAS Tax Saver",
+        "pp_conservative": "PPFAS Cons Hybrid",
+        "pp_liquid": "PPFAS Liquid",
+        "pp_dynamic": "PPFAS Dynamic"
+    }
+    for key, item in FUND_DATA.items():
+        label = short_names.get(key, item["name"])
+        nav = item["nav"].replace("₹ ", "₹")
+        change_raw = item["change"].split(" ")[0]
+        direction = "up" if item["change_positive"] else "down"
+        ticker_data.append((label, nav, change_raw, direction))
 
     items_html = ""
     for label, value, change, direction in ticker_data:
