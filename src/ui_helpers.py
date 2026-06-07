@@ -164,34 +164,18 @@ def render_ticker_bar():
     )
 
 def render_top_navigation():
-    """Renders the terminal-style top navigation bar with working page links."""
-    # Initialize view state
+    """Renders the top navigation bar using native Streamlit buttons (reliable across all versions)."""
     if "active_view" not in st.session_state:
         st.session_state["active_view"] = "overview"
 
-    logo_base64 = ""
-    logo_path = Path(__file__).resolve().parent.parent / "assets" / "logo.png"
-    if logo_path.exists():
-        try:
-            with open(logo_path, "rb") as img_file:
-                logo_base64 = base64.b64encode(img_file.read()).decode("utf-8")
-        except Exception:
-            pass
-
-    if logo_base64:
-        logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="28" height="28" style="border-radius: 4px; object-fit: contain;" />'
-    else:
-        logo_html = '<div class="terminal-logo-icon">A</div>'
-
-    # Detect current running page for active nav highlighting
+    # Detect current page
     from streamlit.runtime.scriptrunner import get_script_run_ctx
     ctx = get_script_run_ctx()
-    current_page_script = "app.py"  # fallback
+    current_page_script = "app.py"
     if ctx:
         try:
             pages = ctx.pages_manager.get_pages()
-            current_hash = ctx.page_script_hash
-            page_info = pages.get(current_hash)
+            page_info = pages.get(ctx.page_script_hash)
             if page_info and page_info.get("script_path"):
                 current_page_script = Path(page_info["script_path"]).name
         except Exception:
@@ -199,178 +183,122 @@ def render_top_navigation():
     is_on_app = (current_page_script == "app.py")
     active_view = st.session_state.get("active_view", "overview")
 
-    def nav_class(condition):
-        return "nav-link nav-link-active" if condition else "nav-link"
+    is_overview = is_on_app and active_view == "overview"
+    is_chatbot  = is_on_app and active_view == "chatbot"
+    is_holdings = current_page_script == "1_Holdings_&_Overlap.py"
+    is_sip      = current_page_script == "2_SIP_Calculator.py"
+    is_news     = current_page_script == "3_News_Feed.py"
 
-    is_overview  = is_on_app and active_view == "overview"
-    is_chatbot   = is_on_app and active_view == "chatbot"
-    is_holdings  = current_page_script == "1_Holdings_&_Overlap.py"
-    is_sip       = current_page_script == "2_SIP_Calculator.py"
-    is_news      = current_page_script == "3_News_Feed.py"
+    # Load logo
+    logo_base64 = ""
+    logo_path = Path(__file__).resolve().parent.parent / "assets" / "logo.png"
+    if logo_path.exists():
+        try:
+            with open(logo_path, "rb") as f:
+                logo_base64 = base64.b64encode(f.read()).decode("utf-8")
+        except Exception:
+            pass
+    logo_src = f"data:image/png;base64,{logo_base64}" if logo_base64 else ""
 
-    # ── Hidden Streamlit proxy buttons ───────────────────────────────────────
-    # Invisible triggers: JS from components.html clicks these to cause a
-    # Streamlit rerun (fast, in-process) rather than a full browser reload.
-    btn_col = st.columns([1, 1, 1, 1, 1])
-    with btn_col[0]:
-        if st.button("nav_overview_hidden", key="__nav_overview"):
+    # ── CSS: style the nav row ─────────────────────────────────────────────
+    st.markdown("""
+    <style>
+        /* Nav row wrapper — targets the first stHorizontalBlock in the app */
+        div[data-testid="stAppViewBlockContainer"] > div:first-child > div[data-testid="stVerticalBlockBorderWrapper"],
+        .nav-row-wrapper {
+            background-color: var(--surface-container-low) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            padding: 6px 8px !important;
+            margin: 0 -5rem !important;
+        }
+        /* Style ALL buttons inside the nav row as pill tabs */
+        .nav-row-wrapper button {
+            background-color: transparent !important;
+            color: var(--text-muted-color) !important;
+            border: 1px solid transparent !important;
+            border-radius: 6px !important;
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            font-family: var(--font-body) !important;
+            padding: 4px 12px !important;
+            height: auto !important;
+            min-height: 34px !important;
+            transition: all 0.15s ease !important;
+        }
+        .nav-row-wrapper button:hover {
+            background-color: var(--surface-high) !important;
+            color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        .nav-row-wrapper button[data-testid="baseButton-primary"] {
+            background-color: var(--primary-color) !important;
+            color: var(--bg-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        .nav-row-wrapper button p {
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            color: inherit !important;
+            margin: 0 !important;
+        }
+        /* Logo column: no extra padding */
+        .nav-row-wrapper [data-testid="stColumn"]:first-child {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ── Nav row ────────────────────────────────────────────────────────────
+    st.markdown('<div class="nav-row-wrapper">', unsafe_allow_html=True)
+    logo_col, c1, c2, c3, c4, c5 = st.columns([2.2, 1, 1, 1, 1, 1])
+
+    with logo_col:
+        if logo_src:
+            st.markdown(
+                f'<div style="display:flex;align-items:center;gap:10px;padding:4px 0;">'
+                f'<img src="{logo_src}" width="26" height="26" style="border-radius:4px;object-fit:contain;"/>'
+                f'<div><div style="color:var(--primary-color);font-family:var(--font-header);font-weight:700;font-size:1rem;letter-spacing:-0.01em;">ArthaAI</div>'
+                f'<div style="font-size:0.58rem;color:var(--outline-color);text-transform:uppercase;letter-spacing:0.1em;opacity:0.6;">Terminal v2.4</div></div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                '<div style="display:flex;align-items:center;gap:10px;padding:4px 0;">'
+                '<div style="width:26px;height:26px;background:var(--primary-color);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#0b1326;font-weight:800;font-size:14px;">A</div>'
+                '<div><div style="color:var(--primary-color);font-family:var(--font-header);font-weight:700;font-size:1rem;">ArthaAI</div>'
+                '<div style="font-size:0.58rem;color:var(--outline-color);text-transform:uppercase;letter-spacing:0.1em;opacity:0.6;">Terminal v2.4</div></div>'
+                '</div>',
+                unsafe_allow_html=True
+            )
+
+    with c1:
+        if st.button("📊 Overview",  key="nav_btn_overview",  use_container_width=True, type="primary" if is_overview else "secondary"):
             st.session_state["active_view"] = "overview"
-            if not is_on_app:
-                st.switch_page("app.py")
-            else:
-                st.rerun()
-    with btn_col[1]:
-        if st.button("nav_chatbot_hidden", key="__nav_chatbot"):
+            if not is_on_app: st.switch_page("app.py")
+            else: st.rerun()
+
+    with c2:
+        if st.button("🤖 AI Chatbot", key="nav_btn_chatbot", use_container_width=True, type="primary" if is_chatbot else "secondary"):
             st.session_state["active_view"] = "chatbot"
-            if not is_on_app:
-                st.switch_page("app.py")
-            else:
-                st.rerun()
-    with btn_col[2]:
-        if st.button("nav_holdings_hidden", key="__nav_holdings"):
+            if not is_on_app: st.switch_page("app.py")
+            else: st.rerun()
+
+    with c3:
+        if st.button("📈 Holdings",  key="nav_btn_holdings", use_container_width=True, type="primary" if is_holdings else "secondary"):
             st.switch_page("pages/1_Holdings_&_Overlap.py")
-    with btn_col[3]:
-        if st.button("nav_sip_hidden", key="__nav_sip"):
+
+    with c4:
+        if st.button("💰 SIP Calc",  key="nav_btn_sip",      use_container_width=True, type="primary" if is_sip else "secondary"):
             st.switch_page("pages/2_SIP_Calculator.py")
-    with btn_col[4]:
-        if st.button("nav_news_hidden", key="__nav_news"):
+
+    with c5:
+        if st.button("📰 News",      key="nav_btn_news",     use_container_width=True, type="primary" if is_news else "secondary"):
             st.switch_page("pages/3_News_Feed.py")
 
-    # ── JS via components.html (real iframe — scripts actually execute) ───────
-    # This hides the proxy button row and wires up __arthaNavClick on the
-    # parent window so the nav span onclicks can trigger Streamlit reruns.
-    import streamlit.components.v1 as _components
-    _components.html(
-        """
-        <script>
-        (function() {
-            function hideProxyButtons() {
-                var btns = window.parent.document.querySelectorAll('button');
-                btns.forEach(function(b) {
-                    var txt = b.innerText && b.innerText.trim();
-                    if (txt && txt.match(/^nav_.*_hidden$/)) {
-                        var row = b.closest('[data-testid="stHorizontalBlock"]');
-                        if (row) { row.style.cssText = 'display:none!important;height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;'; }
-                    }
-                });
-            }
+    st.markdown('</div>', unsafe_allow_html=True)
 
-            // Define the click handler on the PARENT window so nav spans can call it
-            window.parent.__arthaNavClick = function(label) {
-                var btns = window.parent.document.querySelectorAll('button');
-                for (var i = 0; i < btns.length; i++) {
-                    var txt = btns[i].innerText && btns[i].innerText.trim();
-                    if (txt === label) { btns[i].click(); return; }
-                }
-            };
-
-            // Run immediately and after short delays to catch Streamlit's async render
-            hideProxyButtons();
-            setTimeout(hideProxyButtons, 100);
-            setTimeout(hideProxyButtons, 400);
-        })();
-        </script>
-        """,
-        height=0,
-        scrolling=False,
-    )
-
-    # ── Unified visual navbar ────────────────────────────────────────────────
-    st.markdown(
-        f"""
-        <style>
-            .unified-nav {{
-                background-color: var(--surface-container-low);
-                border-bottom: 1px solid var(--border-color);
-                display: flex;
-                align-items: center;
-                padding: 0 2rem;
-                height: 54px;
-                margin: 0 -5rem 0 -5rem;
-                gap: 0;
-            }}
-            .nav-brand {{
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                flex-shrink: 0;
-                margin-right: 2rem;
-            }}
-            .nav-brand-text {{ line-height: 1.1; }}
-            .nav-brand-title {{
-                color: var(--primary-color);
-                font-family: var(--font-header);
-                font-weight: 700;
-                font-size: 1.05rem;
-                letter-spacing: -0.01em;
-            }}
-            .nav-brand-sub {{
-                font-size: 0.6rem;
-                color: var(--outline-color);
-                text-transform: uppercase;
-                letter-spacing: 0.12em;
-                font-weight: 500;
-                opacity: 0.6;
-            }}
-            .nav-links {{
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                flex: 1;
-            }}
-            .nav-link {{
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                padding: 5px 14px;
-                border-radius: 6px;
-                font-size: 0.8rem;
-                font-weight: 600;
-                font-family: var(--font-body);
-                color: var(--text-muted-color);
-                background: transparent;
-                border: 1px solid transparent;
-                cursor: pointer;
-                text-decoration: none !important;
-                transition: background 0.15s, color 0.15s, border-color 0.15s;
-                white-space: nowrap;
-                user-select: none;
-            }}
-            .nav-link:hover {{
-                background: var(--surface-high);
-                color: var(--primary-color);
-                border-color: var(--primary-color);
-                text-decoration: none !important;
-            }}
-            .nav-link-active {{
-                background: var(--primary-color) !important;
-                color: var(--bg-color) !important;
-                border-color: var(--primary-color) !important;
-            }}
-            .nav-link-active:hover {{
-                background: var(--primary-color) !important;
-                color: var(--bg-color) !important;
-            }}
-        </style>
-        <div class="unified-nav">
-            <div class="nav-brand">
-                {logo_html}
-                <div class="nav-brand-text">
-                    <div class="nav-brand-title">ArthaAI</div>
-                    <div class="nav-brand-sub">Terminal v2.4</div>
-                </div>
-            </div>
-            <div class="nav-links">
-                <span class="{nav_class(is_overview)}"  onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_overview_hidden';}});if(b)b.click();}})()">📊 Overview</span>
-                <span class="{nav_class(is_chatbot)}"   onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_chatbot_hidden';}});if(b)b.click();}})()">🤖 AI Chatbot</span>
-                <span class="{nav_class(is_holdings)}"  onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_holdings_hidden';}});if(b)b.click();}})()">📈 Holdings</span>
-                <span class="{nav_class(is_sip)}"       onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_sip_hidden';}});if(b)b.click();}})()">💰 SIP Calc</span>
-                <span class="{nav_class(is_news)}"      onclick="(function(){{var b=[...document.querySelectorAll('button')].find(function(x){{return x.innerText.trim()==='nav_news_hidden';}});if(b)b.click();}})()">📰 News</span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def render_sidebar():
