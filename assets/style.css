@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 /* ===== Global Overrides ===== */
@@ -39,9 +40,9 @@ header[data-testid="stHeader"], [data-testid="stHeader"] {
 
 /* ===== Ticker Bar ===== */
 .ticker-bar {
-    height: 32px;
-    background-color: var(--surface-lowest);
-    border-bottom: 1px solid var(--border-color);
+    height: 28px;
+    background-color: #000000;
+    border-bottom: 0.5px solid rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
     overflow: hidden;
@@ -51,9 +52,9 @@ header[data-testid="stHeader"], [data-testid="stHeader"] {
 .ticker-scroll {
     display: flex;
     white-space: nowrap;
-    animation: ticker 35s linear infinite;
-    gap: 32px;
-    padding: 0 24px;
+    animation: ticker 40s linear infinite;
+    gap: 40px;
+    padding: 0 16px;
 }
 @keyframes ticker {
     0% { transform: translateX(0); }
@@ -62,24 +63,38 @@ header[data-testid="stHeader"], [data-testid="stHeader"] {
 .ticker-item {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 11px;
+    gap: 8px;
+    font-size: 10px;
     font-weight: 500;
     font-family: var(--font-body);
 }
 .ticker-label {
-    color: var(--outline-color);
+    color: #64748b;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.05em;
+    font-size: 10px;
 }
 .ticker-value {
     color: var(--text-highlight-color);
-    font-weight: 700;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: 10px;
 }
-.ticker-up { color: var(--success-color); }
-.ticker-down { color: var(--danger-color); }
-.ticker-flat { color: var(--outline-color); }
+.ticker-up   { color: var(--success-color); font-family: var(--font-mono); font-size: 10px; }
+.ticker-down { color: var(--danger-color);  font-family: var(--font-mono); font-size: 10px; }
+.ticker-flat { color: #64748b;              font-family: var(--font-mono); font-size: 10px; }
+
+/* ===== RAG Engine Glow ===== */
+.rag-gradient-bg {
+    background: radial-gradient(circle at center, rgba(59,130,246,0.08) 0%, transparent 70%);
+}
+
+/* ===== Custom Scrollbar (v2.5 style) ===== */
+.stApp ::-webkit-scrollbar { width: 3px; height: 3px; }
+.stApp ::-webkit-scrollbar-track { background: transparent; }
+.stApp ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+.stApp ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 /* ===== Top Navigation Bar ===== */
 .terminal-nav {
