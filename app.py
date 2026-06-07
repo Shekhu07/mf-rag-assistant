@@ -280,18 +280,7 @@ elif st.session_state["active_view"] == "overview":
 
     st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
-    # --- LATEST NEWS EXPANDER ---
-    with st.expander("📰 Latest News & Updates"):
-        with st.spinner("Fetching latest news..."):
-            news_items = fetch_google_news_cached(selected_key)
-            if news_items:
-                for item in news_items[:3]:
-                    st.markdown(f"**[{item['title']}]({item['link']})**")
-                    st.caption(f"{item.get('source', '')} • {item.get('date', '')}")
-            else:
-                st.info("No recent news found for this fund.")
 
-    st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
     # --- NAV PRICE HISTORY CHART ---
     period_key = f"nav_period_{selected_key}"
