@@ -5,7 +5,7 @@ Fetches Google News RSS feed for mutual funds.
 """
 
 import requests
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 import urllib.parse
 import logging
 from typing import List, Dict, Optional

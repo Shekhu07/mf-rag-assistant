@@ -35,7 +35,8 @@ def download_database() -> bool:
             repo_type="dataset",
             local_dir=str(local_dir),
             token=token,
-            ignore_patterns=[".git*", "README.md"]
+            ignore_patterns=[".git*", "README.md"],
+            revision=os.environ.get("HF_DATASET_REVISION", "main")  # nosec B615
         )
         
         # Handle cases where files might be downloaded into a nested qdrant_local folder

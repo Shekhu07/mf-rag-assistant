@@ -505,7 +505,6 @@ def query_fund(query: str, fund_id: str, chat_history: list = None, k: int = 4, 
 
     hybrid_results = []
     try:
-        global _bm25_retriever_cache
         from qdrant_client.http import models
         
         if fund_id not in _bm25_retriever_cache:
