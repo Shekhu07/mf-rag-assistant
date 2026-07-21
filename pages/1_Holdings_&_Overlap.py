@@ -68,37 +68,40 @@ with left_panel:
         sector_df = df.groupby("Sector", as_index=False)["AllocNum"].sum()
         sector_df = sector_df.sort_values(by="AllocNum", ascending=False)
         sector_df["Allocation"] = sector_df["AllocNum"].apply(lambda x: f"{x:.2f}%")
-        
-        chart = alt.Chart(sector_df).mark_arc(innerRadius=65, outerRadius=110, stroke=config.STITCH_DESIGN["bg_color"], strokeWidth=2).encode(
-            theta=alt.Theta(field="AllocNum", type="quantitative"),
-            color=alt.Color(
-                field="Sector", 
-                type="nominal", 
-                sort=alt.EncodingSortField(field="AllocNum", op="sum", order="descending"),
-                scale=alt.Scale(range=[config.STITCH_DESIGN["primary_color"], config.STITCH_DESIGN["success_color"], "#3B82F6", "#F59E0B", "#EC4899", "#8B5CF6", "#10B981", "#EF4444", "#F97316", "#06B6D4"]),
-                legend=alt.Legend(
-                    title=None,
-                    orient="right",
-                    labelColor=config.STITCH_DESIGN["text_color"],
-                    labelFontSize=11,
-                    labelFontWeight=500,
-                    symbolSize=100,
-                    rowPadding=6
-                )
-            ),
-            tooltip=[
-                alt.Tooltip(field="Sector", type="nominal"),
-                alt.Tooltip(field="Allocation", type="nominal")
-            ]
-        ).properties(
-            height=280
-        ).configure(
-            background="transparent"
-        ).configure_view(
-            strokeWidth=0
-        )
-        
-        st.altair_chart(chart, use_container_width=True)
+
+        if sector_df.empty:
+            st.info("No holdings data available for this fund.")
+        else:
+            chart = alt.Chart(sector_df).mark_arc(innerRadius=65, outerRadius=110, stroke=config.STITCH_DESIGN["bg_color"], strokeWidth=2).encode(
+                theta=alt.Theta(field="AllocNum", type="quantitative"),
+                color=alt.Color(
+                    field="Sector",
+                    type="nominal",
+                    sort=alt.EncodingSortField(field="AllocNum", op="sum", order="descending"),
+                    scale=alt.Scale(range=[config.STITCH_DESIGN["primary_color"], config.STITCH_DESIGN["success_color"], "#3B82F6", "#F59E0B", "#EC4899", "#8B5CF6", "#10B981", "#EF4444", "#F97316", "#06B6D4"]),
+                    legend=alt.Legend(
+                        title=None,
+                        orient="right",
+                        labelColor=config.STITCH_DESIGN["text_color"],
+                        labelFontSize=11,
+                        labelFontWeight=500,
+                        symbolSize=100,
+                        rowPadding=6
+                    )
+                ),
+                tooltip=[
+                    alt.Tooltip(field="Sector", type="nominal"),
+                    alt.Tooltip(field="Allocation", type="nominal")
+                ]
+            ).properties(
+                height=280
+            ).configure(
+                background="transparent"
+            ).configure_view(
+                strokeWidth=0
+            )
+
+            st.altair_chart(chart, use_container_width=True)
     except Exception as chart_err:
         st.error(f"Error rendering chart: {chart_err}")
 
